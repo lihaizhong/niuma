@@ -1,0 +1,44 @@
+{
+  "mcpServers": {
+    "chrome-devtools": {
+      "description": "Chrome浏览器自动化工具，支持页面操作、性能分析、网络监控等功能",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@iflow-mcp/chrome-devtools-mcp"
+      ]
+    },
+    "text-toolkit": {
+      "description": "提供全面的文本处理功能，包括大小写转换、编码解码、格式化、统计分析等工具",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@iflow-mcp/text-toolkit"
+      ]
+    },
+    "lighthouse-mcp": {
+      "description": "基于Google Lighthouse的网站性能审计工具，支持完整审计和快速性能评分",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@iflow-mcp/lighthouse-mcp"
+      ]
+    },
+    "desktop-commander": {
+      "description": "强大的桌面文件系统和进程管理工具，提供文件操作、搜索、进程管理等全面功能",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@iflow-mcp/desktop-commander"
+      ]
+    },
+    "memory": {
+      "description": "提供知识图谱的创建、查询、更新和删除功能，支持实体、关系和观察信息的全生命周期管理",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@iflow-mcp/server-memory@0.6.3"
+      ]
+    }
+  }
+}
