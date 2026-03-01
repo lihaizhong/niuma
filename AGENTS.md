@@ -16,6 +16,7 @@
 | **LLM 接口** | iflow SDK |
 | **Agent 框架** | LangChain.js + LangGraph |
 | **工具协议** | MCP (Model Context Protocol) |
+| **向量存储** | SQLite + sqlite-vec |
 | **性格特质** | 温暖、懂你、适时出现、提供情绪价值 |
 
 ### 参考项目
@@ -23,6 +24,14 @@
 - **nanobot**：精巧设计参考
 - **nanoclaw**：沙箱安全模式参考
 - **OpenClaw**：多 Agent 架构设计参考
+- **sqlite-vec**：SQLite 向量搜索扩展
+
+### 技术决策记录
+
+| 日期 | 决策 | 理由 |
+|------|------|------|
+| 2026-03-01 | 采用 sqlite-vec 作为向量存储 | TypeScript 原生支持，架构精简，无需 Python 桥接 |
+| 2026-03-01 | 放弃 Zvec/OpenViking | 虽功能强大，但需 Python 桥接，增加架构复杂度 |
 
 ---
 
@@ -40,7 +49,10 @@ niuma/
 ├── docs/                      # 项目文档
 │   ├── brainstorming-session.md     # 产品设计头脑风暴
 │   ├── ai-tools-research-report.md  # AI 工具生态研究报告
-│   └── ai-tools-research-prompt.md  # 研究提示词
+│   ├── ai-tools-research-prompt.md  # 研究提示词
+│   ├── sqlite-vec-research.md       # sqlite-vec 研究 ✅ 已采纳
+│   ├── openviking-research.md       # OpenViking 研究
+│   └── zvec-research.md             # Zvec 研究
 ├── memory_data/               # 记忆数据存储（待使用）
 ├── .vscode/                   # VS Code 配置
 ├── .gitignore                 # Git 忽略规则
@@ -89,7 +101,7 @@ flowchart TB
     subgraph Foundation["基础层"]
         LangChain["LangChain.js<br/>LangGraph"]
         SDK["iflow SDK"]
-        SQLite["SQLite"]
+        SQLite["SQLite<br/>+ sqlite-vec"]
     end
 
     CLI --> Gateway
@@ -138,6 +150,29 @@ flowchart TB
 | **网络服务** | 天气查询、新闻获取、API 调用 |
 | **笔记联动** | Obsidian 笔记读写、标签管理、关联分析 |
 | **任务管理** | TodoList 操作、提醒设置、进度更新 |
+
+### Memory Store（记忆存储）
+
+Niuma 使用 **SQLite + sqlite-vec** 作为记忆存储方案：
+
+```
+┌─────────────────────────────────────────────┐
+│              Memory Store                    │
+├─────────────────────────────────────────────┤
+│  SQLite (结构化数据)                         │
+│  ├── memories 表 (记忆内容)                  │
+│  └── metadata (元数据)                       │
+├─────────────────────────────────────────────┤
+│  sqlite-vec (向量检索)                       │
+│  └── memory_embeddings (向量索引)            │
+└─────────────────────────────────────────────┘
+```
+
+**技术选型理由**：
+- ✅ TypeScript 原生支持，无需 Python 桥接
+- ✅ 架构精简，单一数据库文件
+- ✅ 部署简单，零配置
+- ✅ 适合中小规模向量场景（<10万）
 
 ---
 
@@ -190,7 +225,7 @@ flowchart TB
 - [ ] 早安/晚间流程实现
 - [ ] 基础 TodoList 管理
 - [ ] 天气查询集成
-- [ ] 记忆系统基础
+- [ ] 记忆系统基础（sqlite-vec）
 
 ### 近期规划（Q3-Q4 2026）
 - [ ] Obsidian 笔记库联动
@@ -209,11 +244,20 @@ flowchart TB
 
 ## 关键文档
 
+### 设计文档
+
 | 文档 | 说明 |
 |------|------|
 | [产品设计头脑风暴](docs/brainstorming-session.md) | 完整的产品设计头脑风暴记录 |
 | [AI 工具生态研究报告](docs/ai-tools-research-report.md) | AI 辅助工具生态全景研究成果 |
-| [研究提示词](docs/ai-tools-research-prompt.md) | 深度研究提示词模板 |
+
+### 技术研究
+
+| 文档 | 说明 |
+|------|------|
+| [sqlite-vec 研究](docs/sqlite-vec-research.md) | 向量存储方案选型研究 ✅ 已采纳 |
+| [OpenViking 研究](docs/openviking-research.md) | 上下文数据库调研 |
+| [Zvec 研究](docs/zvec-research.md) | 嵌入式向量数据库调研 |
 
 ---
 
