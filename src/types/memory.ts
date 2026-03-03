@@ -2,7 +2,7 @@
  * 记忆类型定义
  */
 
-export type MemoryType = 'preference' | 'experience' | 'knowledge' | 'task' | 'conversation';
+export type MemoryType = 'preference' | 'experience' | 'knowledge' | 'task' | 'conversation' | 'short_term' | 'long_term';
 
 export interface MemoryMetadata {
   type: MemoryType;

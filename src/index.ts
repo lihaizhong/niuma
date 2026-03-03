@@ -7,136 +7,102 @@
 
 import cac from 'cac';
 import chalk from 'chalk';
-import { homedir } from 'os';
-import { join } from 'path';
-import { existsSync, mkdirSync } from 'fs';
-import { MemoryStore } from './core/memory-store.js';
-import { TodoService } from './services/todo-service.js';
-import { WeatherService } from './services/weather-service.js';
-import { morningCommand, eveningCommand, todoCommand, rememberCommand } from './commands/index.js';
+import { NiumaDaemon } from './core/daemon.js';
 
-// 数据目录
-const DATA_DIR = join(homedir(), '.niuma');
-const DB_PATH = join(DATA_DIR, 'niuma.db');
-
-// 确保数据目录存在
-if (!existsSync(DATA_DIR)) {
-  mkdirSync(DATA_DIR, { recursive: true });
+// 检查是否请求帮助（在解析前检查）
+const args = process.argv.slice(2);
+if (args.includes('-h') || args.includes('--help')) {
+  showHelp();
+  process.exit(0);
 }
-
-// 初始化服务
-const memoryStore = new MemoryStore({ dbPath: DB_PATH });
-const todoService = new TodoService(DB_PATH);
-const weatherService = new WeatherService();
 
 // 创建 CLI 程序
 const cli = cac('niuma');
 
 cli
   .version('0.1.0')
-  .usage('[command] [options]')
-  .help();
+  .usage('[command] [options]');
 
-// 早安命令
+// 启动守护进程（默认命令）
 cli
-  .command('morning', '🌅 早安流程 - 问候 + 天气 + 待办')
-  .alias('m')
-  .option('-n, --name <name>', '你的名字')
-  .action(async (options) => {
-    try {
-      await morningCommand({
-        weatherService,
-        todoService,
-        memoryStore,
-        userName: options.name,
-      });
-    } catch (error) {
-      console.error(chalk.red('早安流程出错：'), error);
-    }
+  .command('start', '🚀 启动牛马守护进程（后台持续运行）')
+  .alias('s')
+  .option('-m, --morning <time>', '早安时间，默认 7:00', { default: '0 7 * * *' })
+  .option('-e, --evening <time>', '晚间复盘时间，默认 22:00', { default: '0 22 * * *' })
+  .action((options) => {
+    const daemon = new NiumaDaemon({
+      morningTime: options.morning,
+      eveningTime: options.evening,
+    });
+    daemon.start();
   });
 
-// 晚间命令
+// 默认命令 - 启动守护进程
 cli
-  .command('evening', '🌙 晚间复盘 - 总结今日成就')
-  .alias('e')
-  .option('-n, --name <name>', '你的名字')
-  .action(async (options) => {
-    try {
-      await eveningCommand({
-        todoService,
-        memoryStore,
-        userName: options.name,
-      });
-    } catch (error) {
-      console.error(chalk.red('晚间复盘出错：'), error);
-    }
-  });
-
-// Todo 命令
-cli
-  .command('todo [action] [args]', '📋 TodoList 管理')
-  .alias('t')
-  .action(async (action, args, options) => {
-    try {
-      await todoCommand(action || 'list', args ? [args] : [], { todoService });
-    } catch (error) {
-      console.error(chalk.red('Todo 操作出错：'), error);
-    }
-  });
-
-// Remember 命令
-cli
-  .command('remember [content]', '📝 记录记忆')
-  .alias('r')
-  .action(async (content) => {
-    try {
-      await rememberCommand(content ? [content] : [], { memoryStore });
-    } catch (error) {
-      console.error(chalk.red('记录记忆出错：'), error);
-    }
-  });
-
-// 交互模式
-cli
-  .command('chat', '💬 进入交互聊天模式（开发中）')
-  .alias('c')
+  .command('', '启动牛马守护进程')
   .action(() => {
-    console.log(chalk.yellow('交互聊天模式正在开发中...'));
-    console.log(chalk.gray('敬请期待！'));
+    const daemon = new NiumaDaemon();
+    daemon.start();
   });
 
-// 默认命令 - 显示帮助
+// 自定义帮助命令
 cli
-  .command('', '显示帮助')
+  .command('help', '显示帮助信息')
   .action(() => {
-    console.log();
-    console.log(chalk.bold.cyan('🐮 Niuma (牛马) - 智能生活助手'));
-    console.log(chalk.gray('─'.repeat(40)));
-    console.log();
-    console.log(chalk.white('常用命令：'));
-    console.log(chalk.cyan('  niuma morning') + chalk.gray('    🌅 早安流程'));
-    console.log(chalk.cyan('  niuma evening') + chalk.gray('    🌙 晚间复盘'));
-    console.log(chalk.cyan('  niuma todo') + chalk.gray('        📋 待办管理'));
-    console.log(chalk.cyan('  niuma remember') + chalk.gray('   📝 记录记忆'));
-    console.log();
-    console.log(chalk.gray('使用 niuma --help 查看完整帮助'));
-    console.log();
+    showHelp();
   });
 
-// 优雅退出
-process.on('SIGINT', () => {
-  console.log();
-  console.log(chalk.cyan('再见！期待下次见面 🌈'));
-  memoryStore.close();
-  todoService.close();
-  process.exit(0);
-});
+// 显示帮助信息
+function showHelp(): void {
+  const commandsHelp = `
+${chalk.cyan('可用命令:')}
 
-process.on('SIGTERM', () => {
-  memoryStore.close();
-  todoService.close();
-  process.exit(0);
-});
+  ${chalk.green('niuma')}           启动牛马守护进程（交互式聊天模式）
+  ${chalk.green('niuma start')}     启动守护进程（可配置定时任务）
+  ${chalk.green('niuma help')}      显示帮助信息
+  ${chalk.green('niuma -v')}        显示版本号
+
+${chalk.cyan('交互式命令（启动后使用）:')}
+
+  ${chalk.yellow('聊天功能:')}
+    直接输入任意内容即可与大模型对话
+
+  ${chalk.yellow('任务管理:')}
+    /add <title> [-p high|medium|low]   添加待办任务
+    /done <id|index>                    完成任务
+    /rm <id|index>                      删除任务
+    /todos [-a]                         查看任务列表（-a 显示所有）
+
+  ${chalk.yellow('记忆管理:')}
+    /remember <content>                 保存记忆
+    /recall <keyword>                   搜索记忆
+
+  ${chalk.yellow('日常流程:')}
+    /morning                            手动触发早安流程
+    /evening                            手动触发晚间复盘
+    /weather                            查看天气
+
+  ${chalk.yellow('系统命令:')}
+    /status                             查看当前状态
+    /clear                              清除对话历史
+    /help                               显示帮助信息
+    /exit, /quit                        退出程序
+
+${chalk.cyan('环境变量:')}
+
+  ${chalk.gray('IFLOW_API_KEY')}     iFlow API Key（优先）
+  ${chalk.gray('IFLOW_BASE_URL')}    iFlow API 地址（可选）
+  ${chalk.gray('IFLOW_MODEL')}       模型名称（可选，默认 GLM-5）
+
+  ${chalk.gray('LLM_API_KEY')}       通用 LLM API Key（备选）
+  ${chalk.gray('LLM_BASE_URL')}      通用 LLM API 地址（可选）
+  ${chalk.gray('LLM_MODEL')}         模型名称（可选）
+
+${chalk.gray('更多信息请访问:')} https://github.com/lihaizhong/niuma
+`;
+
+  console.log(commandsHelp);
+}
 
 // 解析命令
 cli.parse();
