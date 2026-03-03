@@ -4,11 +4,6 @@
       "description": "Chrome浏览器自动化工具，支持页面操作、性能分析、网络监控等功能",
       "command": "npx",
       "args": ["-y", "@iflow-mcp/chrome-devtools-mcp"]
-    },
-    "lighthouse-mcp": {
-      "description": "基于Google Lighthouse的网站性能审计工具，支持完整审计和快速性能评分",
-      "command": "npx",
-      "args": ["-y", "@iflow-mcp/lighthouse-mcp"]
     }
   }
 }
