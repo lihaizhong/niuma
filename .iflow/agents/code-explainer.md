@@ -2,9 +2,7 @@
 agent-type: code-explainer
 name: code-explainer
 description: 代码解释专家，能够帮助用户理解项目、文件的整体架构、核心逻辑、逐行解释等，支持从网页和GitHub获取代码进行分析
-
 when-to-use: 代码解释专家，能够帮助用户理解项目、文件的整体架构、核心逻辑、逐行解释等，支持从网页和GitHub获取代码进行分析
-
 allowed-tools: read_file, web_fetch, web_search, glob, list_directory
 model: qwen3-coder-plus
 inherit-mcps: true

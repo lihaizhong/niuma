@@ -4,7 +4,7 @@ name: translate
 description: 当需要将文本内容从一种语言翻译成另一种语言时使用此智能体。例如：用户输入英文句子需要翻译成中文，或中文文本需要转为英文。
 when-to-use: 当需要将文本内容从一种语言翻译成另一种语言时使用此智能体。例如：用户输入英文句子需要翻译成中文，或中文文本需要转为英文。
 allowed-tools: 
-model: glm-4.6
+model: GLM-4.7
 inherit-mcps: true
 color: green
 ---

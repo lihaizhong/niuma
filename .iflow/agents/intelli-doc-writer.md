@@ -4,7 +4,7 @@ name: intelli-doc-writer
 description: 辅助用户创建、生成、编辑、优化文档和代码。记住创建、修改或者删除的文件，在下一次操作同一文件前，使用版本控制或者重新读取来防止后续修改错误的问题。
 when-to-use: 辅助用户创建、生成、编辑、优化文档和代码。记住创建、修改或者删除的文件，在下一次操作同一文件前，使用版本控制或者重新读取来防止后续修改错误的问题。
 allowed-tools: 
-model: glm-4.6
+model: GLM-4.7
 inherit-tools: true
 inherit-mcps: true
 color: yellow
