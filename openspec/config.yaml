@@ -1,0 +1,88 @@
+schema: spec-driven
+
+# ============================================================
+# Project Context
+# ============================================================
+# This context is shown to AI when creating artifacts.
+# It defines the tech stack, conventions, and domain knowledge.
+
+context: |
+  ## Project Overview
+  
+  **Niuma (牛马)** - 智能生活助手 CLI 工具，使用 TypeScript 复写 nanobot。
+  目标：提供陪伴感和情绪价值的智能精灵。
+
+  ## Tech Stack
+  
+  - **Language**: TypeScript 5.9+
+  - **Runtime**: Node.js 18+
+  - **Package Manager**: pnpm
+  - **Test Framework**: vitest
+  - **LLM Framework**: langchain
+  - **Database**: better-sqlite3 + sqlite-vec
+
+  ## Architecture
+  
+  ```
+  src/
+  ├── agent/          # 核心智能体（loop, context, memory, skills, tools）
+  ├── providers/      # LLM 提供商（OpenAI, Anthropic, OpenRouter...）
+  ├── channels/       # 多渠道接入（CLI, Telegram, Discord...）
+  ├── bus/            # 消息总线（events, queue）
+  ├── session/        # 会话管理
+  ├── config/         # 配置管理
+  └── types/          # 类型定义
+  ```
+
+  ## Coding Conventions
+  
+  - ES Module syntax (no CommonJS)
+  - Strict TypeScript enabled
+  - Async/await over Promise chains
+  - Prefer composition over inheritance
+  - Tools follow nanobot's Tool abstract class pattern
+
+  ## Commit Style
+  
+  Conventional Commits:
+  - `feat:` new features
+  - `fix:` bug fixes
+  - `refactor:` code restructuring
+  - `docs:` documentation
+  - `test:` test changes
+  - `chore:` maintenance
+
+  ## Key Patterns (from nanobot)
+  
+  1. **Tool System**: Abstract base class + Registry pattern
+  2. **Provider Registry**: Two-step registration (spec + config field)
+  3. **Memory System**: Two-layer (MEMORY.md + HISTORY.md)
+  4. **Agent Loop**: LLM call ↔ Tool execution cycle
+
+# ============================================================
+# Per-Artifact Rules
+# ============================================================
+
+rules:
+  proposal:
+    - Keep proposals under 500 words
+    - Always include a "Non-goals" section
+    - Define clear acceptance criteria
+    - Reference existing nanobot code when applicable
+
+  specs:
+    - Define inputs, outputs, and edge cases
+    - Include TypeScript interface definitions
+    - List dependencies on other specs
+
+  design:
+    - Include ASCII architecture diagrams
+    - Explain key design decisions
+    - List trade-offs considered
+    - Reference nanobot source files as examples
+
+  tasks:
+    - Break tasks into 30-minute chunks
+    - Each task should be independently verifiable
+    - Number tasks for clear ordering
+    - Mark dependencies between tasks
