@@ -16,9 +16,23 @@ dayjs.extend(weekday);
 dayjs.extend(timezone);
 dayjs.extend(utc);
 
+const partPlatformPolicyPrompt = (system: string) => {
+  if (system === "Windows") {
+    return `## Platform Policy (Windows)
+- You are running on Windows. Do not assume GNU tools like \`grep\`, \`sed\`, or \`awk\` exist.
+- Prefer Windows-native commands or file tools when they are more reliable.
+- If terminal output is garbled, retry with UTF-8 output enabled.`
+  }
+
+  return `## Platform Policy (POSIX)
+- You are running on a POSIX system. Prefer UTF-8 and standard shell tools.
+- Use file tools when they are simpler or more reliable than shell commands.`
+}
+
 const partIdentityPrompt = (
   runtime: string,
   workspacePath: string,
+  platformPolicy: string
 ) => `# niuma 🐈
 
 You are niuma, a helpful AI assistant.
@@ -32,6 +46,8 @@ Your workspace is at: ${workspacePath}
 - History log: ${workspacePath}/memory/HISTORY.md (grep-searchable). Each entry starts with [YYYY-MM-DD HH:MM].
 - Custom skills: ${workspacePath}/skills/{skill-name}/SKILL.md
 
+${platformPolicy}
+
 ## niuma Guidelines
 - State intent before tool calls, but NEVER predict or claim results before receiving them.
 - Before modifying a file, read it first. Do not assume files or directories exist.
@@ -39,24 +55,21 @@ Your workspace is at: ${workspacePath}
 - If a tool call fails, analyze the error before retrying with a different approach.
 - Ask for clarification when the request is ambiguous.
 
-Reply directly with text for conversations. Only use the 'message' tool to send to a specific chat channel.
-`;
+Reply directly with text for conversations. Only use the 'message' tool to send to a specific chat channel.`;
 
 const partSkillsSummaryPrompt = (skillsSummary: string) => `# Skills
 
 The following skills extend your capabilities. To use a skill, read its SKILL.md file using the read_file tool.
 Skills with available="false" need dependencies installed first - you can try installing them with apt/brew.
 
-${skillsSummary}
-`;
+${skillsSummary}`;
 
 export class ContextBuilder {
   static BOOTSTRAP_FILES = [
     "AGENTS.md",
     "SOUL.md",
     "USER.md",
-    "TOOLS.md",
-    "IDENTITY.md",
+    "TOOLS.md"
   ];
 
   private static RUNTIME_CONTEXT_TAG =
@@ -124,8 +137,9 @@ export class ContextBuilder {
     );
     const system = os.platform();
     const runtime = `${system === "darwin" ? "macOS" : system} ${os.machine()}, Python ${os.version()}`;
+    const platformPolicy = partPlatformPolicyPrompt(system)
 
-    return partIdentityPrompt(runtime, workspacePath);
+    return partIdentityPrompt(runtime, workspacePath, platformPolicy);
   }
 
   /**

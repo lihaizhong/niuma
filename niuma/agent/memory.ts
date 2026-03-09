@@ -7,44 +7,49 @@ const SAVE_MEMORY_TOOL = [
     type: "function",
     function: {
       name: "save_memory",
-      description: "Save the memory consolidation result to persistent storage.",
+      description:
+        "Save the memory consolidation result to persistent storage.",
       parameters: {
         type: "object",
         properties: {
           history_entry: {
             type: "string",
-            description: "A paragraph (2-5 sentences) summarizing key events/decisions/topics. Start with [YYYY-MM-DD HH:MM]. Include detail useful for grep search."
+            description:
+              "A paragraph (2-5 sentences) summarizing key events/decisions/topics. Start with [YYYY-MM-DD HH:MM]. Include detail useful for grep search.",
           },
           memory_update: {
             type: "string",
-            description: "Full updated long-term memory as markdown. Include all existing facts plus new ones. Return unchanged if nothing new."
-          }
+            description:
+              "Full updated long-term memory as markdown. Include all existing facts plus new ones. Return unchanged if nothing new.",
+          },
         },
-        required: ["history_entry", "memory_update"]
-      }
-    }
-  }
-]
+        required: ["history_entry", "memory_update"],
+      },
+    },
+  },
+];
 
-const getConsolidationPrompt = (currentMemory: string, lines: string[]): string => `Process this conversation and call the save_memory tool with your consolidation.
+const getConsolidationPrompt = (
+  currentMemory: string,
+  lines: string[],
+): string => `Process this conversation and call the save_memory tool with your consolidation.
 
 ## Current Long-term Memory
 ${currentMemory || "(empty)"}
 
 ## Conversation to Process
-${lines.join("\n")}
-`
+${lines.join("\n")}`;
 
 export class MemoryStore {
-  private memoryDir: string
+  private memoryDir: string;
 
-  private memoryFile: string
+  private memoryFile: string;
 
-  private historyFile: string
+  private historyFile: string;
 
   /**
    * Two-layer memory: MEMORY.md (long-term facts) + HISTORY.md (grep-searchable log).
-   * 
+   *
    * @param {string} workspace
    */
   constructor(workspace: string) {
@@ -81,24 +86,32 @@ export class MemoryStore {
 
   /**
    * Consolidate old messages into MEMORY.md + HISTORY.md via LLM tool call.
-   * 
+   *
    * Returns True on success (including no-op), False on failure.
-   * 
-   * @param {any} session 
-   * @param {any} provider 
-   * @param {string} model 
-   * @param {boolean} archiveAll 
-   * @param {number} memoryWindow 
+   *
+   * @param {any} session
+   * @param {any} provider
+   * @param {string} model
+   * @param {boolean} archiveAll
+   * @param {number} memoryWindow
    * @returns {Promise.<boolean>}
    */
-  async consolidate(session: any, provider: any, model: string, archiveAll: boolean = false, memoryWindow: number = 50): Promise<boolean> {
+  async consolidate(
+    session: any,
+    provider: any,
+    model: string,
+    archiveAll: boolean = false,
+    memoryWindow: number = 50,
+  ): Promise<boolean> {
     let oldMessages: any[] = [];
     let keepCount = 0;
 
     if (archiveAll) {
       oldMessages = session.messages;
       keepCount = 0;
-      logger.info(`Memory consolidation (archive_all): ${session.messages.length} messages`)
+      logger.info(
+        `Memory consolidation (archive_all): ${session.messages.length} messages`,
+      );
     } else {
       keepCount = Math.floor(memoryWindow / 2); // Keep more recent messages for better context
 
@@ -110,11 +123,15 @@ export class MemoryStore {
         return true; // No new messages since last consolidation, skip
       }
 
-      oldMessages = session.messages.slice(session.lastConsolidated - keepCount)
-      logger.info(`Memory consolidation: ${oldMessages.length} to consolidate, ${keepCount} keep`)
+      oldMessages = session.messages.slice(
+        session.lastConsolidated - keepCount,
+      );
+      logger.info(
+        `Memory consolidation: ${oldMessages.length} to consolidate, ${keepCount} keep`,
+      );
     }
 
-    const lines = []
+    const lines = [];
 
     for (const m of oldMessages) {
       if (!m.content) {
@@ -123,7 +140,9 @@ export class MemoryStore {
 
       const tools = ` [tools: ${m.tools_used ? `, ${m.tools_used}` : ""}]`;
 
-      lines.push(`[${m.timestamp || "?"}] ${m.role.toUpperCase()}: ${tools}: ${m.content}`);
+      lines.push(
+        `[${m.timestamp || "?"}] ${m.role.toUpperCase()}: ${tools}: ${m.content}`,
+      );
     }
 
     const currentMemory = this.readLongTerm();
@@ -132,15 +151,21 @@ export class MemoryStore {
     try {
       const response = await provider.chat(
         [
-          { "role": "system", "content": "You are a memory consolidation agent. Call the save_memory tool with your consolidation of the conversation." },
-          { "role": "user", "content": prompt }
+          {
+            role: "system",
+            content:
+              "You are a memory consolidation agent. Call the save_memory tool with your consolidation of the conversation.",
+          },
+          { role: "user", content: prompt },
         ],
         SAVE_MEMORY_TOOL,
-        model
+        model,
       );
 
       if (!response.has_tool_calls) {
-        logger.warn("Memory consolidation: LLM did not call save_memory, skipping")
+        logger.warn(
+          "Memory consolidation: LLM did not call save_memory, skipping",
+        );
         return false;
       }
 
@@ -153,13 +178,17 @@ export class MemoryStore {
         // Some providers return arguments as a Array (handle edge case)
 
         if (!(args[0] instanceof Object && args[0] !== null)) {
-          logger.warn("Memory consolidation: unexpected arguments as empty or non-dict list")
-          return false
+          logger.warn(
+            "Memory consolidation: unexpected arguments as empty or non-dict list",
+          );
+          return false;
         }
 
         args = args[0];
       } else if (!(args instanceof Object && args !== null)) {
-        logger.warn(`Memory consolidation: unexpected arguments type ${typeof args}`)
+        logger.warn(
+          `Memory consolidation: unexpected arguments type ${typeof args}`,
+        );
         return false;
       }
 
@@ -185,8 +214,12 @@ export class MemoryStore {
         }
       }
 
-      session.lastConsolidated = archiveAll ? 0 : session.messages.length - keepCount; // Next consolidation starts from the last few messages we kept
-      logger.info(`Memory consolidation done: ${session.messages.length}, last_consolidated=${session.lastConsolidated}`)
+      session.lastConsolidated = archiveAll
+        ? 0
+        : session.messages.length - keepCount; // Next consolidation starts from the last few messages we kept
+      logger.info(
+        `Memory consolidation done: ${session.messages.length}, last_consolidated=${session.lastConsolidated}`,
+      );
       return true;
     } catch (err) {
       logger.error("Memory consolidation error:", err);

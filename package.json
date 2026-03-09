@@ -26,6 +26,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@clack/prompts": "^1.0.1",
+    "ajv": "^8.18.0",
     "better-sqlite3": "^12.6.2",
     "boxen": "^8.0.1",
     "cac": "^7.0.0",
@@ -43,8 +44,7 @@
     "ora": "^9.3.0",
     "re2": "^1.23.3",
     "sqlite-vec": "0.1.7-alpha.10",
-    "which": "^6.0.1",
-    "zod": "^4.3.6"
+    "which": "^6.0.1"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",

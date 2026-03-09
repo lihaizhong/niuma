@@ -1,4 +1,4 @@
-import { Tool } from "./base";
+import { Tool, ToolParameters } from "./base";
 
 export class CronTool extends Tool {
   private cron: any;
@@ -10,49 +10,51 @@ export class CronTool extends Tool {
   private inCronContext: any;
 
   get name(): string {
-    return "cron"
+    return "cron";
   }
 
   get description(): string {
-    return "Schedule reminders and recurring tasks. Actions: add, list, remove."
+    return "Schedule reminders and recurring tasks. Actions: add, list, remove.";
   }
 
-  get parameters(): Record<string, any> {
+  get parameters(): ToolParameters {
     return {
       type: "object",
       properties: {
         action: {
           type: "string",
           enum: ["add", "list", "remove"],
-          description: "Action to perform"
+          description: "Action to perform",
         },
         message: {
           type: "string",
-          description: "Reminder message (for add)"
+          description: "Reminder message (for add)",
         },
         every_seconds: {
           type: "integer",
-          description: "Interval in seconds (for recurring tasks)"
+          description: "Interval in seconds (for recurring tasks)",
         },
         cron_expr: {
           type: "string",
-          description: "Cron expression like '0 9 * * *' (for scheduled tasks)"
+          description: "Cron expression like '0 9 * * *' (for scheduled tasks)",
         },
         tz: {
           type: "string",
-          description: "IANA timezone for cron expressions (e.g. 'America/Vancouver')"
+          description:
+            "IANA timezone for cron expressions (e.g. 'America/Vancouver')",
         },
         at: {
           type: "string",
-          description: "ISO datetime for one-time execution (e.g. '2026-02-12T10:30:00')"
+          description:
+            "ISO datetime for one-time execution (e.g. '2026-02-12T10:30:00')",
         },
         job_id: {
           type: "string",
-          description: "Job ID (for remove)"
-        }
+          description: "Job ID (for remove)",
+        },
       },
-      required: ["action"]
-    }
+      required: ["action"],
+    };
   }
 
   /**
@@ -61,10 +63,24 @@ export class CronTool extends Tool {
    * @param {CronService} cronService
    */
   constructor(cronService: any) {
+    super();
     this.cron = cronService;
     this.channel = "";
     this.chatId = "";
     this.inCronContext = new ContextVar("cron_in_context", false);
+  }
+
+  async execute(
+    action: string,
+    message: string = "",
+    everySeconds?: number,
+    cronExpr?: string,
+    tz?: string,
+    at?: string,
+    jobId?: string,
+    ...args: any
+  ): Promise<string> {
+    
   }
 
   /**

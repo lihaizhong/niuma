@@ -130,8 +130,7 @@ You are a subagent spawned by the main agent to complete a specific task.
 Stay focused on the assigned task. Your final response will be reported back to the main agent.
 
 ## Workspace
-${workspace}
-`;
+${workspace}`;
 
 const partAnnouncePrompt = (
   label: string,
@@ -145,8 +144,7 @@ Task: ${task}
 Result:
 ${result}
 
-Summarize this naturally for the user. Keep it brief (1-2 sentences). Do not mention technical details like "subagent" or task IDs.
-`;
+Summarize this naturally for the user. Keep it brief (1-2 sentences). Do not mention technical details like "subagent" or task IDs.`;
 
 export class SubagentManager {
   private provider: any;
