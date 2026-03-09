@@ -26,7 +26,6 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@clack/prompts": "^1.0.1",
-    "ajv": "^8.18.0",
     "better-sqlite3": "^12.6.2",
     "boxen": "^8.0.1",
     "cac": "^7.0.0",

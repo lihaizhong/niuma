@@ -102,6 +102,8 @@ pnpm test
 - 使用 ESLint 进行代码规范检查
 - TypeScript 严格模式开启
 - 使用 ES Module (`"type": "module"`)
+- **注释必须使用中文**，代码标识符使用英文
+- JSDoc 注释应包含 `@description`、`@param`、`@returns` 等标签，描述内容使用中文
 
 ### 提交规范
 - 遵循 Conventional Commits 规范
@@ -110,6 +112,69 @@ pnpm test
 ### 分支策略
 - `main` - 主分支
 - `feat/*` - 功能分支
+
+### 工作流约束（强制）
+
+**重要：以下约束为强制执行，不可跳过！**
+
+1. **必须触发 fullstack-workflow skill**
+   - **无论通过任何方式**（如：`/opsx:apply`、手动开发任务等）开始实现代码时，**必须先调用** `Skill` 工具触发 `fullstack-workflow` skill
+   - 示例：`Skill(skill: "fullstack-workflow")`
+   - fullstack-workflow skill 会协调多个专业 subagent 协作完成任务
+   - **每个角色优先使用对应的 subagent 处理**：
+     | 角色/任务类型 | 优先使用的 subagent |
+     |--------------|-------------------|
+     | 规划分析 | `plan-agent` |
+     | 代码探索 | `explore-agent` |
+     | 代码审查 | `code-reviewer` |
+     | 前端测试 | `frontend-tester` |
+     | 深度研究 | `search-specialist` |
+     | 复杂多步骤任务 | `general-purpose` |
+     | 翻译任务 | `translate` |
+     | 教程生成 | `tutorial-engineer` |
+
+2. **必须使用 OpenSpec CLI 命令**
+   - **禁止手动创建 openspec 文件**，必须通过 CLI 命令生成
+   - 使用 `openspec` CLI 命令管理变更生命周期
+   - 关键命令：
+     ```bash
+     # 创建新变更
+     openspec new change "<change-name>"
+     
+     # 查看变更状态
+     openspec status --change "<change-name>" --json
+     
+     # 获取 artifact 构建指令
+     openspec instructions <artifact-id> --change "<change-name>" --json
+     
+     # 应用变更（实施）
+     openspec apply --change "<change-name>"
+     
+     # 归档变更
+     openspec archive --change "<change-name>"
+     ```
+
+3. **使用斜杠命令触发 Skill**
+   - `/opsx:explore` - 探索模式和需求澄清
+   - `/opsx:propose` - 创建变更提案（包含 proposal、design、specs、tasks）
+   - `/opsx:apply` - 实施变更任务
+   - `/opsx:archive` - 归档变更
+
+**正确的工作流顺序：**
+```
+1. /opsx:explore (可选，复杂任务建议使用)
+   ↓
+2. /opsx:propose (创建提案，自动生成所有 artifacts)
+   ↓
+3. /opsx:apply (实施变更)
+   ↓
+4. /opsx:archive (归档)
+```
+
+**注意：**
+- 所有 artifacts 文件必须通过 `openspec` CLI 命令生成
+- 只有 `openspec status` 显示 `applyReady: true` 时才能执行 `/opsx:apply`
+- 文件路径必须使用 `openspec instructions` 返回的 `outputPath`
 
 ## CLI 命令
 
