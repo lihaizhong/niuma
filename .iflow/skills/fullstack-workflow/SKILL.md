@@ -5,13 +5,12 @@ license: MIT
 compatibility: iFlow CLI
 metadata:
   author: niuma
-  version: "2.0"
+  version: "2.3"
   tags:
     - fullstack
     - multi-agent
     - collaboration
     - constraint
-always: true
 ---
 
 # 全栈开发工作流
@@ -22,34 +21,69 @@ always: true
 
 ## 架构概览
 
-```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                        全栈开发工作流架构                                │
-└─────────────────────────────────────────────────────────────────────────┘
+### 开发流程总览
 
-                              ┌──────────────┐
-                              │     Main     │
-                              │    Agent     │
-                              │   (我本人)    │
-                              └───────┬──────┘
-                                      │
-       ┌──────────────────────────────┼──────────────────────────────┐
-       │                              │                              │
-       ▼                              ▼                              ▼
-┌────────────────┐           ┌────────────────┐           ┌────────────────┐
-│  plan-agent    │           │ explore-agent  │           │ code-reviewer  │
-│   规划分析     │           │   代码探索     │           │   代码审查     │
-└────────────────┘           └────────────────┘           └────────────────┘
-       │                              │                              │
-       │      ┌───────────────────────┼───────────────────────┐      │
-       │      │                       │                       │      │
-       │      ▼                       ▼                       ▼      │
-       │ ┌────────────────┐   ┌────────────────┐   ┌────────────────┐ │
-       │ │general-purpose │   │frontend-tester │   │search-specialist│ │
-       │ │    通用任务    │   │   前端测试     │   │   搜索专家     │ │
-       │ └────────────────┘   └────────────────┘   └────────────────┘ │
-       │                                                              │
-       └──────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph 设计阶段["设计阶段"]
+        UD[ui-designer<br/>UI 设计]
+        AD[api-designer<br/>API 设计]
+    end
+    
+    subgraph 实现阶段["实现阶段"]
+        FD[frontend-developer<br/>前端实现]
+        BD[backend-developer<br/>后端实现]
+    end
+    
+    subgraph 验证阶段["验证阶段"]
+        FT[frontend-tester<br/>前端测试]
+        CR[code-reviewer<br/>代码审查]
+    end
+    
+    UD --> FD
+    AD --> BD
+    AD -.->|API 规格| FD
+    
+    FD --> FT
+    BD --> CR
+```
+
+### Subagent 协作架构
+
+```mermaid
+graph TB
+    subgraph Main["主 Agent"]
+        M[Main Agent<br/>我本人]
+    end
+    
+    subgraph VoltAgent["开发专家 (VoltAgent)"]
+        subgraph 设计专家
+            UD[ui-designer]
+            AD[api-designer]
+        end
+        subgraph 实现专家
+            FD[frontend-developer]
+            BD[backend-developer]
+            FSD[fullstack-developer]
+        end
+    end
+    
+    subgraph Core["核心 Subagent"]
+        PA[plan-agent]
+        EA[explore-agent]
+    end
+    
+    subgraph Support["支持 Subagent"]
+        FT[frontend-tester]
+        CR[code-reviewer]
+        SS[search-specialist]
+        GP[general-purpose]
+    end
+    
+    M --> VoltAgent
+    M --> Core
+    Core --> GP
+    CR --> SS
 ```
 
 ---
@@ -60,24 +94,19 @@ always: true
 
 **所有代码变更必须先有规格定义**
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                    变更流程                             │
-├─────────────────────────────────────────────────────────┤
-│                                                         │
-│   ┌──────────┐    ┌──────────┐    ┌──────────┐        │
-│   │ Proposal │───▶│  Specs   │───▶│  Design  │        │
-│   │  提案    │    │  规格    │    │  设计    │        │
-│   └──────────┘    └──────────┘    └──────────┘        │
-│         │              │              │               │
-│         │              │              │               │
-│         ▼              ▼              ▼               │
-│   ┌──────────┐    ┌──────────┐    ┌──────────┐        │
-│   │  Tasks   │───▶│Implement │───▶│ Archive  │        │
-│   │  任务    │    │  实现    │    │  归档    │        │
-│   └──────────┘    └──────────┘    └──────────┘        │
-│                                                         │
-└─────────────────────────────────────────────────────────┘
+```mermaid
+flowchart LR
+    subgraph 规划阶段
+        P[Proposal<br/>提案] --> S[Specs<br/>规格]
+        S --> D[Design<br/>设计]
+    end
+    
+    subgraph 执行阶段
+        T[Tasks<br/>任务] --> I[Implement<br/>实现]
+        I --> A[Archive<br/>归档]
+    end
+    
+    D --> T
 ```
 
 **强制规则：**
@@ -127,33 +156,31 @@ tasks.md 格式：
 
 **只实现明确要求的功能，遵循 YAGNI 原则**
 
+```mermaid
+flowchart TD
+    A[用户请求功能 X] --> B{用户明确要求了吗？}
+    B -->|是| C[实现它]
+    B -->|否| D[不实现]
 ```
-┌─────────────────────────────────────────────────────────┐
-│                 需求判断决策树                          │
-├─────────────────────────────────────────────────────────┤
-│                                                         │
-│  用户请求功能 X                                         │
-│       │                                                 │
-│       ▼                                                 │
-│  ┌─────────────────────────────────────┐               │
-│  │ 用户明确要求了吗？                   │               │
-│  └──────────────┬──────────────────────┘               │
-│           是 │     │ 否                                │
-│              ▼     ▼                                    │
-│         实现它    不实现                                │
-│                                                         │
-│  ❌ 不要做：                                            │
-│     • "这个模块应该有个配置文件"                        │
-│     • "将来可能需要这个接口"                            │
-│     • "加上日志/监控会更好"                             │
-│                                                         │
-│  ✅ 要做：                                              │
-│     • 用户明确要求的功能                                │
-│     • 完成任务必须的依赖                                │
-│     • proposal 中定义的范围                             │
-│                                                         │
-└─────────────────────────────────────────────────────────┘
-```
+
+**写代码前问自己：**
+
+| 问题 | 回答 | 行动 |
+|------|------|------|
+| 用户明确要求这个功能了吗？ | 没有 | 不写 |
+| 这行代码是完成任务必须的吗？ | 不是 | 不写 |
+| 能用更简单的方式实现吗？ | 能 | 用简单的方式 |
+| 有现成的解决方案吗？ | 有 | 直接用 |
+
+**不要做：**
+- "这个模块应该有个配置文件"
+- "将来可能需要这个接口"
+- "加上日志/监控会更好"
+
+**要做：**
+- 用户明确要求的功能
+- 完成任务必须的依赖
+- proposal 中定义的范围
 
 **强制规则：**
 - 只实现用户明确要求的功能
@@ -246,73 +273,73 @@ confirm:
 
 ### 可用的 Subagent 类型
 
+#### 开发专家 (VoltAgent - 已安装)
+
+| Subagent | 用途 | 调用时机 |
+|----------|------|---------|
+| `frontend-developer` | 前端开发专家，React/Vue/Angular | 实现前端组件、页面、UI |
+| `backend-developer` | 后端开发专家，可扩展 API | 实现 API、服务端逻辑 |
+| `fullstack-developer` | 全栈开发，端到端功能 | 跨前后端的功能开发 |
+| `api-designer` | REST/GraphQL API 架构师 | 设计 API 接口、数据模型 |
+| `ui-designer` | 视觉设计和交互专家 | UI/UX 设计决策 |
+
+#### 核心 Subagent (内置)
+
 | Subagent | 用途 | 调用时机 |
 |----------|------|---------|
 | `plan-agent` | 规划分析 | 需要详细规划实现步骤时 |
 | `explore-agent` | 代码探索 | 需要理解代码库结构时 |
-| `general-purpose` | 通用任务 | 复杂的多步骤任务 |
-| `frontend-tester` | 前端测试 | 修改前端文件后验证 |
 | `code-reviewer` | 代码审查 | 完成代码后主动审查 |
+| `frontend-tester` | 前端测试 | 修改前端文件后验证 |
+
+#### 支持 Subagent (内置)
+
+| Subagent | 用途 | 调用时机 |
+|----------|------|---------|
+| `general-purpose` | 通用任务 | 复杂的多步骤任务 |
 | `search-specialist` | 搜索专家 | 需要深入研究时 |
 | `translate` | 翻译 | 多语言处理 |
 | `tutorial-engineer` | 教程生成 | 需要文档化时 |
 
 ### 协作流程
 
-```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                       工作流状态机                                      │
-└─────────────────────────────────────────────────────────────────────────┘
-
-                           ┌────────────┐
-                           │   IDLE     │
-                           └─────┬──────┘
-                                 │ 用户请求
-                                 ▼
-                           ┌────────────┐
-                           │  ANALYZE   │
-                           │  需求分析  │
-                           └─────┬──────┘
-                                 │
-              ┌──────────────────┼──────────────────┐
-              │ 复杂/需探索      │                  │ 简单/直接
-              ▼                  │                  ▼
-       ┌────────────┐            │           ┌────────────┐
-       │ EXPLORE    │            │           │  PROPOSE   │
-       │ 调用 explore-agent      │           │  创建提案  │
-       └─────┬──────┘            │           └─────┬──────┘
-             │                   │                 │
-             └───────────────────┼─────────────────┘
-                                 │
-                                 ▼
-                           ┌────────────┐
-                           │  DECOMPOSE │
-                           │  任务分解  │
-                           └─────┬──────┘
-                                 │
-                    ┌────────────┼────────────┐
-                    │            │            │
-                    ▼            ▼            ▼
-             ┌──────────┐ ┌──────────┐ ┌──────────┐
-             │ Task 1   │ │ Task 2   │ │ Task 3   │
-             │ (subagent)│ │ (自己)   │ │ (subagent)│
-             └─────┬────┘ └─────┬────┘ └─────┬────┘
-                   │            │            │
-                   └────────────┼────────────┘
-                                │
-                                ▼
-                           ┌────────────┐
-                           │  MERGE     │
-                           │  结果合并  │
-                           └─────┬──────┘
-                                 │
-                    ┌────────────┼────────────┐
-                    │            │            │
-                    ▼            ▼            ▼
-             ┌──────────┐ ┌──────────┐ ┌──────────┐
-             │ REVIEW   │ │  VALIDATE│ │ ARCHIVE  │
-             │code-reviewer│frontend-tester│  归档   │
-             └──────────┘ └──────────┘ └──────────┘
+```mermaid
+stateDiagram-v2
+    [*] --> IDLE
+    
+    IDLE --> ANALYZE: 用户请求
+    
+    ANALYZE --> EXPLORE: 复杂/需探索
+    ANALYZE --> PROPOSE: 简单/直接
+    
+    EXPLORE --> PROPOSE: 探索完成
+    
+    PROPOSE --> DECOMPOSE: 提案创建
+    
+    state DECOMPOSE {
+        [*] --> Task1
+        Task1 --> Task2
+        Task2 --> Task3
+    }
+    
+    DECOMPOSE --> IMPLEMENT: 任务分解完成
+    
+    state IMPLEMENT {
+        [*] --> Frontend
+        [*] --> Backend
+        Frontend --> Review
+        Backend --> Review
+    }
+    
+    IMPLEMENT --> MERGE: 实现完成
+    
+    state MERGE {
+        [*] --> REVIEW
+        REVIEW --> VALIDATE
+        VALIDATE --> ARCHIVE
+    }
+    
+    MERGE --> [*]
 ```
 
 ### 任务分解与分配
@@ -329,27 +356,30 @@ confirm:
 
 #### 分配决策树
 
-```
-任务类型判断：
-│
-├── 需要探索代码库？
-│   └── 是 → 调用 explore-agent
-│
-├── 需要规划实现步骤？
-│   └── 是 → 调用 plan-agent
-│
-├── 是前端文件修改？
-│   ├── 完成后 → 调用 frontend-tester 验证
-│   └── 需要审查 → 调用 code-reviewer
-│
-├── 需要深度研究？
-│   └── 是 → 调用 search-specialist
-│
-├── 复杂多步骤任务？
-│   └── 是 → 调用 general-purpose
-│
-└── 简单任务？
-    └── 自己执行
+```mermaid
+flowchart TD
+    A[任务类型判断] --> B{需要探索代码库？}
+    B -->|是| C[调用 explore-agent]
+    B -->|否| D{需要规划实现步骤？}
+    
+    D -->|是| E[调用 plan-agent]
+    D -->|否| F{任务类型？}
+    
+    F -->|前端开发| G[调用 ui-designer 设计]
+    G --> H[调用 frontend-developer 实现]
+    H --> I[调用 frontend-tester 验证]
+    
+    F -->|后端开发| J[调用 api-designer 设计 API]
+    J --> K[调用 backend-developer 实现]
+    K --> L[调用 code-reviewer 审查]
+    
+    F -->|全栈功能| M[调用 api-designer 设计 API]
+    M --> N[调用 fullstack-developer 实现]
+    N --> I
+    N --> L
+    
+    F -->|需要深度研究| O[调用 search-specialist]
+    F -->|通用任务| P[调用 general-purpose]
 ```
 
 ### 并行执行策略
@@ -357,34 +387,33 @@ confirm:
 #### 何时并行
 
 ```yaml
-可并行：
-  - 多个独立的前端组件
-  - 多个独立的后端 API
-  - 测试与文档（在功能完成后）
+设计阶段可并行：
+  - 多个页面的 UI 设计 → 多个 ui-designer
+  - 多个 API 的接口设计 → 多个 api-designer
+  - UI 设计 + API 设计同时进行
+
+实现阶段可并行（设计完成后）：
+  - 多个独立的前端组件 → 多个 frontend-developer
+  - 多个独立的后端 API → 多个 backend-developer
+  - 前端 + 后端同时开发（基于 API 规格）
 
 必须顺序：
+  - 设计 → 实现（ui-designer → frontend-developer）
+  - 设计 → 实现（api-designer → backend-developer）
   - 有依赖关系的任务
   - 修改同一文件的任务
-  - 数据库 schema → API → 前端
 ```
 
 #### 并行执行方式
 
-使用单条消息发起多个 `task` 调用：
+```typescript
+// 设计阶段并行
+task(subagent="ui-designer", prompt="设计用户列表页面")
+task(subagent="api-designer", prompt="设计用户管理 API")
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│ 并行调用示例                                                 │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  我同时发起:                                                 │
-│  ├── task(subagent="explore-agent", prompt="探索认证模块")  │
-│  ├── task(subagent="explore-agent", prompt="探索支付模块")  │
-│  └── task(subagent="search-specialist", prompt="研究JWT")   │
-│                                                             │
-│  等待所有结果返回后合并                                      │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
+// 设计完成后，实现阶段并行
+task(subagent="frontend-developer", prompt="根据 UI 设计实现用户列表组件")
+task(subagent="backend-developer", prompt="根据 API 规格实现用户管理接口")
 ```
 
 ### 结果合并
@@ -410,11 +439,89 @@ confirm:
 
 ```yaml
 任务类型: frontend
+推荐流程: ui-designer → frontend-developer
 执行流程:
   1. 阅读 proposal.md 和 design.md
-  2. 检查现有组件模式
-  3. 实现组件/页面
-  4. 添加样式
+  
+  # Phase 1: 设计
+  2. 调用 ui-designer 设计页面结构和交互
+     - 确定布局和组件结构
+     - 定义交互行为和状态
+     - 输出设计规格
+  
+  # Phase 2: 实现  
+  3. 调用 frontend-developer 实现代码
+     - 根据设计规格实现组件
+     - 添加交互逻辑
+     - 集成状态管理
+  
+  4. 更新 tasks.md
+  
+完成后:
+  - 调用 frontend-tester 验证
+  - 调用 code-reviewer 审查
+```
+
+**并行策略：**
+- 多个独立页面可并行：`ui-designer` 先并行设计，`frontend-developer` 再并行实现
+- 设计完成后可立即开始实现，无需等待所有设计完成
+
+### 后端任务模板
+
+```yaml
+任务类型: backend
+推荐流程: api-designer → backend-developer
+执行流程:
+  1. 阅读 proposal.md 和 design.md
+  
+  # Phase 1: API 设计
+  2. 调用 api-designer 设计 API
+     - 定义 REST/GraphQL 接口
+     - 设计数据模型和 Schema
+     - 确定请求/响应格式
+     - 输出 API 规格
+  
+  # Phase 2: 实现  
+  3. 调用 backend-developer 实现代码
+     - 根据 API 规格实现接口
+     - 实现业务逻辑
+     - 添加数据验证
+  
+  4. 更新 tasks.md
+  
+完成后:
+  - 运行类型检查
+  - 调用 code-reviewer 审查
+```
+
+**并行策略：**
+- API 设计完成后，前端可基于 API 规格并行开发（mock 数据）
+- 多个独立 API 可并行设计和实现
+
+### 全栈任务模板
+
+```yaml
+任务类型: fullstack
+推荐流程: api-designer → fullstack-developer
+执行流程:
+  1. 阅读 proposal.md 和 design.md
+  
+  # Phase 1: 设计
+  2. 调用 api-designer 设计 API
+     - 定义数据模型
+     - 设计 REST/GraphQL 接口
+     - 输出 API 规格
+  
+  # Phase 2: 实现后端
+  3. 调用 fullstack-developer 实现后端
+     - 实现 API 接口
+     - 实现业务逻辑
+  
+  # Phase 3: 实现前端
+  4. 调用 fullstack-developer 实现前端
+     - 根据 API 规格实现 UI
+     - 集成 API 调用
+  
   5. 更新 tasks.md
   
 完成后:
@@ -422,21 +529,9 @@ confirm:
   - 调用 code-reviewer 审查
 ```
 
-### 后端任务模板
-
-```yaml
-任务类型: backend
-执行流程:
-  1. 阅读 proposal.md 和 design.md
-  2. 检查现有 API 模式
-  3. 实现 API/服务
-  4. 添加类型定义
-  5. 更新 tasks.md
-  
-完成后:
-  - 运行类型检查
-  - 调用 code-reviewer 审查
-```
+**并行策略：**
+- API 设计完成后，前端可基于 API 规格 mock 数据并行开发
+- 后端完成后，前端可对接真实 API
 
 ### 测试任务模板
 
@@ -534,35 +629,42 @@ confirm:
 
 ## 快速参考
 
-```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                      全栈工作流速查                                     │
-└─────────────────────────────────────────────────────────────────────────┘
+### 命令
 
-命令:
-  /opsx:explore    → 探索问题空间
-  /opsx:propose    → 创建变更提案
-  /opsx:apply      → 实施变更任务
-  /opsx:archive    → 归档完成的变更
+| 命令 | 说明 |
+|------|------|
+| `/opsx:explore` | 探索问题空间 |
+| `/opsx:propose` | 创建变更提案 |
+| `/opsx:apply` | 实施变更任务 |
+| `/opsx:archive` | 归档完成的变更 |
 
-Subagent 调用时机:
-  • explore-agent     → 探索代码库
-  • plan-agent        → 规划实现步骤
-  • frontend-tester   → 前端修改后验证
-  • code-reviewer     → 代码完成后审查
-  • search-specialist → 深度研究
-  • general-purpose   → 复杂多步骤任务
+### Subagent 调用时机
 
-硬约束:
-  • 无提案不写代码
-  • 按顺序执行任务
-  • 完成后更新 tasks.md
-  • 前端修改后调用 frontend-tester
-  • 代码完成后调用 code-reviewer
-  • 只实现明确要求的功能，不过度设计
+| 任务类型 | 推荐 Subagent 流程 |
+|----------|------------------|
+| 前端开发 | `ui-designer` → `frontend-developer` |
+| 后端开发 | `api-designer` → `backend-developer` |
+| 全栈功能 | `api-designer` → `fullstack-developer` |
+| API 设计 | `api-designer` |
+| UI 设计 | `ui-designer` |
+| 代码探索 | `explore-agent` |
+| 规划分析 | `plan-agent` |
+| 前端测试 | `frontend-tester` |
+| 代码审查 | `code-reviewer` |
+| 深度研究 | `search-specialist` |
+| 通用任务 | `general-purpose` |
 
-软约束:
-  • 最小变更原则
-  • 遵循现有模式
-  • 先测试后提交
-```
+### 硬约束
+
+- 无提案不写代码
+- 按顺序执行任务
+- 完成后更新 tasks.md
+- 前端修改后调用 frontend-tester
+- 代码完成后调用 code-reviewer
+- 只实现明确要求的功能，不过度设计
+
+### 软约束
+
+- 最小变更原则
+- 遵循现有模式
+- 先测试后提交

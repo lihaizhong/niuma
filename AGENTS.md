@@ -104,6 +104,7 @@ pnpm test
 - 使用 ES Module (`"type": "module"`)
 - **注释必须使用中文**，代码标识符使用英文
 - JSDoc 注释应包含 `@description`、`@param`、`@returns` 等标签，描述内容使用中文
+- **图表必须使用 mermaid 语法**，禁止使用 ASCII 艺术/字符画图表
 
 ### 提交规范
 - 遵循 Conventional Commits 规范
