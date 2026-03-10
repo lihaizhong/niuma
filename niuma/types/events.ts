@@ -3,7 +3,6 @@
  */
 
 import type { InboundMessage, OutboundMessage } from './message'
-import type { ToolResult } from './tool'
 import type { LLMResponse } from './llm'
 
 /**
@@ -40,7 +39,7 @@ export interface EventMap {
   /** 工具执行完成 */
   TOOL_CALL_END: {
     toolName: string
-    result: ToolResult
+    result: string
     success: boolean
     duration: number
   }
@@ -70,11 +69,8 @@ export interface EventMap {
  * 带元数据的事件载荷
  */
 export interface EventPayload<K extends EventType = EventType> {
-  /** 事件类型 */
   type: K
-  /** 事件数据 */
   data: EventMap[K]
-  /** 事件发出时间戳 */
   timestamp: number
 }
 

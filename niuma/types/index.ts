@@ -3,16 +3,20 @@
  */
 
 // 消息类型
-export type { ChannelType, MediaContent, InboundMessage, OutboundMessage, MessageMetadata } from './message'
+export type {
+  ChannelType,
+  MediaContent,
+  InboundMessage,
+  OutboundMessage,
+  MessageMetadata,
+} from './message'
 
 // 工具类型
 export type {
   ToolParameterSchema,
   ToolDefinition,
   ToolCall,
-  ToolResult,
   OpenAIToolSchema,
-  AnthropicToolSchema,
 } from './tool'
 
 // LLM 类型
