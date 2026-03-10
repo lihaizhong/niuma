@@ -8,7 +8,6 @@ export type {
   MediaContent,
   InboundMessage,
   OutboundMessage,
-  MessageMetadata,
 } from './message'
 
 // 工具类型
@@ -19,15 +18,23 @@ export type {
   OpenAIToolSchema,
 } from './tool'
 
+// 技能类型
+export type { SkillInfo, SkillMetadata, SkillFullInfo } from '../agent/skills'
+
+// 会话类型
+export type { SessionMessage, Session, SessionManagerConfig } from '../session/manager'
+
 // LLM 类型
 export type {
   LLMUsage,
   LLMConfig,
   ChatRole,
+  MessageContentPart,
   ChatMessage,
   LLMResponse,
   LLMStreamChunk,
   ProviderConfig,
+  ChatOptions,
 } from './llm'
 
 // 事件类型

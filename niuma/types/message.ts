@@ -15,6 +15,7 @@ export type ChannelType =
   | 'email'
   | 'qq'
   | 'cli'
+  | 'system' // 系统内部消息（用于子智能体通知等）
 
 /**
  * 媒体内容类型

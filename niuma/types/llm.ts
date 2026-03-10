@@ -2,7 +2,7 @@
  * LLM 提供商抽象层类型定义
  */
 
-import type { ToolCall } from './tool'
+import type { ToolCall, ToolDefinition } from './tool'
 
 /**
  * LLM 使用统计
@@ -34,6 +34,8 @@ export interface LLMConfig {
   topP?: number
   /** 停止序列 */
   stopSequences?: string[]
+  /** 请求超时时间（毫秒） */
+  timeout?: number
   /** 其他提供商特定选项 */
   extra?: Record<string, unknown>
 }
@@ -44,19 +46,36 @@ export interface LLMConfig {
 export type ChatRole = 'system' | 'user' | 'assistant' | 'tool'
 
 /**
+ * 多部分消息内容（用于图片等）
+ */
+export interface MessageContentPart {
+  /** 内容类型 */
+  type: 'text' | 'image_url'
+  /** 文本内容（type=text 时） */
+  text?: string
+  /** 图片 URL（type=image_url 时） */
+  image_url?: {
+    url: string
+    detail?: 'auto' | 'low' | 'high'
+  }
+}
+
+/**
  * 对话历史的聊天消息
  */
 export interface ChatMessage {
   /** 消息角色 */
   role: ChatRole
-  /** 消息内容 */
-  content: string
+  /** 消息内容（字符串或多部分内容） */
+  content: string | MessageContentPart[]
   /** 工具消息的名称 */
   name?: string
   /** 工具消息的调用 ID */
   toolCallId?: string
   /** 助手的工具调用 */
   toolCalls?: ToolCall[]
+  /** 推理内容（用于思维模型，如 DeepSeek） */
+  reasoningContent?: string
 }
 
 /**
@@ -111,4 +130,20 @@ export interface ProviderConfig {
   apiBase?: string
   /** 默认模型参数 */
   params?: Omit<LLMConfig, 'model' | 'apiKey' | 'apiBase'>
+}
+
+/**
+ * 聊天调用选项
+ */
+export interface ChatOptions {
+  /** 消息列表 */
+  messages: ChatMessage[]
+  /** 工具定义 */
+  tools?: ToolDefinition[]
+  /** 模型（覆盖默认） */
+  model?: string
+  /** 采样温度 */
+  temperature?: number
+  /** 最大生成 token 数 */
+  maxTokens?: number
 }

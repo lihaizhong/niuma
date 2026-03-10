@@ -2,7 +2,7 @@
  * 工具注册中心 - 管理和执行工具
  */
 
-import type { OpenAIToolSchema } from '../../types'
+import type { ToolDefinition } from '../../types'
 import type { ITool } from './base'
 
 const ERROR_HINT = '\n\n[分析上述错误并尝试其他方式。]'
@@ -51,10 +51,10 @@ export class ToolRegistry {
   }
 
   /**
-   * 获取所有工具的 OpenAI Schema
+   * 获取所有工具的定义
    */
-  getDefinitions(): OpenAIToolSchema[] {
-    return Array.from(this.tools.values()).map((tool) => tool.toSchema())
+  getDefinitions(): ToolDefinition[] {
+    return Array.from(this.tools.values()).map((tool) => tool.getDefinition())
   }
 
   /**

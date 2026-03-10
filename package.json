@@ -11,8 +11,12 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "dev": "tsx src/index.ts",
-    "lint": "eslint src --ext .ts",
-    "test": "vitest"
+    "lint": "eslint niuma --ext .ts",
+    "lint:fix": "eslint niuma --ext .ts --fix",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage",
+    "type-check": "tsc --noEmit"
   },
   "keywords": [
     "ai",
@@ -26,6 +30,8 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@clack/prompts": "^1.0.1",
+    "@langchain/core": "^1.1.31",
+    "@langchain/openai": "^1.2.12",
     "better-sqlite3": "^12.6.2",
     "boxen": "^8.0.1",
     "cac": "^7.0.0",
@@ -35,6 +41,7 @@
     "dotenv": "^17.3.1",
     "file-type": "^21.3.0",
     "fs-extra": "^11.3.4",
+    "js-yaml": "^4.1.1",
     "langchain": "^1.2.30",
     "nanoid": "^5.1.6",
     "node-cron": "^4.2.1",
@@ -48,11 +55,17 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/better-sqlite3": "^7.6.13",
     "@types/fs-extra": "^11.0.4",
+    "@types/js-yaml": "^4.0.9",
     "@types/node": "^25.3.3",
     "@types/node-cron": "^3.0.11",
     "@types/which": "^3.0.4",
+    "@typescript-eslint/eslint-plugin": "^8.57.0",
+    "@typescript-eslint/parser": "^8.57.0",
+    "eslint": "^10.0.3",
+    "eslint-config-prettier": "^10.1.8",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "vitest": "^4.0.18"

@@ -27,7 +27,8 @@ export function loadConfig(configPath?: string): NiumaConfig {
     return NiumaConfigSchema.parse(config)
   } catch (error) {
     throw new Error(
-      `加载配置文件失败: ${path}\n${error instanceof Error ? error.message : String(error)}`
+      `加载配置文件失败: ${path}\n${error instanceof Error ? error.message : String(error)}`,
+      { cause: error }
     )
   }
 }

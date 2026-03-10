@@ -144,6 +144,33 @@ export const CronTaskConfigSchema = z.object({
 export type CronTaskConfig = z.infer<typeof CronTaskConfigSchema>
 
 // ============================================
+// Agent 配置 Schema
+// ============================================
+
+/** 进度通知模式 */
+export const ProgressModeSchema = z.enum(['quiet', 'normal', 'verbose']).default('normal')
+
+export type ProgressMode = z.infer<typeof ProgressModeSchema>
+
+/** Agent 配置 */
+export const AgentConfigSchema = z.object({
+  /** 进度通知模式 */
+  progressMode: ProgressModeSchema,
+  /** 是否显示推理内容（思维模型） */
+  showReasoning: z.boolean().default(false),
+  /** 是否显示工具执行耗时 */
+  showToolDuration: z.boolean().default(true),
+  /** 记忆窗口大小（触发整合的消息数阈值） */
+  memoryWindow: z.number().int().positive().default(50),
+  /** LLM 调用失败重试次数 */
+  maxRetries: z.number().int().min(0).max(10).default(4),
+  /** 重试基础延迟（毫秒），指数退避 */
+  retryBaseDelay: z.number().int().positive().default(1000),
+})
+
+export type AgentConfig = z.infer<typeof AgentConfigSchema>
+
+// ============================================
 // 主配置 Schema
 // ============================================
 
@@ -152,6 +179,15 @@ export const NiumaConfigSchema = z.object({
   workspaceDir: z.string().default('.niuma'),
   /** 最大 Agent 迭代次数 */
   maxIterations: z.number().int().positive().default(40),
+  /** Agent 配置 */
+  agent: AgentConfigSchema.default({
+    progressMode: 'normal',
+    showReasoning: false,
+    showToolDuration: true,
+    memoryWindow: 50,
+    maxRetries: 4,
+    retryBaseDelay: 1000,
+  }),
   /** LLM 提供商配置 */
   providers: z.record(z.string(), ProviderConfigSchema).default({}),
   /** 渠道配置 */

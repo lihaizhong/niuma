@@ -44,10 +44,20 @@ export class EventBus {
         if (result instanceof Promise) {
           result.catch((error) => {
             console.error(`事件处理器 "${type}" 执行错误:`, error)
+            // 发射错误事件
+            this.emit('ERROR', {
+              error: error instanceof Error ? error : new Error(String(error)),
+              context: { event: type },
+            })
           })
         }
       } catch (error) {
         console.error(`事件处理器 "${type}" 执行错误:`, error)
+        // 发射错误事件
+        this.emit('ERROR', {
+          error: error instanceof Error ? error : new Error(String(error)),
+          context: { event: type },
+        })
       }
     })
   }

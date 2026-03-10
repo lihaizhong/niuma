@@ -3,7 +3,7 @@
  */
 
 import { z } from 'zod'
-import type { ToolParameterSchema, OpenAIToolSchema } from '../../types'
+import type { ToolParameterSchema, OpenAIToolSchema, ToolDefinition } from '../../types'
 
 /**
  * 所有工具必须实现的接口
@@ -13,6 +13,7 @@ export interface ITool<TInput = unknown, TOutput = string> {
   readonly description: string
   readonly parameters: z.ZodType<TInput>
 
+  getDefinition(): ToolDefinition
   toSchema(): OpenAIToolSchema
   validateArgs(args: unknown): TInput
   execute(args: TInput): Promise<TOutput>
@@ -23,7 +24,7 @@ export interface ITool<TInput = unknown, TOutput = string> {
  */
 export function zodToParameter(zodType: z.ZodType<unknown>): ToolParameterSchema {
   const jsonSchema = z.toJSONSchema(zodType)
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // 移除不需要的字段
   const { $schema, additionalProperties, ...result } = jsonSchema as Record<string, unknown>
   return result as ToolParameterSchema
 }
@@ -37,6 +38,17 @@ export abstract class BaseTool<TInput = unknown, TOutput = string>
   abstract readonly name: string
   abstract readonly description: string
   abstract readonly parameters: z.ZodType<TInput>
+
+  /**
+   * 获取工具定义（内部格式）
+   */
+  getDefinition(): ToolDefinition {
+    return {
+      name: this.name,
+      description: this.description,
+      parameters: this.parameters,
+    }
+  }
 
   /**
    * 转换为 OpenAI 函数 Schema 格式

@@ -8,4 +8,4 @@ export type { EventName } from './events'
 export { EventNames } from './events'
 
 // 队列类
-export { AsyncQueue, BoundedQueue, PriorityQueue } from './queue'
+export { AsyncQueue } from './queue'
