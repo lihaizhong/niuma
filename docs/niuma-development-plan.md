@@ -6,7 +6,7 @@
 
 ## 项目概述
 
-**目标：** 基于 nanobot（https://github.com/HKUDS/nanobot）设计理念，使用 TypeScript 构建企业级多角色 AI 助手系统
+**目标：** 基于 nanobot（[https://github.com/HKUDS/nanobot](https://github.com/HKUDS/nanobot)）设计理念，使用 TypeScript 构建企业级多角色 AI 助手系统
 
 **Niuma 特点：**
 - 企业级多角色架构：支持多个独立角色（项目经理、开发工程师、测试工程师等）

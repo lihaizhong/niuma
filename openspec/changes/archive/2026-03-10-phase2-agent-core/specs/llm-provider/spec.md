@@ -19,6 +19,27 @@ LLMProvider SHALL 提供聊天接口，接收消息列表并返回响应。
 - **WHEN** 调用 `chat()` 并提供 temperature, maxTokens
 - **THEN** 使用指定参数调用 LLM
 
+#### Scenario: 自定义生成控制参数
+
+- **WHEN** 调用 `chat()` 并提供 topP, stopSequences
+- **THEN** 使用指定参数调用 LLM
+
+#### Scenario: 自定义惩罚参数
+
+- **WHEN** 调用 `chat()` 并提供 frequencyPenalty, presencePenalty
+- **THEN** 使用指定参数调用 LLM
+
+#### Scenario: 自定义超时参数
+
+- **WHEN** 调用 `chat()` 并提供 timeout
+- **THEN** 使用指定的超时时间调用 LLM
+
+#### Scenario: 参数覆盖默认配置
+
+- **WHEN** ChatOptions 中指定了参数
+- **THEN** 该参数 SHALL 覆盖提供商的默认配置
+- **AND** 未指定的参数 SHALL 使用提供商的默认值
+
 ### Requirement: 流式响应
 
 LLMProvider SHALL 支持流式响应。
@@ -87,11 +108,51 @@ interface LLMProvider {
 }
 
 interface ChatOptions {
+  /** 消息列表 */
   messages: ChatMessage[]
+  /** 工具定义 */
   tools?: ToolDefinition[]
+  /** 模型（覆盖默认） */
   model?: string
+  /** 采样温度（覆盖默认） */
   temperature?: number
+  /** 最大生成 token 数（覆盖默认） */
   maxTokens?: number
+  /** Top-p 采样参数（覆盖默认） */
+  topP?: number
+  /** 停止序列（覆盖默认） */
+  stopSequences?: string[]
+  /** 频率惩罚（覆盖默认） */
+  frequencyPenalty?: number
+  /** 存在惩罚（覆盖默认） */
+  presencePenalty?: number
+  /** 请求超时时间（覆盖默认） */
+  timeout?: number
+}
+
+interface LLMConfig {
+  /** 模型标识符 */
+  model: string
+  /** API 密钥（可通过环境变量设置） */
+  apiKey?: string
+  /** API 基础 URL */
+  apiBase?: string
+  /** 采样温度（0-2） */
+  temperature?: number
+  /** 最大生成 token 数 */
+  maxTokens?: number
+  /** Top-p 采样参数 */
+  topP?: number
+  /** 停止序列 */
+  stopSequences?: string[]
+  /** 频率惩罚（-2.0 到 2.0） */
+  frequencyPenalty?: number
+  /** 存在惩罚（-2.0 到 2.0） */
+  presencePenalty?: number
+  /** 请求超时时间（毫秒） */
+  timeout?: number
+  /** 其他提供商特定选项 */
+  extra?: Record<string, unknown>
 }
 
 interface LLMResponse {

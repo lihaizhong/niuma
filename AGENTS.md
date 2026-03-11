@@ -19,13 +19,22 @@ Niuma（牛马）是一个企业级多角色 AI 助手系统，基于 TypeScript
    - 示例：`Skill(skill: "fullstack-workflow")`
 
 2. **必须使用 OpenSpec CLI 命令**
-   - 禁止手动创建 openspec 文件，必须通过 CLI 命令生成
-   - 使用 `openspec` CLI 命令管理变更生命周期
+   - **禁止手动文件操作** - 不要使用 `mv`、`cp`、`mkdir` 等命令操作 openspec 目录
+   - **优先使用 openspec CLI** - 所有 openspec 相关操作必须通过 `openspec` 命令完成
+   - **严禁修改 .iflow 目录** - 除非用户明确说明，否则绝对不要修改 `.iflow/` 下的任何文件（包括 skills、commands 等）
+   - 常用命令：
+     ```bash
+     openspec list                    # 列出所有变更
+     openspec status <change-name>    # 查看变更状态
+     openspec archive <change-name>   # 归档变更（自动处理规格同步）
+     openspec spec list               # 列出所有规格
+     openspec validate <item-name>    # 验证变更或规格
+     ```
    - 正确的工作流顺序：
      - `/opsx:explore` - 探索模式（可选，复杂任务建议使用）
      - `/opsx:propose` - 创建提案（包含 proposal、design、specs、tasks）
      - `/opsx:apply` - 实施变更（仅当 `applyReady: true` 时）
-     - `/opsx:archive` - 归档变更
+     - `/opsx:archive` - 归档变更（自动执行 `openspec archive` 命令）
 
 3. **Subagent 优先级**
    每个角色优先使用对应的 subagent 处理：

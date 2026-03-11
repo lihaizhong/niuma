@@ -35,7 +35,11 @@
         "providers": {
           "openai": {
             "model": "gpt-4o",
-            "temperature": 0.6
+            "temperature": 0.6,
+            "topP": 0.9,
+            "maxTokens": 3000,
+            "presencePenalty": 0.2,
+            "frequencyPenalty": 0.2
           }
         }
       },
@@ -52,7 +56,11 @@
         "providers": {
           "openai": {
             "model": "gpt-4o",
-            "temperature": 0.3
+            "temperature": 0.3,
+            "topP": 0.8,
+            "maxTokens": 8000,
+            "frequencyPenalty": 0.3,
+            "stopSequences": ["```"]
           }
         }
       },
@@ -64,7 +72,26 @@
         "providers": {
           "anthropic": {
             "model": "claude-sonnet-4-5",
-            "temperature": 0.5
+            "temperature": 0.5,
+            "topP": 0.85,
+            "maxTokens": 6000,
+            "stopSequences": ["\n\n##"]
+          }
+        }
+      },
+      {
+        "id": "writer",
+        "name": "内容创作者",
+        "description": "负责文档撰写、创意写作和内容生成",
+        "workspaceDir": "~/.niuma/agents/writer/workspace",
+        "providers": {
+          "openai": {
+            "model": "gpt-4o",
+            "temperature": 0.9,
+            "topP": 0.95,
+            "maxTokens": 4000,
+            "presencePenalty": 0.5,
+            "frequencyPenalty": 0.5
           }
         }
       }
@@ -79,14 +106,21 @@
       "apiKey": "${OPENAI_API_KEY}",
       "apiBase": "${OPENAI_BASE_URL:https://api.openai.com/v1}",
       "temperature": 0.7,
-      "maxTokens": 4000
+      "maxTokens": 4000,
+      "topP": 0.9,
+      "frequencyPenalty": 0.1,
+      "presencePenalty": 0.1,
+      "timeout": 120000
     },
     "anthropic": {
       "type": "anthropic",
       "model": "claude-sonnet-4-5",
       "apiKey": "${ANTHROPIC_API_KEY}",
       "temperature": 0.7,
-      "maxTokens": 8192
+      "maxTokens": 8192,
+      "topP": 0.9,
+      "stopSequences": ["\n\nHuman:", "\n\nAssistant:"],
+      "timeout": 120000
     }
   },
 

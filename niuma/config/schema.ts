@@ -20,10 +20,20 @@ export const ProviderConfigSchema = z.object({
   apiKey: z.string().optional(),
   /** API 基础 URL */
   apiBase: z.string().optional(),
-  /** 采样温度 */
+  /** 采样温度（0-2，值越高输出越随机） */
   temperature: z.number().min(0).max(2).optional(),
   /** 最大生成 token 数 */
   maxTokens: z.number().int().positive().optional(),
+  /** Top-p 采样参数（0-1，控制文本多样性） */
+  topP: z.number().min(0).max(1).optional(),
+  /** 停止序列，遇到这些字符串时停止生成 */
+  stopSequences: z.array(z.string()).optional(),
+  /** 频率惩罚（-2.0 到 2.0，降低重复词汇的概率） */
+  frequencyPenalty: z.number().min(-2).max(2).optional(),
+  /** 存在惩罚（-2.0 到 2.0，鼓励谈论新话题） */
+  presencePenalty: z.number().min(-2).max(2).optional(),
+  /** 请求超时时间（毫秒） */
+  timeout: z.number().int().positive().optional(),
   /** 其他提供商特定选项 */
   extra: z.record(z.string(), z.unknown()).optional(),
 })

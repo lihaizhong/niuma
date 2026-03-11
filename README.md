@@ -259,6 +259,32 @@ niuma chat --agent tester
 
 ## 🔨 开发
 
+### 开发流程
+
+本项目使用 **OpenSpec** 进行规格驱动的开发（Spec-Driven Development）：
+
+```bash
+# 查看所有变更
+openspec list
+
+# 查看变更状态
+openspec status <change-name>
+
+# 归档变更（自动同步规格到主规格库）
+openspec archive <change-name>
+
+# 验证变更或规格
+openspec validate <item-name>
+
+# 列出所有规格
+openspec spec list
+```
+
+**重要提示：**
+- 所有 openspec 相关操作必须使用 `openspec` CLI 命令
+- 禁止手动使用 `mv`、`cp` 等命令操作 openspec 目录
+- 归档变更时会自动处理规格同步，无需手动操作
+
 ### 开发环境设置
 
 ```bash

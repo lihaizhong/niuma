@@ -34,6 +34,10 @@ export interface LLMConfig {
   topP?: number
   /** 停止序列 */
   stopSequences?: string[]
+  /** 频率惩罚（-2.0 到 2.0） */
+  frequencyPenalty?: number
+  /** 存在惩罚（-2.0 到 2.0） */
+  presencePenalty?: number
   /** 请求超时时间（毫秒） */
   timeout?: number
   /** 其他提供商特定选项 */
@@ -146,4 +150,14 @@ export interface ChatOptions {
   temperature?: number
   /** 最大生成 token 数 */
   maxTokens?: number
+  /** Top-p 采样参数 */
+  topP?: number
+  /** 停止序列 */
+  stopSequences?: string[]
+  /** 频率惩罚（-2.0 到 2.0） */
+  frequencyPenalty?: number
+  /** 存在惩罚（-2.0 到 2.0） */
+  presencePenalty?: number
+  /** 请求超时时间（毫秒） */
+  timeout?: number
 }
