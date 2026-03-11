@@ -1,53 +1,53 @@
 ## ADDED Requirements
 
-### Requirement: Tool abstract base class
+### Requirement: 工具抽象基类
 
-The system SHALL provide a BaseTool abstract class for tool implementation.
+系统 SHALL 提供 BaseTool 抽象类用于工具实现。
 
-#### Scenario: BaseTool defines tool interface
-- **WHEN** implementing a new tool
-- **THEN** it SHALL extend BaseTool and implement name, description, parameters, execute()
+#### Scenario: BaseTool 定义工具接口
+- **WHEN** 实现新工具
+- **THEN** 它 SHALL 扩展 BaseTool 并实现 name、description、parameters、execute()
 
-#### Scenario: BaseTool validates arguments
-- **WHEN** tool is executed with arguments
-- **THEN** arguments SHALL be validated against the zod parameters schema
+#### Scenario: BaseTool 验证参数
+- **WHEN** 带参数执行工具
+- **THEN** 参数 SHALL 根据 zod parameters schema 进行验证
 
-#### Scenario: BaseTool provides helper methods
-- **WHEN** tool execution completes
-- **THEN** success() or failure() methods SHALL create proper ToolExecutionResult
+#### Scenario: BaseTool 提供辅助方法
+- **WHEN** 工具执行完成
+- **THEN** success() 或 failure() 方法 SHALL 创建适当的 ToolExecutionResult
 
-### Requirement: Tool registry for tool management
+### Requirement: 工具注册表用于工具管理
 
-The system SHALL provide a ToolRegistry for registering and executing tools.
+系统 SHALL 提供 ToolRegistry 用于注册和执行工具。
 
-#### Scenario: Register tools
-- **WHEN** a tool is registered
-- **THEN** it SHALL be available for execution by name
+#### Scenario: 注册工具
+- **WHEN** 注册工具
+- **THEN** 它 SHALL 可通过名称执行
 
-#### Scenario: Execute tool calls
-- **WHEN** LLM returns tool calls
-- **THEN** ToolRegistry.execute() SHALL execute each tool and return ToolResult
+#### Scenario: 执行工具调用
+- **WHEN** LLM 返回工具调用
+- **THEN** ToolRegistry.execute() SHALL 执行每个工具并返回 ToolResult
 
-#### Scenario: Generate OpenAI-compatible schemas
-- **WHEN** generating tool definitions for LLM
-- **THEN** generateOpenAISchema() SHALL produce valid OpenAI function calling schema
+#### Scenario: 生成 OpenAI 兼容的 schemas
+- **WHEN** 为 LLM 生成工具定义
+- **THEN** generateOpenAISchema() SHALL 生成有效的 OpenAI 函数调用 schema
 
-#### Scenario: Generate Anthropic-compatible schemas
-- **WHEN** generating tool definitions for Claude
-- **THEN** generateAnthropicSchema() SHALL produce valid Anthropic tool schema
+#### Scenario: 生成 Anthropic 兼容的 schemas
+- **WHEN** 为 Claude 生成工具定义
+- **THEN** generateAnthropicSchema() SHALL 生成有效的 Anthropic 工具 schema
 
-### Requirement: SimpleTool for function-based tools
+### Requirement: SimpleTool 用于基于函数的工具
 
-The system SHALL provide SimpleTool class for defining tools with functions.
+系统 SHALL 提供 SimpleTool 类用于通过函数定义工具。
 
-#### Scenario: Create tool from function
-- **WHEN** using SimpleTool
-- **THEN** a tool SHALL be created from name, description, parameters schema, and handler function
+#### Scenario: 从函数创建工具
+- **WHEN** 使用 SimpleTool
+- **THEN** SHALL 从 name、description、parameters schema 和 handler 函数创建工具
 
-### Requirement: Dangerous tool marking
+### Requirement: 危险工具标记
 
-The system SHALL support marking tools as dangerous.
+系统 SHALL 支持将工具标记为危险。
 
-#### Scenario: Mark tool as dangerous
-- **WHEN** a tool has dangerous: true
-- **THEN** ToolRegistry.getDangerousTools() SHALL include it
+#### Scenario: 将工具标记为危险
+- **WHEN** 工具具有 dangerous: true
+- **THEN** ToolRegistry.getDangerousTools() SHALL 包含它

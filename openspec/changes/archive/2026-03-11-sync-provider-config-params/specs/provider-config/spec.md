@@ -2,7 +2,7 @@
 
 ## MODIFIED Requirements
 
-### Requirement: Provider config schema validates provider settings
+### Requirement: Provider config schema 验证提供商配置
 
 系统 SHALL 使用 Zod 验证提供商配置，支持完整的 LLM 参数集合。
 

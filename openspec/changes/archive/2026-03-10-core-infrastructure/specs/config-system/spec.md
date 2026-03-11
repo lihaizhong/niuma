@@ -1,60 +1,60 @@
 ## ADDED Requirements
 
-### Requirement: Configuration schema validation
+### Requirement: 配置 schema 验证
 
-The system SHALL use zod to define and validate configuration schemas.
+系统 SHALL 使用 zod 定义和验证配置 schemas。
 
-#### Scenario: NiumaConfig schema validates main config
-- **WHEN** loading configuration
-- **THEN** NiumaConfigSchema SHALL validate workDir, model, maxIterations, enableMemory, providers, channels fields
+#### Scenario: NiumaConfig schema 验证主配置
+- **WHEN** 加载配置
+- **THEN** NiumaConfigSchema SHALL 验证 workDir、model、maxIterations、enableMemory、providers、channels 字段
 
-#### Scenario: Provider config schema validates provider settings
-- **WHEN** configuring an LLM provider
-- **THEN** ProviderConfigSchema SHALL validate model, apiKey, apiBase, extra fields
+#### Scenario: Provider config schema 验证提供商设置
+- **WHEN** 配置 LLM 提供商
+- **THEN** ProviderConfigSchema SHALL 验证 model、apiKey、apiBase、extra 字段
 
-#### Scenario: ProviderConfigSchema validates generation control parameters
-- **WHEN** configuring an LLM provider
-- **THEN** ProviderConfigSchema SHALL validate temperature (0-2), maxTokens (positive integer), topP (0-1), stopSequences (string array)
+#### Scenario: ProviderConfigSchema 验证生成控制参数
+- **WHEN** 配置 LLM 提供商
+- **THEN** ProviderConfigSchema SHALL 验证 temperature (0-2)、maxTokens (正整数)、topP (0-1)、stopSequences (字符串数组)
 
-#### Scenario: ProviderConfigSchema validates penalty parameters
-- **WHEN** configuring an LLM provider
-- **THEN** ProviderConfigSchema SHALL validate frequencyPenalty (-2 to 2), presencePenalty (-2 to 2)
+#### Scenario: ProviderConfigSchema 验证惩罚参数
+- **WHEN** 配置 LLM 提供商
+- **THEN** ProviderConfigSchema SHALL 验证 frequencyPenalty (-2 到 2)、presencePenalty (-2 到 2)
 
-#### Scenario: ProviderConfigSchema validates other parameters
-- **WHEN** configuring an LLM provider
-- **THEN** ProviderConfigSchema SHALL validate timeout (positive integer milliseconds)
+#### Scenario: ProviderConfigSchema 验证其他参数
+- **WHEN** 配置 LLM 提供商
+- **THEN** ProviderConfigSchema SHALL 验证 timeout (正整数毫秒)
 
-#### Scenario: Channel config schema validates channel settings
-- **WHEN** configuring a message channel
-- **THEN** ChannelConfigSchema SHALL validate type, enabled, config fields
+#### Scenario: Channel config schema 验证渠道设置
+- **WHEN** 配置消息渠道
+- **THEN** ChannelConfigSchema SHALL 验证 type、enabled、config 字段
 
-### Requirement: Configuration loading from multiple sources
+### Requirement: 从多个来源加载配置
 
-The system SHALL load and merge configuration from multiple sources with defined priority.
+系统 SHALL 从多个来源加载和合并配置，并定义优先级。
 
-#### Scenario: Default config provides base values
-- **WHEN** no config file or env vars exist
-- **THEN** default values SHALL be used (model: gpt-4o, maxIterations: 10, enableMemory: true)
+#### Scenario: 默认配置提供基础值
+- **WHEN** 不存在配置文件或环境变量
+- **THEN** SHALL 使用默认值 (model: gpt-4o、maxIterations: 10、enableMemory: true)
 
-#### Scenario: Environment variables override defaults
-- **WHEN** OPENAI_API_KEY or NIUMA_MODEL env vars are set
-- **THEN** they SHALL override default config values
+#### Scenario: 环境变量覆盖默认值
+- **WHEN** 设置了 OPENAI_API_KEY 或 NIUMA_MODEL 环境变量
+- **THEN** 它们 SHALL 覆盖默认配置值
 
-#### Scenario: Config file has highest priority
-- **WHEN** niuma.json or .niumarc exists
-- **THEN** file config SHALL override env vars and defaults
+#### Scenario: 配置文件具有最高优先级
+- **WHEN** 存在 niuma.json 或 .niumarc
+- **THEN** 文件配置 SHALL 覆盖环境变量和默认值
 
-### Requirement: Configuration file discovery
+### Requirement: 配置文件发现
 
-The system SHALL search for configuration files in standard locations.
+系统 SHALL 在标准位置搜索配置文件。
 
-#### Scenario: Search current directory first
-- **WHEN** loading config
-- **THEN** current directory SHALL be searched for niuma.json, .niuma.json, .niumarc
+#### Scenario: 首先搜索当前目录
+- **WHEN** 加载配置
+- **THEN** SHALL 在当前目录搜索 niuma.json、.niuma.json、.niumarc
 
-#### Scenario: Fall back to home directory
-- **WHEN** no config in current directory
-- **THEN** user home directory SHALL be searched
+#### Scenario: 回退到主目录
+- **WHEN** 当前目录中没有配置
+- **THEN** SHALL 搜索用户主目录
 
 ## TypeScript Interface Definitions
 

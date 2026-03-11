@@ -5,7 +5,44 @@
 import type { ToolDefinition } from '../../types'
 import type { ITool } from './base'
 
+// 导入所有内置工具
+import {
+  readFileTool,
+  writeFileTool,
+  editFileTool,
+  listDirTool,
+} from './filesystem.js'
+import { execTool } from './shell.js'
+import { webSearchTool, webFetchTool } from './web.js'
+import { messageTool } from './message.js'
+import { spawnTool, cronTool } from './agent.js'
+
 const ERROR_HINT = '\n\n[分析上述错误并尝试其他方式。]'
+
+/**
+ * 注册所有内置工具
+ */
+export function registerBuiltinTools(registry: ToolRegistry): void {
+  // 文件系统工具
+  registry.register(readFileTool)
+  registry.register(writeFileTool)
+  registry.register(editFileTool)
+  registry.register(listDirTool)
+
+  // Shell 工具
+  registry.register(execTool)
+
+  // Web 工具
+  registry.register(webSearchTool)
+  registry.register(webFetchTool)
+
+  // 消息工具
+  registry.register(messageTool)
+
+  // Agent 工具
+  registry.register(spawnTool)
+  registry.register(cronTool)
+}
 
 /**
  * 工具注册中心
