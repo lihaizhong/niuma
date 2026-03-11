@@ -2,209 +2,203 @@
 
 ## 项目概述
 
-Niuma（牛马）是一个智能生活助手 CLI 工具，旨在提供陪伴感和情绪价值的智能精灵。项目使用 TypeScript + Node.js 开发，基于 LangChain 框架构建 AI 能力。
+Niuma（牛马）是一个智能生活助手 CLI 工具，支持多角色架构，可创建多个独立的 AI 角色（项目经理、开发工程师、测试工程师等），每个角色拥有独立的配置、工作区和数据，完全隔离。
 
-**当前状态：** 早期开发阶段，核心架构正在规划中。
+**核心特性：** 多角色架构、JSON5 配置、环境变量引用、完全隔离  
+**当前状态：** v0.1.0 - 多角色配置系统已实现，Phase 2 Agent Core 核心模块已完成
 
 ## 技术栈
 
 ### 核心技术
-- **TypeScript 5.9.3** - 主要开发语言
-- **Node.js >=18.0.0** - 运行时环境
-- **pnpm** - 包管理器
+- TypeScript 5.9.3
+- Node.js >=18.0.0
+- pnpm
 
 ### 主要依赖
 | 依赖 | 用途 |
 |------|------|
 | langchain | AI/LLM 应用框架 |
+| zod | 运行时类型验证 |
+| json5 | JSON5 配置文件格式 |
 | better-sqlite3 | 本地 SQLite 数据库 |
 | sqlite-vec | 向量存储扩展 |
 | @clack/prompts | CLI 交互界面 |
 | cac | 命令行参数解析 |
-| chalk / ora / boxen | CLI 输出美化 |
-| node-cron | 定时任务调度 |
-| node-notifier | 系统通知 |
-| dotenv | 环境变量管理 |
-| date-fns / dayjs | 日期处理 |
 
 ### 开发依赖
-- **tsx** - TypeScript 执行器
-- **vitest** - 单元测试框架
-- **eslint** - 代码规范检查
+- tsx、vitest、eslint
 
 ## 项目结构
 
 ```
 niuma/
-├── src/                # 源代码目录
-│   └── app.ts          # 应用入口
-├── niuma/              # 核心模块目录（待开发）
-├── docs/               # 文档目录
-├── public/             # 静态资源
+├── niuma/
+│   ├── agent/          # Agent 核心模块
+│   ├── config/         # 配置系统
+│   ├── providers/      # LLM 提供商
+│   ├── session/        # 会话管理
+│   ├── bus/            # 事件总线
+│   ├── channels/       # 多渠道接入
+│   ├── types/          # 类型定义
+│   └── utils/          # 工具函数
 ├── openspec/           # OpenSpec 规范文件
-│   ├── changes/        # 变更记录
-│   ├── specs/          # 规格定义
-│   └── config.yaml     # OpenSpec 配置
 ├── .iflow/             # iFlow CLI 配置
-│   ├── commands/       # 自定义命令
-│   └── skills/         # 技能定义
-├── package.json        # 项目配置
-├── tsconfig.json       # TypeScript 配置（构建用，rootDir: niuma/）
-├── tsconfig.build.json # TypeScript 构建配置（rootDir: src/）
-└── pnpm-workspace.yaml # pnpm 工作区配置
+└── package.json
 ```
+
+**配置目录：** `~/.niuma/` (niuma.json、.env、sessions/、logs/、agents/)
 
 ## 构建与运行
 
 ```bash
-# 安装依赖
-pnpm install
-
-# 开发模式运行
-pnpm dev
-
-# 构建项目
-pnpm build
-
-# 生产模式运行
-pnpm start
-
-# 代码检查
-pnpm lint
-
-# 运行测试
-pnpm test
+pnpm install      # 安装依赖
+pnpm dev          # 开发模式
+pnpm build        # 构建
+pnpm start        # 运行
+pnpm lint         # 代码检查
+pnpm test         # 运行测试
 ```
 
-## 架构设计（规划）
+## 配置系统
 
-基于项目依赖和历史代码结构，Niuma 采用以下架构设计：
+### 多角色架构
+
+```json5
+{
+  "agents": {
+    "defaults": { "progressMode": "normal" },
+    "list": [
+      { "id": "manager", "name": "项目经理", "default": true },
+      { "id": "developer", "name": "开发工程师" }
+    ]
+  }
+}
+```
+
+### 环境变量引用
+
+```json5
+{ "apiKey": "${OPENAI_API_KEY}" }
+```
+
+### 配置优先级
+1. 命令行参数
+2. 工作区 profile
+3. 全局 `~/.niuma/niuma.json`
+4. 环境变量
+5. 默认值
+
+## 架构设计
 
 ### 核心模块
-
 - **Agent** - 智能体核心，处理对话循环、记忆管理、技能调用
-- **Tools** - 工具集，包括文件系统操作、Shell 命令、Web 请求、MCP 协议等
-- **Bus** - 事件总线，模块间通信
-- **Channels** - 多渠道接入（钉钉、飞书、邮件等）
+- **Tools** - 工具集（文件系统、Shell、Web 请求、MCP 协议）
+- **Bus** - 事件总线
+- **Channels** - 多渠道接入
 - **Providers** - LLM 提供商抽象层
 - **Session** - 会话管理
 - **Skills** - 可扩展技能系统
-- **Cron** - 定时任务服务
+- **Cron** - 定时任务
 
 ### 数据存储
-
-- 使用 SQLite 作为本地数据库
-- sqlite-vec 支持向量检索，用于语义记忆
+- SQLite 本地数据库
+- sqlite-vec 向量检索
 
 ## 开发规范
 
 ### 代码风格
-- 使用 ESLint 进行代码规范检查
-- TypeScript 严格模式开启
-- 使用 ES Module (`"type": "module"`)
-- **注释必须使用中文**，代码标识符使用英文
-- JSDoc 注释应包含 `@description`、`@param`、`@returns` 等标签，描述内容使用中文
-- **图表必须使用 mermaid 语法**，禁止使用 ASCII 艺术/字符画图表
+- ESLint 检查，TypeScript 严格模式
+- ES Module
+- **注释使用中文**，代码标识符使用英文
+- **图表使用 mermaid 语法**
 
 ### 提交规范
-- 遵循 Conventional Commits 规范
-- 提交信息格式：`type: description`
+- Conventional Commits: `type: description`
 
 ### 分支策略
 - `main` - 主分支
 - `feat/*` - 功能分支
 
-### 工作流约束（强制）
+## 工作流约束（强制）
 
-**重要：以下约束为强制执行，不可跳过！**
-
-1. **必须触发 fullstack-workflow skill**
-   - **无论通过任何方式**（如：`/opsx:apply`、手动开发任务等）开始实现代码时，**必须先调用** `Skill` 工具触发 `fullstack-workflow` skill
-   - 示例：`Skill(skill: "fullstack-workflow")`
-   - fullstack-workflow skill 会协调多个专业 subagent 协作完成任务
-   - **每个角色优先使用对应的 subagent 处理**：
-     | 角色/任务类型 | 优先使用的 subagent |
-     |--------------|-------------------|
-     | 规划分析 | `plan-agent` |
-     | 代码探索 | `explore-agent` |
-     | 代码审查 | `code-reviewer` |
-     | 前端测试 | `frontend-tester` |
-     | 深度研究 | `search-specialist` |
-     | 复杂多步骤任务 | `general-purpose` |
-     | 翻译任务 | `translate` |
-     | 教程生成 | `tutorial-engineer` |
-
-2. **必须使用 OpenSpec CLI 命令**
-   - **禁止手动创建 openspec 文件**，必须通过 CLI 命令生成
-   - 使用 `openspec` CLI 命令管理变更生命周期
-   - 关键命令：
-     ```bash
-     # 创建新变更
-     openspec new change "<change-name>"
-     
-     # 查看变更状态
-     openspec status --change "<change-name>" --json
-     
-     # 获取 artifact 构建指令
-     openspec instructions <artifact-id> --change "<change-name>" --json
-     
-     # 应用变更（实施）
-     openspec apply --change "<change-name>"
-     
-     # 归档变更
-     openspec archive --change "<change-name>"
-     ```
-
-3. **使用斜杠命令触发 Skill**
-   - `/opsx:explore` - 探索模式和需求澄清
-   - `/opsx:propose` - 创建变更提案（包含 proposal、design、specs、tasks）
-   - `/opsx:apply` - 实施变更任务
-   - `/opsx:archive` - 归档变更
-
-**正确的工作流顺序：**
-```
-1. /opsx:explore (可选，复杂任务建议使用)
-   ↓
-2. /opsx:propose (创建提案，自动生成所有 artifacts)
-   ↓
-3. /opsx:apply (实施变更)
-   ↓
-4. /opsx:archive (归档)
+### 1. 必须触发 fullstack-workflow skill
+```bash
+Skill(skill: "fullstack-workflow")
 ```
 
-**注意：**
-- 所有 artifacts 文件必须通过 `openspec` CLI 命令生成
-- 只有 `openspec status` 显示 `applyReady: true` 时才能执行 `/opsx:apply`
-- 文件路径必须使用 `openspec instructions` 返回的 `outputPath`
+**Subagent 映射：**
+| 任务类型 | Subagent |
+|----------|----------|
+| 规划分析 | plan-agent |
+| 代码探索 | explore-agent |
+| 代码审查 | code-reviewer |
+| 前端测试 | frontend-tester |
+| 深度研究 | search-specialist |
+| 复杂任务 | general-purpose |
+
+### 2. 必须使用 OpenSpec CLI 命令
+```bash
+/opsx:explore   # 探索模式
+/opsx:propose   # 创建提案
+/opsx:apply     # 实施变更
+/opsx:archive   # 归档变更
+```
+
+**工作流：** `/opsx:explore` → `/opsx:propose` → `/opsx:apply` → `/opsx:archive`
 
 ## CLI 命令
 
 ```bash
-# 全局安装后使用
-niuma [command] [options]
-
-# 或通过 npx
-npx niuma [command] [options]
+niuma chat                      # 默认角色对话
+niuma chat --agent developer    # 指定角色
+niuma agents list               # 列出角色
+niuma agents get --id manager   # 角色详情
+niuma config get                # 查看配置
 ```
 
 ## 环境变量
 
-创建 `.env` 文件配置以下变量：
-
+**`~/.niuma/.env`：**
 ```env
-# LLM 配置（示例）
-OPENAI_API_KEY=your_api_key
-OPENAI_BASE_URL=https://api.openai.com/v1
+OPENAI_API_KEY=sk-xxx
+ANTHROPIC_API_KEY=sk-ant-xxx
+DEBUG=false
+LOG_LEVEL=info
+```
 
-# 其他配置
-NODE_ENV=development
+## 快速开始
+
+```bash
+git clone git@github.com:lihaizhong/niuma.git
+cd niuma
+pnpm install
+cp niuma/niuma.json.example ~/.niuma/niuma.json
+cp niuma/.env.example ~/.niuma/.env
+pnpm build && pnpm start
 ```
 
 ## 相关资源
 
-- [LangChain 文档](https://js.langchain.com/)
+- [LangChain](https://js.langchain.com/)
 - [SQLite Vec](https://github.com/asg017/sqlite-vec)
-- [Clack Prompts](https://github.com/natemoo-re/clack)
+- [Zod](https://zod.dev/)
+- [JSON5](https://json5.org/)
+
+## 最近变更
+
+### v0.1.0 (2026-03-10)
+
+**新增：企业级多角色配置系统**
+- JSON5 配置文件格式支持
+- 多角色架构，支持独立 AI 角色
+- 环境变量引用 `${VAR}` 和 `${VAR:default}`
+- defaults-with-overrides 配置模式
+- 角色完全隔离（工作区、会话、日志）
+- 严格 Zod 配置验证
+- 配置缓存机制
+
+**新增文件：** json5-loader.ts、env-resolver.ts、merger.ts、manager.ts、配置示例  
+**测试：** 74 个测试用例全部通过
 
 ---
 

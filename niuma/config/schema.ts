@@ -171,6 +171,79 @@ export const AgentConfigSchema = z.object({
 export type AgentConfig = z.infer<typeof AgentConfigSchema>
 
 // ============================================
+// 角色定义 Schema
+// ============================================
+
+/**
+ * 角色定义 Schema
+ * 定义单个角色的配置，可以覆盖全局默认配置
+ */
+export const AgentDefinitionSchema = z.object({
+  /** 角色唯一标识符（必填） */
+  id: z.string(),
+  /** 角色显示名称（可选，默认使用 id） */
+  name: z.string().optional(),
+  /** 角色描述 */
+  description: z.string().optional(),
+  /** 是否为默认角色 */
+  default: z.boolean().default(false),
+  /** 工作区目录 */
+  workspaceDir: z.string().optional(),
+  /** Agent 配置覆盖 */
+  agent: AgentConfigSchema.partial().optional(),
+  /** 提供商配置覆盖 */
+  providers: z.record(z.string(), ProviderConfigSchema.partial()).optional(),
+  /** 渠道配置覆盖（完全替换） */
+  channels: z.array(ChannelConfigSchema).optional(),
+  /** 定时任务配置覆盖（完全替换） */
+  cronTasks: z.array(CronTaskConfigSchema).optional(),
+  /** 调试模式覆盖 */
+  debug: z.boolean().optional(),
+  /** 日志级别覆盖 */
+  logLevel: z.enum(['debug', 'info', 'warn', 'error']).optional(),
+})
+
+export type AgentDefinition = z.infer<typeof AgentDefinitionSchema>
+
+// ============================================
+// 多角色配置 Schema
+// ============================================
+
+/**
+ * 多角色配置 Schema
+ * 定义全局默认配置和角色列表
+ */
+export const AgentsConfigSchema = z.object({
+  /** Agent 默认配置 */
+  defaults: AgentConfigSchema.default({
+    progressMode: 'normal',
+    showReasoning: false,
+    showToolDuration: true,
+    memoryWindow: 50,
+    maxRetries: 4,
+    retryBaseDelay: 1000,
+  }),
+  /** 角色列表 */
+  list: z.array(AgentDefinitionSchema).default([]),
+})
+
+export type AgentsConfig = z.infer<typeof AgentsConfigSchema>
+
+// ============================================
+// 环境变量解析选项接口
+// ============================================
+
+/**
+ * 环境变量解析选项
+ */
+export interface EnvVarResolverOptions {
+  /** 是否严格模式（未知环境变量报错） */
+  strict?: boolean
+  /** 环境变量来源（.env 文件和系统环境变量） */
+  env: Record<string, string>
+}
+
+// ============================================
 // 主配置 Schema
 // ============================================
 
@@ -198,6 +271,28 @@ export const NiumaConfigSchema = z.object({
   debug: z.boolean().default(false),
   /** 日志级别 */
   logLevel: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
+  /** 多角色配置 */
+  agents: AgentsConfigSchema.default({
+    defaults: {
+      progressMode: 'normal',
+      showReasoning: false,
+      showToolDuration: true,
+      memoryWindow: 50,
+      maxRetries: 4,
+      retryBaseDelay: 1000,
+    },
+    list: [],
+  }),
 })
 
 export type NiumaConfig = z.infer<typeof NiumaConfigSchema>
+
+// ============================================
+// 严格配置验证 Schema
+// ============================================
+
+/**
+ * 严格配置验证 Schema
+ * 使用 strict 模式，拒绝未知字段
+ */
+export const StrictNiumaConfigSchema = NiumaConfigSchema.strict()
