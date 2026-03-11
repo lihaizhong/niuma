@@ -1,11 +1,11 @@
 ---
-name: exp
+name: openexp
 description: 经验管理技能，从对话中学习、积累经验，并在未来交互中应用这些经验以提供更智能的响应。支持单次交互生成 0-x 条经验记录。数据存储在 Obsidian Vault 中。
 license: MIT
 compatibility: iFlow CLI
 metadata:
   author: niuma
-  version: "1.2"
+  version: "1.3"
   tags:
   - learning
   - memory
@@ -24,7 +24,7 @@ metadata:
 - ✅ 每条经验独立存储，可独立更新和管理
 - ✅ 支持批量经验检索和应用
 
-**数据存储：** 使用 Obsidian Markdown 格式存储在 `~/exp` Vault 中，支持 Obsidian 的双向链接、标签和搜索功能。
+**数据存储：** 使用 Obsidian Markdown 格式存储在 `~/Exp Vault` 中，支持 Obsidian 的双向链接、标签和搜索功能。
 
 ---
 
@@ -145,7 +145,7 @@ flowchart LR
 
 ## Obsidian 存储结构
 
-经验以 Obsidian Markdown 格式存储在 `~/exp` Vault 中，支持双向链接和标签。
+经验以 Obsidian Markdown 格式存储在 `~/Exp Vault` 中，支持双向链接和标签。
 
 ### 文件命名规范
 
@@ -193,7 +193,7 @@ batch_id: 20260311_130245  # 同一批次的关联 ID
 ### 目录结构
 
 ```
-~/exp/
+~/Exp Vault/
 ├── .obsidian/           # Obsidian 配置
 ├── Preferences/         # 用户偏好
 ├── Workflows/          # 工作流程
@@ -336,7 +336,7 @@ flowchart TD
 ## 使用方法
 
 ```bash
-/exp <自然语言描述>
+/openexp <自然语言描述>
 ```
 
 只需要用自然语言描述你的需求，AI 会自动判断需要做什么操作。
@@ -345,41 +345,41 @@ flowchart TD
 
 #### 添加单条经验
 ```bash
-/exp 我喜欢用 pnpm 而不是 npm
+/openexp 我喜欢用 pnpm 而不是 npm
 ```
 
 #### 添加多条经验
 ```bash
-/exp 记住这些：项目使用 TypeScript、strict mode、ESLint、单引号
-/exp 我的习惯是先运行测试再 lint 检查，然后构建最后部署
-/exp 规范：驼峰命名、2 空格缩进、单引号、尾随逗号
+/openexp 记住这些：项目使用 TypeScript、strict mode、ESLint、单引号
+/openexp 我的习惯是先运行测试再 lint 检查，然后构建最后部署
+/openexp 规范：驼峰命名、2 空格缩进、单引号、尾随逗号
 ```
 
 #### 查看经验
 ```bash
-/exp 显示所有经验
-/exp 列出所有关于 TypeScript 的经验
-/exp 看看有什么工作流程
+/openexp 显示所有经验
+/openexp 列出所有关于 TypeScript 的经验
+/openexp 看看有什么工作流程
 ```
 
 #### 搜索经验
 ```bash
-/exp 搜索 CORS 相关的经验
-/exp 找找关于部署的解决方案
-/exp 查询 pnpm 相关的偏好
+/openexp 搜索 CORS 相关的经验
+/openexp 找找关于部署的解决方案
+/openexp 查询 pnpm 相关的偏好
 ```
 
 #### 应用经验
 ```bash
-/exp 遇到了 CORS 问题，有什么经验吗？
-/exp 怎么部署这个项目？
-/exp 根据经验，我应该用什么工具？
+/openexp 遇到了 CORS 问题，有什么经验吗？
+/openexp 怎么部署这个项目？
+/openexp 根据经验，我应该用什么工具？
 ```
 
 #### 提供反馈
 ```bash
-/exp 这个经验很有效：exp_preference_20260311_130245_1.md
-/exp 这批经验中，第 2 条不管用
+/openexp 这个经验很有效：exp_preference_20260311_130245_1.md
+/openexp 这批经验中，第 2 条不管用
 ```
 
 ---
@@ -387,12 +387,44 @@ flowchart TD
 ## 集成点
 
 ### 与 Obsidian 集成
-- 使用 `obsidian-cli create` 创建经验笔记（支持批量）
-- 使用 `obsidian-cli search-content` 检索相关经验
-- 使用 `obsidian-cli frontmatter` 更新元数据
+此技能提供两种 Obsidian 集成方式：
+
+#### 方式一：使用 Obsidian CLI Shell 脚本（推荐）
+技能内置了完整的 Shell 脚本封装（`obsidian-cli.sh`），提供简单易用的命令行接口：
+
+```bash
+# 创建笔记
+./obsidian-cli.sh create Preferences/test.md '# 测试内容'
+
+# 搜索笔记
+./obsidian-cli.sh search pnpm content
+
+# 读取笔记
+./obsidian-cli.sh read Preferences/test.md
+```
+
+**特点：**
+- ✅ 无需编译，直接运行
+- ✅ 跨平台兼容（Linux、macOS）
+- ✅ 无需额外 MCP 服务器
+- ✅ 直接调用 Obsidian CLI 命令
+- ✅ 完整的错误处理
+
+#### 方式二：使用 MCP Server
+通过 `storks-obsidian-mcp` MCP 服务器访问 Obsidian vault：
+
+- 使用 `create_note` 创建经验笔记（支持批量）
+- 使用 `search_vault` 检索相关经验
+- 使用 `update_note` 更新元数据
 - 支持双向链接 `[[link]]` 关联相关经验
 - 使用标签系统 `#tag` 分类经验
 - 使用 batch_id 关联同批次经验
+
+**特点：**
+- ✅ MCP 协议标准
+- ✅ 支持 Obsidian 完整功能（backlinks、graphs 等）
+- ✅ 需要配置 MCP 服务器
+- ✅ 需要 Obsidian 桌面应用运行
 
 ### 与 Agent Memory 集成
 - 将 Obsidian 笔记 ID 存储到长期记忆中
@@ -466,6 +498,13 @@ flowchart TD
 
 ## 版本历史
 
+- **v1.3** (2026-03-11) - 添加 Obsidian CLI Shell 脚本封装，支持直接使用 obsidian-cli 命令
 - **v1.2** (2026-03-11) - 支持单次交互生成 0-x 条经验记录
-- **v1.1** (2026-03-11) - 集成 Obsidian 存储，数据存储在 ~/exp Vault
+- **v1.1** (2026-03-11) - 集成 Obsidian 存储，数据存储在 ~/Exp Vault
 - **v1.0** (2026-03-11) - 初始版本，定义核心能力
+
+## 相关资源
+
+- [obsidian-cli.sh](scripts/obsidian-cli.sh) - Obsidian CLI Shell 脚本封装
+- [Obsidian 文档](https://help.obsidian.md/)
+- [Obsidian CLI 文档](https://help.obsidian.md/cli)

@@ -7,6 +7,40 @@ Niuma（牛马）是一个企业级多角色 AI 助手系统，基于 TypeScript
 **当前版本：** v0.1.0  
 **项目状态：** 核心基础设施、Agent 核心、多角色配置系统已完成
 
+## 行为指导
+
+### 经验积累
+- 如果你觉得当前对话有价值（例如：解决了问题、学到了新知识、发现了重要信息），可以主动提示用户是否将对话内容总结成经验记录
+- 提示方式：简洁自然地询问，例如："这次对话似乎很有价值，是否需要我将其总结成经验记录？"
+
+### 工作流约束（强制）
+1. **必须触发 fullstack-workflow skill**
+   - 无论通过任何方式（如：`/opsx:apply`、手动开发任务等）开始实现代码时，必须先调用 `Skill` 工具触发 `fullstack-workflow` skill
+   - 示例：`Skill(skill: "fullstack-workflow")`
+
+2. **必须使用 OpenSpec CLI 命令**
+   - 禁止手动创建 openspec 文件，必须通过 CLI 命令生成
+   - 使用 `openspec` CLI 命令管理变更生命周期
+   - 正确的工作流顺序：
+     - `/opsx:explore` - 探索模式（可选，复杂任务建议使用）
+     - `/opsx:propose` - 创建提案（包含 proposal、design、specs、tasks）
+     - `/opsx:apply` - 实施变更（仅当 `applyReady: true` 时）
+     - `/opsx:archive` - 归档变更
+
+3. **Subagent 优先级**
+   每个角色优先使用对应的 subagent 处理：
+
+   | 角色/任务类型 | 优先使用的 Subagent |
+   |--------------|-------------------|
+   | 规划分析 | plan-agent |
+   | 代码探索 | explore-agent |
+   | 代码审查 | code-reviewer |
+   | 前端测试 | frontend-tester |
+   | 深度研究 | search-specialist |
+   | 复杂多步骤任务 | general-purpose |
+   | 翻译任务 | translate |
+   | 教程生成 | tutorial-engineer |
+
 ## 技术栈
 
 ### 核心技术
@@ -141,28 +175,6 @@ flowchart TD
 ### 分支策略
 - `main` - 主分支
 - `feat/*` - 功能分支
-
-### 工作流约束（强制）
-
-1. **必须触发 fullstack-workflow skill**
-   - 示例：`Skill(skill: "fullstack-workflow")`
-
-2. **必须使用 OpenSpec CLI 命令**
-   - `/opsx:explore` - 探索模式
-   - `/opsx:propose` - 创建提案
-   - `/opsx:apply` - 实施变更
-   - `/opsx:archive` - 归档变更
-
-## Subagent 映射表
-
-| 角色/任务类型 | 优先使用的 Subagent |
-|--------------|-------------------|
-| 规划分析 | plan-agent |
-| 代码探索 | explore-agent |
-| 代码审查 | code-reviewer |
-| 前端测试 | frontend-tester |
-| 深度研究 | search-specialist |
-| 复杂多步骤任务 | general-purpose |
 
 ## 构建与测试
 
