@@ -169,10 +169,6 @@ AI：你想对 pnpm 做什么操作？
 
 此技能内置了对 Obsidian CLI 的支持，可以直接调用 Obsidian CLI 命令来操作 vault。这种方式更轻量，无需配置额外的 MCP 服务器。
 
-**前置要求：**
-1. Obsidian 桌面应用（版本 1.12+）需要运行
-2. Obsidian CLI 已安装并配置
-
 ### 前置要求
 
 **使用 storks-obsidian-mcp：**

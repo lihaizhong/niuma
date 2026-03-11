@@ -4,16 +4,6 @@
       "description": "Chrome浏览器自动化工具，支持页面操作、性能分析、网络监控等功能",
       "command": "npx",
       "args": ["-y", "@iflow-mcp/chrome-devtools-mcp"]
-    },
-    "storks-obsidian-mcp": {
-      "description": "通过 Obsidian CLI 访问 Obsidian vault 的 MCP 服务器。支持读取、创建、搜索笔记，管理任务、标签、属性、插件等功能。需要 Obsidian 桌面应用运行（版本 1.12+）",
-      "command": "uv",
-      "args": [
-        "run",
-        "--directory",
-        "~/Exp Vault",
-        "obsidian-mcp"
-      ]
     }
   }
 }
