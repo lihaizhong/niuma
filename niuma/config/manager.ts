@@ -53,13 +53,11 @@ export interface AgentInfo {
  */
 export class ConfigManager {
   private configPath: string
-  private envPath: string
   private config: NiumaConfig | null = null
   private cache: Map<string, Partial<NiumaConfig>> = new Map()
 
-  constructor(configPath?: string, envPath?: string) {
+  constructor(configPath?: string) {
     this.configPath = configPath ?? join(homedir(), '.niuma', 'niuma.json')
-    this.envPath = envPath ?? join(homedir(), '.niuma', '.env')
   }
 
   /**

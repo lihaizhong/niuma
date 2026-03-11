@@ -9,14 +9,6 @@ import type { NiumaConfig, AgentDefinition } from './schema'
 // 常量定义
 // ============================================
 
-/**
- * 需要完全替换的字段（数组字段）
- */
-const REPLACE_FIELDS = new Set<keyof NiumaConfig>([
-  'channels',
-  'cronTasks'
-])
-
 // ============================================
 // 函数定义
 // ============================================

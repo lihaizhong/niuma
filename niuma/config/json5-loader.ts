@@ -4,7 +4,7 @@
  */
 
 import { existsSync, readFileSync } from 'node:fs'
-import { join, resolve } from 'node:path'
+import { join } from 'node:path'
 import { homedir } from 'node:os'
 import JSON5 from 'json5'
 

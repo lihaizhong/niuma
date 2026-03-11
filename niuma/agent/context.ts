@@ -10,7 +10,6 @@
  * @see 参考 nanobot: https://github.com/HKUDS/nanobot/blob/main/nanobot/agent/context.py
  */
 
-import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { join, normalize } from "node:path";
 import * as path from "node:path";

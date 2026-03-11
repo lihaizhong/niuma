@@ -3,8 +3,7 @@
  * 支持多角色配置，向后兼容旧的 API
  */
 
-import { resolve, join } from 'node:path'
-import { homedir } from 'node:os'
+import { resolve } from 'node:path'
 import type { NiumaConfig } from './schema'
 import { ConfigManager } from './manager'
 

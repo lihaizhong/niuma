@@ -5,7 +5,6 @@
 
 import { existsSync, readFileSync } from 'node:fs'
 import { join, dirname } from 'node:path'
-import { homedir } from 'node:os'
 import type { EnvVarResolverOptions } from './schema'
 
 // ============================================
