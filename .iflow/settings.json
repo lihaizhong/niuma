@@ -4,6 +4,10 @@
       "description": "Chrome浏览器自动化工具，支持页面操作、性能分析、网络监控等功能",
       "command": "npx",
       "args": ["-y", "@iflow-mcp/chrome-devtools-mcp"]
+    },
+    "obsidian": {
+      "command": "npx",
+      "args": ["@mauricio.wolff/mcp-obsidian@latest", "~/exp"]
     }
   }
 }
