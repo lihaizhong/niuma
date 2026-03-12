@@ -3,10 +3,10 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { writeFile, mkdir, rm } from 'fs/promises'
-import { join } from 'path'
-import { readFileTool, writeFileTool, editFileTool, listDirTool } from '../agent/tools/filesystem.js'
-import { ToolExecutionError } from '../types/error.js'
+import { writeFile, mkdir, rm } from 'node:fs/promises'
+import { join } from 'node:path'
+import { readFileTool, writeFileTool, editFileTool, listDirTool } from '../agent/tools/filesystem'
+import { ToolExecutionError } from '../types/error'
 
 describe('ReadFileTool', () => {
   const testDir = '/tmp/niuma-test-readfile'

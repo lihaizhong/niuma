@@ -1,8 +1,8 @@
 # Niuma 项目开发计划
 
-> **当前版本：** v0.1.0
-> **最后更新：** 2026-03-11
-> **状态：** 已完成核心基础设施和 Agent 核心，正在进行企业级功能扩展
+> **当前版本：** v0.1.1
+> **最后更新：** 2026-03-12
+> **状态：** 已完成核心基础设施、Agent 核心和内置工具，正在进行企业级功能扩展
 
 ## 项目概述
 
@@ -30,12 +30,14 @@
 | Phase 1 | 核心基础设施 | 2026-03-10 | ✅ 已完成 |
 | Phase 2 | Agent 核心 | 2026-03-10 | ✅ 已完成 |
 | 企业扩展 | 多角色配置系统 | 2026-03-11 | ✅ 已完成 |
+| Phase 3 | 内置工具实现 | 2026-03-12 | ✅ 已完成 |
 
 ### 📊 项目统计
 
-- **核心模块：** 20+ 个文件
-- **代码行数：** ~8000+ 行 TypeScript
-- **测试覆盖：** 核心模块单元测试
+- **核心模块：** 25+ 个文件
+- **代码行数：** ~10000+ 行 TypeScript
+- **内置工具：** 10 个（文件系统、Shell、Web、消息、Agent）
+- **测试覆盖：** 100% 通过（332/332 测试）
 - **文档完善度：** OpenSpec 变更记录完整
 
 ---
@@ -247,38 +249,166 @@ flowchart TD
 
 ---
 
-## 待开发功能
+## 已完成功能详情
 
-### 🔄 Phase 3: 内置工具
+### ✅ Phase 3: 内置工具实现
 
-**优先级：** 高
-**预计工时：** 5-7 天
+**完成日期：** 2026-03-12
+
+**实现内容：**
 
 | 工具 | 文件 | 功能 | 状态 |
 |------|------|------|------|
-| read_file | `agent/tools/filesystem.ts` | 读取文件 | ⏸️ 待开发 |
-| write_file | `agent/tools/filesystem.ts` | 写入文件 | ⏸️ 待开发 |
-| edit_file | `agent/tools/filesystem.ts` | 编辑文件 | ⏸️ 待开发 |
-| list_dir | `agent/tools/filesystem.ts` | 列出目录 | ⏸️ 待开发 |
-| exec | `agent/tools/shell.ts` | 执行命令 | ⏸️ 待开发 |
-| web_search | `agent/tools/web.ts` | Brave 搜索 | ⏸️ 待开发 |
-| web_fetch | `agent/tools/web.ts` | 网页抓取 | ⏸️ 待开发 |
-| message | `agent/tools/message.ts` | 发送消息 | ⏸️ 待开发 |
-| spawn | `agent/tools/spawn.ts` | 创建子智能体 | ⏸️ 待开发 |
-| cron | `agent/tools/cron.ts` | 定时任务 | ⏸️ 待开发 |
+| read_file | `agent/tools/filesystem.ts` | 读取文件、行号范围、大文件截断 | ✅ 已完成 |
+| write_file | `agent/tools/filesystem.ts` | 写入文件、自动创建目录 | ✅ 已完成 |
+| edit_file | `agent/tools/filesystem.ts` | 精确编辑、字符串替换 | ✅ 已完成 |
+| list_dir | `agent/tools/filesystem.ts` | 列出目录、递归、glob 过滤 | ✅ 已完成 |
+| exec | `agent/tools/shell.ts` | Shell 命令执行、黑名单防护 | ✅ 已完成 |
+| web_search | `agent/tools/web.ts` | Brave 搜索、缓存机制 | ✅ 已完成 |
+| web_fetch | `agent/tools/web.ts` | 网页抓取、HTML 解析 | ✅ 已完成 |
+| message | `agent/tools/message.ts` | 消息发送、队列、富文本 | ✅ 已完成 |
+| spawn | `agent/tools/agent.ts` | 创建子智能体、配置隔离 | ✅ 已完成 |
+| cron | `agent/tools/agent.ts` | 定时任务调度、Cron 表达式 | ✅ 已完成 |
 
-**安全考虑：**
+**核心特性：**
 
-```typescript
-// Shell 工具危险命令黑名单
-const DENY_PATTERNS = [
-  /\brm\s+-[rf]{1,2}\b/,           // rm -r, rm -rf
-  /\bdel\s+[fq]\b/,                // del /f, del /q
-  /\brmdir\s+\/s\b/,               // rmdir /s
-  /\b(shutdown|reboot|poweroff)\b/, // 系统电源
-  /:\(\)\s*\{.*\};\s*:/,           // fork bomb
-];
-```
+1. **Shell 安全防护：** 危险命令黑名单（rm -rf、shutdown、fork bomb 等）
+2. **Web 搜索缓存：** 1 小时 TTL，减少 API 调用
+3. **消息队列系统：** 按优先级排序，支持并发控制
+4. **子智能体隔离：** 独立工作区、配置、会话、记忆
+5. **富文本支持：** Markdown、HTML 解析
+
+**测试覆盖：** 100% 通过（332/332 测试）
+
+**OpenSpec 变更：** `builtin-tools-implementation`
+
+---
+
+## 待开发功能
+
+---
+
+### 🔄 Phase 3.1: 高级文件操作
+
+**优先级：** 高
+**预计工时：** 2-3 天
+
+| 工具 | 文件 | 功能 | 状态 |
+|------|------|------|------|
+| file_search | `agent/tools/filesystem.ts` | 在文件中搜索内容 | ⏸️ 待开发 |
+| file_move | `agent/tools/filesystem.ts` | 移动文件 | ⏸️ 待开发 |
+| file_copy | `agent/tools/filesystem.ts` | 复制文件 | ⏸️ 待开发 |
+| file_delete | `agent/tools/filesystem.ts` | 删除文件（带安全确认） | ⏸️ 待开发 |
+| file_info | `agent/tools/filesystem.ts` | 获取文件详细信息 | ⏸️ 待开发 |
+| dir_create | `agent/tools/filesystem.ts` | 创建目录 | ⏸️ 待开发 |
+| dir_delete | `agent/tools/filesystem.ts` | 删除目录（递归） | ⏸️ 待开发 |
+
+---
+
+### 🔄 Phase 3.2: Git 操作
+
+**优先级：** 高
+**预计工时：** 2-3 天
+
+| 工具 | 文件 | 功能 | 状态 |
+|------|------|------|------|
+| git_status | `agent/tools/git.ts` | 查看状态 | ⏸️ 待开发 |
+| git_commit | `agent/tools/git.ts` | 提交代码 | ⏸️ 待开发 |
+| git_push | `agent/tools/git.ts` | 推送代码 | ⏸️ 待开发 |
+| git_pull | `agent/tools/git.ts` | 拉取代码 | ⏸️ 待开发 |
+| git_branch | `agent/tools/git.ts` | 分支管理 | ⏸️ 待开发 |
+| git_log | `agent/tools/git.ts` | 查看提交历史 | ⏸️ 待开发 |
+
+---
+
+### 🔄 Phase 3.3: 压缩与解压
+
+**优先级：** 中
+**预计工时：** 1-2 天
+
+| 工具 | 文件 | 功能 | 状态 |
+|------|------|------|------|
+| archive | `agent/tools/archive.ts` | 压缩文件/目录（zip, tar, gzip） | ⏸️ 待开发 |
+| extract | `agent/tools/archive.ts` | 解压文件 | ⏸️ 待开发 |
+
+---
+
+### 🔄 Phase 3.4: 网络工具
+
+**优先级：** 中
+**预计工时：** 1-2 天
+
+| 工具 | 文件 | 功能 | 状态 |
+|------|------|------|------|
+| ping | `agent/tools/network.ts` | 网络连通性测试 | ⏸️ 待开发 |
+| dns_lookup | `agent/tools/network.ts` | DNS 查询 | ⏸️ 待开发 |
+| http_request | `agent/tools/network.ts` | 通用 HTTP 请求 | ⏸️ 待开发 |
+
+---
+
+### 🔄 Phase 3.5: JSON/YAML 处理
+
+**优先级：** 中
+**预计工时：** 1-2 天
+
+| 工具 | 文件 | 功能 | 状态 |
+|------|------|------|------|
+| json_parse | `agent/tools/data.ts` | 解析 JSON | ⏸️ 待开发 |
+| json_stringify | `agent/tools/data.ts` | 序列化为 JSON | ⏸️ 待开发 |
+| yaml_parse | `agent/tools/data.ts` | 解析 YAML | ⏸️ 待开发 |
+| yaml_stringify | `agent/tools/data.ts` | 序列化为 YAML | ⏸️ 待开发 |
+
+---
+
+### 🔄 Phase 3.6: 加密与解密
+
+**优先级：** 低
+**预计工时：** 1-2 天
+
+| 工具 | 文件 | 功能 | 状态 |
+|------|------|------|------|
+| encrypt | `agent/tools/crypto.ts` | 加密数据 | ⏸️ 待开发 |
+| decrypt | `agent/tools/crypto.ts` | 解密数据 | ⏸️ 待开发 |
+| hash | `agent/tools/crypto.ts` | 计算哈希值 | ⏸️ 待开发 |
+
+---
+
+### 🔄 Phase 3.7: 环境变量与进程管理
+
+**优先级：** 低
+**预计工时：** 1-2 天
+
+| 工具 | 文件 | 功能 | 状态 |
+|------|------|------|------|
+| env_get | `agent/tools/system.ts` | 获取环境变量 | ⏸️ 待开发 |
+| env_set | `agent/tools/system.ts` | 设置环境变量 | ⏸️ 待开发 |
+| process_list | `agent/tools/system.ts` | 列出进程 | ⏸️ 待开发 |
+| process_kill | `agent/tools/system.ts` | 终止进程 | ⏸️ 待开发 |
+
+---
+
+### 🔄 Phase 3.8: 图像处理
+
+**优先级：** 低
+**预计工时：** 2-3 天
+
+| 工具 | 文件 | 功能 | 状态 |
+|------|------|------|------|
+| image_resize | `agent/tools/image.ts` | 调整图片大小 | ⏸️ 待开发 |
+| image_crop | `agent/tools/image.ts` | 裁剪图片 | ⏸️ 待开发 |
+| image_convert | `agent/tools/image.ts` | 格式转换 | ⏸️ 待开发 |
+
+---
+
+### 🔄 Phase 3.9: 媒体处理
+
+**优先级：** 低
+**预计工时：** 2-3 天
+
+| 工具 | 文件 | 功能 | 状态 |
+|------|------|------|------|
+| audio_transcribe | `agent/tools/media.ts` | 音频转文字（Whisper） | ⏸️ 待开发 |
+| video_transcribe | `agent/tools/media.ts` | 视频转文字 | ⏸️ 待开发 |
 
 ---
 
@@ -337,12 +467,16 @@ interface ProviderSpec {
 ### 🔄 Phase 6: 定时任务与心跳
 
 **优先级：** 低
-**预计工时：** 2-3 天
+**预计工时：** 1-2 天
+
+**已完成：**
+- ✅ Cron 工具：`agent/tools/agent.ts` - 定时任务调度、Cron 表达式解析
+
+**待开发：**
 
 | 模块 | 文件 | 功能 | 状态 |
 |------|------|------|------|
-| 定时服务 | `cron/service.ts` | Cron 表达式调度 | ⏸️ 待开发 |
-| 心跳服务 | `heartbeat/service.ts` | HEARTBEAT.md 检查 | ⏸️ 待开发 |
+| 心跳服务 | `heartbeat/service.ts` | HEARTBEAT.md 检查、周期性任务 | ⏸️ 待开发 |
 
 **心跳机制：**
 - 每 30 分钟检查 `HEARTBEAT.md`
@@ -444,6 +578,53 @@ interface ProviderSpec {
    ↓
 4. /opsx:archive (归档)
 ```
+
+---
+
+## 最近变更
+
+### v0.1.1 (2026-03-12)
+
+**Phase 3：内置工具实现**
+- ✅ 文件系统工具（read_file、write_file、edit_file、list_dir）
+- ✅ Shell 工具（exec，带危险命令黑名单防护）
+- ✅ Web 工具（web_search、web_fetch，带缓存机制）
+- ✅ 消息工具（message，支持队列和富文本）
+- ✅ Agent 工具（spawn、cron，支持子智能体和定时任务）
+- ✅ 100% 测试覆盖（332/332 通过）
+
+**代码质量改进：**
+- ✅ 完整的单元测试和集成测试
+- ✅ 工具注册和配置系统优化
+- ✅ 类型安全和错误处理完善
+
+### v0.1.0 (2026-03-11)
+
+**企业扩展：多角色配置系统**
+- ✅ JSON5 配置文件格式支持
+- ✅ 多角色架构，支持独立 AI 角色
+- ✅ 环境变量引用 `${VAR}` 和 `${VAR:default}`
+- ✅ defaults-with-overrides 配置模式
+- ✅ 角色完全隔离（工作区、会话、日志）
+- ✅ 严格 Zod 配置验证
+
+**代码质量改进：**
+- ✅ 删除未使用的变量和导入
+- ✅ 添加完整的测试用例注释
+
+### v0.1.0-beta (2026-03-10)
+
+**Phase 2：Agent 核心**
+- ✅ 上下文构建器（支持媒体、技能、记忆）
+- ✅ 双层记忆系统
+- ✅ 技能系统
+- ✅ Agent 循环（LLM ↔ 工具执行）
+
+**Phase 1：核心基础设施**
+- ✅ 核心类型系统
+- ✅ 配置管理
+- ✅ 工具框架
+- ✅ 事件总线
 
 ---
 

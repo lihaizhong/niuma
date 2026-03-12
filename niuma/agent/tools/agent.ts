@@ -3,14 +3,75 @@
  * 提供子智能体创建和管理、定时任务调度等功能
  */
 
+import { join } from 'node:path'
+import { existsSync, mkdirSync } from 'node:fs'
+
 import { z } from 'zod'
 import { nanoid } from 'nanoid'
 import { schedule, validate, type ScheduledTask } from 'node-cron'
-import { BaseTool } from './base.js'
-import { ToolExecutionError } from '../../types/error.js'
 import pino from 'pino'
 
+import { BaseTool } from './base'
+import { ToolExecutionError } from '../../types/error'
+
 const logger = pino({ level: 'info' })
+
+/**
+ * 子智能体状态
+ */
+type SubagentStatus = 'initializing' | 'running' | 'paused' | 'completed' | 'failed' | 'timeout'
+
+/**
+ * 子智能体配置
+ */
+interface SubagentConfig {
+  agentId: string
+  parentAgentId: string
+  configPath?: string
+  workspaceDir: string
+  model?: {
+    provider: string
+    model: string
+    temperature?: number
+    maxTokens?: number
+  }
+  tools?: {
+    allowed: string[]
+    denied: string[]
+  }
+  memory?: {
+    enabled: boolean
+    sharedWithParent?: boolean
+  }
+  timeout?: number
+  createdAt: Date
+  status: SubagentStatus
+  result?: string
+  error?: string
+}
+
+/**
+ * 子智能体存储（内存实现）
+ */
+const subagents: Map<string, SubagentConfig> = new Map()
+
+/**
+ * 父子智能体通信消息
+ */
+interface AgentMessage {
+  messageId: string
+  senderId: string
+  receiverId: string
+  content: string
+  type: 'request' | 'response' | 'notification'
+  timestamp: Date
+  status?: 'queued' | 'delivered' | 'read'
+}
+
+/**
+ * 消息存储
+ */
+const agentMessages: AgentMessage[] = []
 
 /**
  * Spawn 工具：创建子智能体
@@ -25,6 +86,10 @@ export class SpawnTool extends BaseTool {
     timeout: z.number().int().positive().optional().describe('超时时间（毫秒）'),
     allowedTools: z.array(z.string()).optional().describe('允许的工具列表'),
     deniedTools: z.array(z.string()).optional().describe('禁止的工具列表'),
+    memorySharing: z.object({
+      read: z.boolean().optional().describe('是否可读取父智能体记忆'),
+      write: z.boolean().optional().describe('是否可写入父智能体记忆'),
+    }).optional().describe('记忆共享配置'),
   })
 
   async execute(args: {
@@ -34,26 +99,132 @@ export class SpawnTool extends BaseTool {
     timeout?: number
     allowedTools?: string[]
     deniedTools?: string[]
+    memorySharing?: { read?: boolean; write?: boolean }
   }): Promise<string> {
-    const { config = {}, initialMessage, task, timeout, allowedTools, deniedTools } = args
+    const { config = {}, initialMessage, task, timeout, allowedTools, deniedTools, memorySharing } = args
 
     const agentId = nanoid()
+    const parentAgentId = 'default' // TODO: 从上下文获取父智能体 ID
     const now = new Date()
 
     try {
-      // TODO: 实现子智能体创建逻辑
-      // 1. 创建独立的配置
-      // 2. 创建独立的工作区
-      // 3. 创建独立的会话
-      // 4. 设置工具权限
-      // 5. 初始化子智能体
+      // 1. 创建工作区
+      const workspaceDir = join(process.cwd(), '.niuma', 'subagents', agentId)
+      if (!existsSync(workspaceDir)) {
+        mkdirSync(workspaceDir, { recursive: true })
+      }
 
-      logger.info({ agentId, task }, '创建子智能体')
+      // 2. 创建独立配置
+      const subagentConfig: SubagentConfig = {
+        agentId,
+        parentAgentId,
+        workspaceDir,
+        model: config.model as any,
+        tools: {
+          allowed: allowedTools || [],
+          denied: deniedTools || [],
+        },
+        memory: {
+          enabled: true,
+          sharedWithParent: memorySharing?.read || false,
+        },
+        timeout,
+        createdAt: now,
+        status: 'initializing',
+      }
 
-      return `子智能体已创建（ID: ${agentId}）${task ? `，任务: ${task}` : ''}`
+      subagents.set(agentId, subagentConfig)
+
+      // 3. 创建独立会话
+      // TODO: 实现会话管理
+
+      // 4. 初始化子智能体
+      subagentConfig.status = 'running'
+
+      logger.info({ agentId, task, workspaceDir }, '创建子智能体')
+
+      // 5. 如果有初始消息，发送给子智能体
+      if (initialMessage) {
+        await this.sendMessageToSubagent(agentId, initialMessage)
+      }
+
+      return `子智能体已创建（ID: ${agentId}）${task ? `，任务: ${task}` : ''}${workspaceDir ? `，工作区: ${workspaceDir}` : ''}`
     } catch (error) {
       throw new ToolExecutionError(this.name, `创建子智能体失败: ${(error as Error).message}`)
     }
+  }
+
+  /**
+   * 发送消息到子智能体
+   */
+  private async sendMessageToSubagent(agentId: string, content: string): Promise<void> {
+    const subagent = subagents.get(agentId)
+    if (!subagent) {
+      throw new ToolExecutionError(this.name, `子智能体不存在: ${agentId}`)
+    }
+
+    const message: AgentMessage = {
+      messageId: nanoid(),
+      senderId: subagent.parentAgentId,
+      receiverId: agentId,
+      content,
+      type: 'request',
+      timestamp: new Date(),
+      status: 'queued',
+    }
+
+    agentMessages.push(message)
+
+    // TODO: 实际发送消息到子智能体
+    logger.info({ messageId: message.messageId, agentId }, '发送消息到子智能体')
+  }
+
+  /**
+   * 接收来自子智能体的消息
+   */
+  private receiveMessageFromSubagent(agentId: string, content: string): AgentMessage {
+    const subagent = subagents.get(agentId)
+    if (!subagent) {
+      throw new ToolExecutionError(this.name, `子智能体不存在: ${agentId}`)
+    }
+
+    const message: AgentMessage = {
+      messageId: nanoid(),
+      senderId: agentId,
+      receiverId: subagent.parentAgentId,
+      content,
+      type: 'response',
+      timestamp: new Date(),
+      status: 'delivered',
+    }
+
+    agentMessages.push(message)
+
+    logger.info({ messageId: message.messageId, agentId }, '接收来自子智能体的消息')
+
+    return message
+  }
+
+  /**
+   * 获取子智能体信息
+   */
+  getSubagentInfo(agentId: string): SubagentConfig | undefined {
+    return subagents.get(agentId)
+  }
+
+  /**
+   * 停止子智能体
+   */
+  async stopSubagent(agentId: string): Promise<void> {
+    const subagent = subagents.get(agentId)
+    if (!subagent) {
+      throw new ToolExecutionError(this.name, `子智能体不存在: ${agentId}`)
+    }
+
+    subagent.status = 'completed'
+
+    // TODO: 清理资源
+    logger.info({ agentId }, '停止子智能体')
   }
 }
 
@@ -174,9 +345,11 @@ export class CronTool extends BaseTool {
     // 如果启用，创建 ScheduledTask
     if (enabled) {
       task.scheduledTask = schedule(cron, () => {
-        this.executeTask(taskId)
+        void this.executeTask(taskId).catch((error) => {
+          logger.error({ taskId, error }, '定时任务执行失败')
+        })
       })
-      task.scheduledTask.start()
+      void task.scheduledTask.start()
     }
 
     cronTasks.set(taskId, task)
@@ -229,7 +402,7 @@ export class CronTool extends BaseTool {
 
     // 停止现有的 ScheduledTask
     if (task.scheduledTask) {
-      task.scheduledTask.stop()
+      void task.scheduledTask.stop()
     }
 
     // 更新字段
@@ -245,9 +418,11 @@ export class CronTool extends BaseTool {
     // 如果启用，创建新的 ScheduledTask
     if (task.enabled) {
       task.scheduledTask = schedule(task.cron, () => {
-        this.executeTask(taskId)
+        void this.executeTask(taskId).catch((error) => {
+          logger.error({ taskId, error }, '定时任务执行失败')
+        })
       })
-      task.scheduledTask.start()
+      void task.scheduledTask.start()
     }
 
     logger.info({ taskId, updates }, '更新定时任务')
@@ -266,7 +441,7 @@ export class CronTool extends BaseTool {
 
     // 停止 ScheduledTask
     if (task.scheduledTask) {
-      task.scheduledTask.stop()
+      void task.scheduledTask.stop()
     }
 
     cronTasks.delete(taskId)
@@ -293,7 +468,7 @@ export class CronTool extends BaseTool {
     task.status = 'paused'
 
     if (task.scheduledTask) {
-      task.scheduledTask.stop()
+      void task.scheduledTask.stop()
     }
 
     logger.info({ taskId }, '暂停定时任务')
@@ -318,9 +493,11 @@ export class CronTool extends BaseTool {
     task.status = 'pending'
 
     task.scheduledTask = schedule(task.cron, () => {
-        this.executeTask(taskId)
+        void this.executeTask(taskId).catch((error) => {
+          logger.error({ taskId, error }, '定时任务执行失败')
+        })
       })
-      task.scheduledTask.start()
+      void task.scheduledTask.start()
 
     logger.info({ taskId }, '恢复定时任务')
 

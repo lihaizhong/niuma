@@ -2,7 +2,7 @@
  * 类型安全的事件总线
  */
 
-import { EventEmitter } from 'events'
+import { EventEmitter } from 'node:events'
 import type { EventType, EventMap, EventPayload } from '../types/events'
 
 // ============================================

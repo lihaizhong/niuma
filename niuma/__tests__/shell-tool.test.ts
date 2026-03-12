@@ -3,8 +3,8 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { execTool } from '../agent/tools/shell.js'
-import { ToolExecutionError } from '../types/error.js'
+import { execTool } from '../agent/tools/shell'
+import { ToolExecutionError } from '../types/error'
 
 describe('ExecTool', () => {
   it('应该成功执行简单命令', async () => {

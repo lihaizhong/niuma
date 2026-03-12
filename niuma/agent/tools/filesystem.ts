@@ -3,11 +3,13 @@
  * 提供文件读写、编辑、目录列出等功能
  */
 
+import { readFile as fsReadFile, writeFile as fsWriteFile, stat, readdir, mkdir } from 'node:fs/promises'
+import { join, resolve, isAbsolute } from 'node:path'
+
 import { z } from 'zod'
-import { readFile as fsReadFile, writeFile as fsWriteFile, stat, readdir, mkdir } from 'fs/promises'
-import { join, resolve, isAbsolute } from 'path'
-import { BaseTool } from './base.js'
-import { ToolExecutionError } from '../../types/error.js'
+
+import { BaseTool } from './base'
+import { ToolExecutionError } from '../../types/error'
 
 /**
  * 解析路径：支持绝对路径和相对路径

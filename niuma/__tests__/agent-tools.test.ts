@@ -3,8 +3,8 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { spawnTool, cronTool } from '../agent/tools/agent.js'
-import { ToolExecutionError } from '../types/error.js'
+import { spawnTool, cronTool } from '../agent/tools/agent'
+import { ToolExecutionError } from '../types/error'
 
 describe('SpawnTool', () => {
   it('应该成功创建子智能体', async () => {

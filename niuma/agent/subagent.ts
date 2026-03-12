@@ -5,7 +5,7 @@
  * 子智能体与主 Agent 隔离运行，完成后通过事件通知主 Agent。
  */
 
-import { randomUUID } from 'crypto'
+import { randomUUID } from 'node:crypto'
 import type { LLMProvider } from '../providers/base'
 import type { ToolRegistry } from './tools/registry'
 import type { EventBus } from '../bus/events'

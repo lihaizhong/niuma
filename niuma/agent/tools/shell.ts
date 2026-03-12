@@ -3,11 +3,13 @@
  * 提供安全的 Shell 命令执行功能，包含危险命令黑名单防护
  */
 
+import { spawn, exec as execSync } from 'node:child_process'
+import { promisify } from 'node:util'
+
 import { z } from 'zod'
-import { spawn, exec as execSync } from 'child_process'
-import { promisify } from 'util'
-import { BaseTool } from './base.js'
-import { ToolExecutionError } from '../../types/error.js'
+
+import { BaseTool } from './base'
+import { ToolExecutionError } from '../../types/error'
 
 const execAsync = promisify(execSync)
 

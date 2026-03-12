@@ -3,10 +3,146 @@
  * 提供 Web 搜索和网页内容抓取功能
  */
 
-import { z } from 'zod'
-import { BaseTool } from './base.js'
-import { ToolExecutionError } from '../../types/error.js'
+import pino from 'pino'
 import * as cheerio from 'cheerio'
+
+import { z } from 'zod'
+
+import { BaseTool } from './base'
+import { ToolExecutionError } from '../../types/error'
+
+const logger = pino({ level: 'info' })
+
+/**
+ * 搜索缓存条目
+ */
+interface SearchCacheEntry {
+  query: string
+  engine: string
+  results: any[]
+  timestamp: number
+}
+
+/**
+ * 搜索缓存存储（内存实现，缓存 1 小时）
+ */
+const searchCache: Map<string, SearchCacheEntry> = new Map()
+const CACHE_TTL = 60 * 60 * 1000 // 1 小时
+
+/**
+ * 清理过期缓存
+ */
+function cleanExpiredCache(): void {
+  const now = Date.now()
+  for (const [key, entry] of searchCache.entries()) {
+    if (now - entry.timestamp > CACHE_TTL) {
+      searchCache.delete(key)
+    }
+  }
+}
+
+/**
+ * 获取缓存键
+ */
+function getCacheKey(query: string, engine: string): string {
+  return `${engine}:${query.toLowerCase().trim()}`
+}
+
+/**
+ * 搜索结果
+ */
+interface SearchResult {
+  title: string
+  url: string
+  snippet: string
+  date?: string
+}
+
+/**
+ * 搜索引擎接口
+ */
+interface SearchProvider {
+  name: string
+  search(query: string, options: { num: number }): Promise<SearchResult[]>
+  requiresApiKey: boolean
+  validateApiKey?(key: string): Promise<boolean>
+}
+
+/**
+ * Brave Search 提供商
+ */
+class BraveSearchProvider implements SearchProvider {
+  name = 'brave'
+  requiresApiKey = true
+
+  async search(query: string, options: { num: number }): Promise<SearchResult[]> {
+    const apiKey = process.env.BRAVE_API_KEY
+    if (!apiKey) {
+      throw new ToolExecutionError('web_search', '未配置 BRAVE_API_KEY 环境变量')
+    }
+
+    const response = await fetch('https://api.search.brave.com/res/v1/web/search', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Accept-Encoding': 'gzip',
+        'Content-Type': 'application/json',
+        'X-Subscription-Token': apiKey,
+      },
+      body: JSON.stringify({
+        q: query,
+        count: Math.min(options.num, 20),
+      }),
+    })
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new ToolExecutionError('web_search', 'Brave API 密钥无效')
+      }
+      throw new ToolExecutionError('web_search', `搜索失败，状态码: ${response.status}`)
+    }
+
+    const data = (await response.json()) as any
+
+    if (!data.web?.results || data.web.results.length === 0) {
+      return []
+    }
+
+    return data.web.results.map((result: any) => ({
+      title: result.title || '',
+      url: result.url || '',
+      snippet: result.description || '',
+      date: result.age ? `${result.age}前` : undefined,
+    }))
+  }
+
+  async validateApiKey(key: string): Promise<boolean> {
+    try {
+      const response = await fetch('https://api.search.brave.com/res/v1/web/search', {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'X-Subscription-Token': key,
+        },
+        body: JSON.stringify({
+          q: 'test',
+          count: 1,
+        }),
+      })
+      return response.ok
+    } catch {
+      return false
+    }
+  }
+}
+
+/**
+ * 搜索引擎注册表
+ */
+const searchProviders: Record<string, SearchProvider> = {
+  brave: new BraveSearchProvider(),
+}
 
 /**
  * WebSearch 工具：执行网页搜索
@@ -18,76 +154,77 @@ export class WebSearchTool extends BaseTool {
     query: z.string().describe('搜索查询'),
     num: z.number().int().positive().max(20).optional().describe('结果数量（最多20）'),
     engine: z.enum(['brave']).optional().describe('搜索引擎'),
+    ignoreCache: z.boolean().optional().describe('是否忽略缓存'),
   })
 
-  async execute(args: { query: string; num?: number; engine?: string }): Promise<string> {
-    const { query, num = 10, engine = 'brave' } = args
+  async execute(args: { query: string; num?: number; engine?: string; ignoreCache?: boolean }): Promise<string> {
+    const { query, num = 10, engine = 'brave', ignoreCache = false } = args
 
     if (!query.trim()) {
       throw new ToolExecutionError(this.name, '查询不能为空')
     }
 
-    if (engine !== 'brave') {
+    const provider = searchProviders[engine]
+    if (!provider) {
       throw new ToolExecutionError(this.name, `暂不支持搜索引擎: ${engine}`)
     }
 
-    const apiKey = process.env.BRAVE_API_KEY
-    if (!apiKey) {
-      throw new ToolExecutionError(this.name, '未配置 BRAVE_API_KEY 环境变量')
+    const cacheKey = getCacheKey(query, engine)
+    const startTime = Date.now()
+
+    // 检查缓存
+    if (!ignoreCache) {
+      cleanExpiredCache()
+      const cached = searchCache.get(cacheKey)
+      if (cached) {
+        logger.info({ query, engine, fromCache: true }, '搜索命中缓存')
+        return this.formatResults(cached.results, engine, true)
+      }
     }
 
     try {
-      const response = await fetch('https://api.search.brave.com/res/v1/web/search', {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/json',
-          'Accept-Encoding': 'gzip',
-          'Content-Type': 'application/json',
-          'X-Subscription-Token': apiKey,
-        },
-        body: JSON.stringify({
-          q: query,
-          count: Math.min(num, 20),
-        }),
-      })
+      // 执行搜索
+      const results = await provider.search(query, { num: Math.min(num, 20) })
 
-      if (!response.ok) {
-        if (response.status === 401) {
-          throw new ToolExecutionError(this.name, 'Brave API 密钥无效')
-        }
-        throw new ToolExecutionError(this.name, `搜索失败，状态码: ${response.status}`)
-      }
-
-      const data = (await response.json()) as any
-
-      if (!data.web?.results || data.web.results.length === 0) {
-        return '未找到搜索结果'
-      }
-
-      const results = data.web.results.map((result: any) => {
-        return {
-          title: result.title || '',
-          url: result.url || '',
-          snippet: result.description || '',
-          date: result.age ? `${result.age}前` : undefined,
-        }
-      })
-
-      // 格式化输出
-      const output = results
-        .map((result: any, index: number) => {
-          const dateStr = result.date ? ` [${result.date}]` : ''
-          return `${index + 1}. ${result.title}${dateStr}\n   ${result.url}\n   ${result.snippet}`
+      // 缓存结果
+      if (results.length > 0) {
+        searchCache.set(cacheKey, {
+          query,
+          engine,
+          results,
+          timestamp: Date.now(),
         })
-        .join('\n\n')
+      }
 
-      return output
+      const duration = Date.now() - startTime
+      logger.info({ query, engine, resultCount: results.length, duration }, '搜索完成')
+
+      return this.formatResults(results, engine, false)
     } catch (error) {
       if (error instanceof ToolExecutionError) {
         throw error
       }
       throw new ToolExecutionError(this.name, `搜索失败: ${(error as Error).message}`)
     }
+  }
+
+  /**
+   * 格式化搜索结果
+   */
+  private formatResults(results: SearchResult[], engine: string, fromCache: boolean): string {
+    if (results.length === 0) {
+      return '未找到搜索结果'
+    }
+
+    const output = results
+      .map((result, index) => {
+        const dateStr = result.date ? ` [${result.date}]` : ''
+        return `${index + 1}. ${result.title}${dateStr}\n   ${result.url}\n   ${result.snippet}`
+      })
+      .join('\n\n')
+
+    const cacheNote = fromCache ? '\n[注: 结果来自缓存]' : ''
+    return `${output}${cacheNote}`
   }
 }
 

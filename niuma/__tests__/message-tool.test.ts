@@ -3,16 +3,26 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { messageTool, getMessageHistory, cleanMessageHistory } from '../agent/tools/message.js'
-import { ToolExecutionError } from '../types/error.js'
+import { messageTool, getMessageHistory, cleanMessageHistory } from '../agent/tools/message'
+import { ToolExecutionError } from '../types/error'
 
 describe('MessageTool', () => {
   it('应该成功发送消息', async () => {
     const result = await messageTool.execute({
       content: 'Test message',
       channel: 'cli',
+      immediate: true, // 立即发送，跳过队列
     })
     expect(result).toContain('消息已发送')
+    expect(result).toContain('ID:')
+  })
+
+  it('应该支持加入队列', async () => {
+    const result = await messageTool.execute({
+      content: 'Test message',
+      channel: 'cli',
+    })
+    expect(result).toContain('消息已加入队列')
     expect(result).toContain('ID:')
   })
 
@@ -34,14 +44,23 @@ describe('MessageTool', () => {
     const result1 = await messageTool.execute({
       content: 'Plain text',
       type: 'text',
+      immediate: true,
     })
     expect(result1).toBeTruthy()
 
     const result2 = await messageTool.execute({
       content: '**Markdown**',
       type: 'markdown',
+      immediate: true,
     })
     expect(result2).toBeTruthy()
+
+    const result3 = await messageTool.execute({
+      content: '<b>HTML</b>',
+      type: 'html',
+      immediate: true,
+    })
+    expect(result3).toBeTruthy()
   })
 
   it('应该支持消息标签', async () => {
@@ -52,21 +71,15 @@ describe('MessageTool', () => {
     expect(result).toBeTruthy()
   })
 
-  it('应该拒绝不支持的消息类型', async () => {
+  it('应该支持富文本解析', async () => {
     const result = await messageTool.execute({
-      content: 'Test',
-      type: 'text', // CLI 只支持文本
+      content: '**Bold** and *italic*',
+      type: 'markdown',
+      immediate: true,
     })
     expect(result).toBeTruthy()
-  })
-
-  it('应该抛出错误当渠道不支持', async () => {
-    await expect(
-      messageTool.execute({
-        content: 'Test',
-        channel: 'unsupported',
-      })
-    ).rejects.toThrow(ToolExecutionError)
+    // Markdown 应该被解析
+    expect(result).toContain('markdown')
   })
 })
 

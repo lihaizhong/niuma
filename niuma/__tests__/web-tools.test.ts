@@ -3,8 +3,8 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { webSearchTool, webFetchTool } from '../agent/tools/web.js'
-import { ToolExecutionError } from '../types/error.js'
+import { webSearchTool, webFetchTool } from '../agent/tools/web'
+import { ToolExecutionError } from '../types/error'
 
 // Mock fetch
 global.fetch = vi.fn()
@@ -83,7 +83,7 @@ describe('WebSearchTool', () => {
 
     vi.mocked(fetch).mockResolvedValue(mockResponse as any)
 
-    await expect(webSearchTool.execute({ query: 'test' })).rejects.toThrow(ToolExecutionError)
+    await expect(webSearchTool.execute({ query: 'test', ignoreCache: true })).rejects.toThrow(ToolExecutionError)
   })
 })
 

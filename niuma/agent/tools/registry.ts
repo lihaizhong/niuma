@@ -11,11 +11,11 @@ import {
   writeFileTool,
   editFileTool,
   listDirTool,
-} from './filesystem.js'
-import { execTool } from './shell.js'
-import { webSearchTool, webFetchTool } from './web.js'
-import { messageTool } from './message.js'
-import { spawnTool, cronTool } from './agent.js'
+} from './filesystem'
+import { execTool } from './shell'
+import { webSearchTool, webFetchTool } from './web'
+import { messageTool } from './message'
+import { spawnTool, cronTool } from './agent'
 
 const ERROR_HINT = '\n\n[分析上述错误并尝试其他方式。]'
 

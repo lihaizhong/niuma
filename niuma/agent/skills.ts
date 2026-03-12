@@ -7,7 +7,7 @@
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { fileURLToPath } from "url";
+import { fileURLToPath } from "node:url";
 import { dirname } from "node:path";
 import * as yaml from "js-yaml";
 

@@ -3,21 +3,22 @@
  * 验证所有工具符合规格要求
  */
 
-import { describe, it, expect } from 'vitest'
-import { BaseTool } from '../agent/tools/base.js'
-import { ToolRegistry, registerBuiltinTools } from '../agent/tools/registry.js'
+import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { BaseTool } from '../agent/tools/base'
+import { ToolRegistry, registerBuiltinTools } from '../agent/tools/registry'
 import {
   readFileTool,
   writeFileTool,
   editFileTool,
   listDirTool,
-} from '../agent/tools/filesystem.js'
-import { execTool } from '../agent/tools/shell.js'
-import { webSearchTool, webFetchTool } from '../agent/tools/web.js'
-import { messageTool } from '../agent/tools/message.js'
-import { spawnTool, cronTool } from '../agent/tools/agent.js'
-import { ToolExecutionError } from '../types/error.js'
+} from '../agent/tools/filesystem'
+import { execTool } from '../agent/tools/shell'
+import { webSearchTool, webFetchTool } from '../agent/tools/web'
+import { messageTool } from '../agent/tools/message'
+import { spawnTool, cronTool } from '../agent/tools/agent'
+import { ToolExecutionError } from '../types/error'
 import { z } from 'zod'
+import { rm } from 'node:fs/promises'
 
 describe('10.1 验证所有工具继承自 BaseTool', () => {
   it('ReadFileTool 应该继承自 BaseTool', () => {
@@ -286,6 +287,15 @@ describe('10.7 验证所有工具单元测试通过', () => {
 })
 
 describe('10.8 运行集成测试验证工具组合使用', () => {
+  beforeEach(async () => {
+    // 清理临时文件
+    try {
+      await rm('/tmp/integration-test.txt', { force: true })
+    } catch {
+      // 忽略错误
+    }
+  })
+
   it('应该能够组合使用文件工具', async () => {
     // 写入文件
     await writeFileTool.execute({
