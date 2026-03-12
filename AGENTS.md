@@ -49,41 +49,69 @@ Niuma（牛马）是一个企业级多角色 AI 助手系统，基于 TypeScript
 - 代码审查时
 
 ### 工作流约束（强制）
-1. **必须触发 fullstack-workflow skill**
-   - 无论通过任何方式（如：`/opsx:apply`、手动开发任务等）开始实现代码时，必须先调用 `Skill` 工具触发 `fullstack-workflow` skill
-   - 示例：`Skill(skill: "fullstack-workflow")`
 
-2. **必须使用 OpenSpec CLI 命令**
-   - **禁止手动文件操作** - 不要使用 `mv`、`cp`、`mkdir` 等命令操作 openspec 目录
-   - **优先使用 openspec CLI** - 所有 openspec 相关操作必须通过 `openspec` 命令完成
-   - **严禁修改 .iflow 目录** - 除非用户明确说明，否则绝对不要修改 `.iflow/` 下的任何文件（包括 skills、commands 等）
-   - 常用命令：
-     ```bash
-     openspec list                    # 列出所有变更
-     openspec status <change-name>    # 查看变更状态
-     openspec archive <change-name>   # 归档变更（自动处理规格同步）
-     openspec spec list               # 列出所有规格
-     openspec validate <item-name>    # 验证变更或规格
-     ```
-   - 正确的工作流顺序：
-     - `/opsx:explore` - 探索模式（可选，复杂任务建议使用）
-     - `/opsx:propose` - 创建提案（包含 proposal、design、specs、tasks）
-     - `/opsx:apply` - 实施变更（仅当 `applyReady: true` 时）
-     - `/opsx:archive` - 归档变更（自动执行 `openspec archive` 命令）
+#### 1. 智能使用 fullstack skill
 
-3. **Subagent 优先级**
-   每个角色优先使用对应的 subagent 处理：
+**重要：** fullstack skill 适用于复杂任务，简单任务直接使用 subagent 即可。
 
-   | 角色/任务类型 | 优先使用的 Subagent |
-   |--------------|-------------------|
-   | 规划分析 | plan-agent |
-   | 代码探索 | explore-agent |
-   | 代码审查 | code-reviewer |
-   | 前端测试 | frontend-tester |
-   | 深度研究 | search-specialist |
-   | 复杂多步骤任务 | general-purpose |
-   | 翻译任务 | translate |
-   | 教程生成 | tutorial-engineer |
+##### ✅ 使用 fullstack skill 的场景（复杂任务）
+- **API 设计和文档生成**：5+ 端点、需要完整 OpenAPI 规范
+- **复杂架构设计**：多模块、多服务、微服务架构
+- **多组件集成任务**：需要前后端协作、多个 subagent 协同
+- **需要标准化输出**：生成生产级别的文档和测试用例
+
+**触发方式：**
+```bash
+/opsx:apply           # 触发 skill 并实施变更
+/opsx:propose         # 触发 skill 并创建提案
+```
+
+##### ❌ 不使用 fullstack skill 的场景（简单任务）
+- **简单代码审查**：< 100 行代码、快速 review
+- **小型功能开发**：< 200 行代码、单一功能
+- **快速原型验证**：概念验证、演示代码
+- **Bug 修复**：修复特定问题、无需架构变更
+- **性能敏感任务**：需要快速响应的场景
+
+**直接使用 subagent：**
+- 代码审查 → `code-reviewer`
+- 简单开发 → `general-purpose` 或特定领域 subagent
+
+**性能对比：**
+- 使用 skill：平均 540 秒，5,000 tokens（适合复杂任务）
+- 不使用 skill：平均 3.2 秒，4,200 tokens（适合简单任务）
+
+#### 2. 必须使用 OpenSpec CLI 命令
+- **禁止手动文件操作** - 不要使用 `mv`、`cp`、`mkdir` 等命令操作 openspec 目录
+- **优先使用 openspec CLI** - 所有 openspec 相关操作必须通过 `openspec` 命令完成
+- **严禁修改 .iflow 目录** - 除非用户明确说明，否则绝对不要修改 `.iflow/` 下的任何文件（包括 skills、commands 等）
+- 常用命令：
+  ```bash
+  openspec list                    # 列出所有变更
+  openspec status <change-name>    # 查看变更状态
+  openspec archive <change-name>   # 归档变更（自动处理规格同步）
+  openspec spec list               # 列出所有规格
+  openspec validate <item-name>    # 验证变更或规格
+  ```
+- 正确的工作流顺序：
+  - `/opsx:explore` - 探索模式（可选，复杂任务建议使用）
+  - `/opsx:propose` - 创建提案（包含 proposal、design、specs、tasks）
+  - `/opsx:apply` - 实施变更（仅当 `applyReady: true` 时）
+  - `/opsx:archive` - 归档变更（自动执行 `openspec archive` 命令）
+
+#### 3. Subagent 优先级
+每个角色优先使用对应的 subagent 处理：
+
+| 角色/任务类型 | 优先使用的 Subagent |
+|--------------|-------------------|
+| 规划分析 | plan-agent |
+| 代码探索 | explore-agent |
+| 代码审查 | code-reviewer |
+| 前端测试 | frontend-tester |
+| 深度研究 | search-specialist |
+| 复杂多步骤任务 | general-purpose |
+| 翻译任务 | translate |
+| 教程生成 | tutorial-engineer |
 
 ## 技术栈
 

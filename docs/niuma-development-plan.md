@@ -554,9 +554,9 @@ interface ProviderSpec {
 
 **重要：以下约束为强制执行，不可跳过！**
 
-1. **必须触发 fullstack-workflow skill**
-   - 无论通过任何方式开始实现代码时，必须先调用 `Skill` 工具触发 `fullstack-workflow` skill
-   - 示例：`Skill(skill: "fullstack-workflow")`
+1. **必须触发 fullstack skill**
+   - 无论通过任何方式开始实现代码时，必须先调用 `Skill` 工具触发 `fullstack` skill
+   - 示例：`Skill(skill: "fullstack")`
 
 2. **必须使用 OpenSpec CLI 命令**
    - 禁止手动创建 openspec 文件，必须通过 CLI 命令生成

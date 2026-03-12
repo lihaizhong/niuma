@@ -48,3 +48,6 @@ out/
 tmp/
 temp/
 *.tmp
+
+# BENCHMARK
+.benchmark/
