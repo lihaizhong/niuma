@@ -3,7 +3,10 @@
  */
 
 import { EventEmitter } from 'node:events'
+import { createLogger } from '../log'
 import type { EventType, EventMap, EventPayload } from '../types/events'
+
+const logger = createLogger('events')
 
 // ============================================
 // EventBus 类
@@ -43,7 +46,7 @@ export class EventBus {
         const result = handler(payload.data)
         if (result instanceof Promise) {
           result.catch((error) => {
-            console.error(`事件处理器 "${type}" 执行错误:`, error)
+            logger.error({ event: type, error }, '事件处理器执行错误')
             // 发射错误事件
             this.emit('ERROR', {
               error: error instanceof Error ? error : new Error(String(error)),
@@ -52,7 +55,7 @@ export class EventBus {
           })
         }
       } catch (error) {
-        console.error(`事件处理器 "${type}" 执行错误:`, error)
+        logger.error({ event: type, error }, '事件处理器执行错误')
         // 发射错误事件
         this.emit('ERROR', {
           error: error instanceof Error ? error : new Error(String(error)),

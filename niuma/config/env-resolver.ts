@@ -5,7 +5,10 @@
 
 import { existsSync, readFileSync } from 'node:fs'
 import { join, dirname } from 'node:path'
+import { createLogger } from '../log'
 import type { EnvVarResolverOptions } from './schema'
+
+const logger = createLogger('env-resolver')
 
 // ============================================
 // 函数定义
@@ -50,7 +53,7 @@ export function loadEnvFile(envPath: string): Record<string, string> {
 
     return env
   } catch (error) {
-    console.warn(`加载 .env 文件失败: ${envPath}`)
+    logger.warn({ envPath }, '加载 .env 文件失败')
     return {}
   }
 }

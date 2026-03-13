@@ -11,6 +11,7 @@
  * @see 参考 nanobot: https://github.com/HKUDS/nanobot/blob/main/nanobot/agent/loop.py
  */
 
+import { createLogger } from "../log";
 import type {
   ChatMessage,
   InboundMessage,
@@ -29,6 +30,8 @@ import { ContextBuilder } from "./context";
 import { MemoryStore } from "./memory";
 import { SkillsLoader } from "./skills";
 import { retryWithBackoff } from "../utils/retry";
+
+const logger = createLogger("agent-loop");
 
 /**
  * Agent 循环配置选项
@@ -182,12 +185,12 @@ export class AgentLoop {
    */
   async run(): Promise<void> {
     if (this.running) {
-      console.warn("[AgentLoop] 已在运行中，忽略重复启动请求");
+      logger.warn("已在运行中，忽略重复启动请求");
       return;
     }
 
     this.running = true;
-    console.log("[AgentLoop] 启动消息处理循环");
+    logger.info("启动消息处理循环");
 
     // 监听消息事件
     this.bus.on("MESSAGE_RECEIVED", async (data) => {
@@ -209,7 +212,7 @@ export class AgentLoop {
         await this._processMessage(message);
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
-        console.error(`[AgentLoop] 消息处理错误: ${message}`);
+        logger.error({ error: message }, "消息处理错误");
 
         // 发射错误事件
         this.bus.emit("ERROR", {
@@ -219,7 +222,7 @@ export class AgentLoop {
       }
     }
 
-    console.log("[AgentLoop] 消息处理循环已停止");
+    logger.info("消息处理循环已停止");
   }
 
   /**
@@ -227,7 +230,7 @@ export class AgentLoop {
    * @description 停止监听，清理资源
    */
   stop(): void {
-    console.log("[AgentLoop] 停止消息处理循环");
+    logger.info("停止消息处理循环");
     this.running = false;
     this.messageQueue.clear();
   }
@@ -521,8 +524,9 @@ export class AgentLoop {
       },
       onError: (error, attempt) => {
         const attemptNumber = attempt + 1;
-        console.error(
-          `[AgentLoop] LLM 调用失败 (尝试 ${attemptNumber}/${MAX_LLM_RETRIES}): ${error.message}`,
+        logger.error(
+          { attempt: attemptNumber, maxRetries: MAX_LLM_RETRIES, error: error.message },
+          "LLM 调用失败"
         );
 
         if (attemptNumber < MAX_LLM_RETRIES && onProgress) {
@@ -692,8 +696,9 @@ export class AgentLoop {
 
     const memoryStore = this._getMemoryStore(session.key);
 
-    console.log(
-      `[AgentLoop] 触发记忆整合: ${unconsolidated} 条未整合消息 (阈值: ${threshold})`
+    logger.info(
+      { unconsolidated, threshold },
+      "触发记忆整合"
     );
 
     try {
@@ -705,7 +710,7 @@ export class AgentLoop {
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      console.error(`[AgentLoop] 记忆整合失败: ${message}`);
+      logger.error({ error: message }, "记忆整合失败");
     }
   }
 
@@ -779,7 +784,7 @@ export class AgentLoop {
     while (keys.length > AgentLoop.MAX_CACHE_SIZE) {
       const keyToEvict = keys.shift()!;
       this._cleanupCaches(keyToEvict);
-      console.log(`[AgentLoop] 缓存淘汰: ${keyToEvict}`);
+      logger.info({ key: keyToEvict }, "缓存淘汰");
     }
   }
 }

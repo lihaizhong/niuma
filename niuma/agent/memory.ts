@@ -10,9 +10,12 @@
 
 import { mkdir, readFile, writeFile, appendFile, rename } from 'node:fs/promises'
 import { join } from 'node:path'
+import { createLogger } from '../log'
 import type { ToolDefinition } from '../types'
 import type { Session, SessionMessage } from '../session/manager'
 import type { LLMProvider } from '../providers/base'
+
+const logger = createLogger('memory')
 
 /**
  * 记忆整合选项
@@ -157,7 +160,7 @@ export class MemoryStore {
     if (archiveAll) {
       // 全量归档模式：整合所有消息
       oldMessages = session.messages
-      console.log(`[Memory] 全量归档: ${session.messages.length} 条消息`)
+      logger.info({ totalMessages: session.messages.length }, 'Memory 全量归档')
     } else {
       // 增量整合模式：只整合超出窗口的旧消息
       keepCount = Math.floor(memoryWindow / 2)
@@ -179,9 +182,7 @@ export class MemoryStore {
         return true
       }
 
-      console.log(
-        `[Memory] 增量整合: ${oldMessages.length} 条待整合, ${keepCount} 条保留`
-      )
+      logger.info({ oldMessagesCount: oldMessages.length, keepCount }, 'Memory 增量整合')
     }
 
     // 格式化消息为文本
@@ -214,7 +215,7 @@ export class MemoryStore {
 
       // 检查是否有工具调用
       if (!response.hasToolCalls || !response.toolCalls?.length) {
-        console.warn('[Memory] LLM 未调用 save_memory 工具，跳过整合')
+        logger.warn('LLM 未调用 save_memory 工具，跳过整合')
         return false
       }
 
@@ -222,7 +223,7 @@ export class MemoryStore {
       const args = this._parseToolCallArguments(response.toolCalls[0].arguments)
 
       if (!args) {
-        console.warn('[Memory] 工具调用参数解析失败')
+        logger.warn('工具调用参数解析失败')
         return false
       }
 
@@ -246,14 +247,15 @@ export class MemoryStore {
       // 更新会话的整合标记
       session.lastConsolidated = archiveAll ? 0 : session.messages.length - keepCount
 
-      console.log(
-        `[Memory] 整合完成: ${session.messages.length} 条消息, lastConsolidated=${session.lastConsolidated}`
+      logger.info(
+        { totalMessages: session.messages.length, lastConsolidated: session.lastConsolidated },
+        'Memory 整合完成'
       )
 
       return true
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error)
-      console.error(`[Memory] 整合失败: ${message}`)
+      logger.error({ error: message }, 'Memory 整合失败')
       return false
     }
   }
@@ -328,7 +330,7 @@ ${conversationLines.join('\n')}`
           return this._sanitizeObject(parsed)
         }
       } catch {
-        console.warn('[Memory] JSON 解析参数失败')
+        logger.warn('JSON 解析参数失败')
         return null
       }
       return null
@@ -336,7 +338,7 @@ ${conversationLines.join('\n')}`
 
     // 数组格式的特殊情况
     if (Array.isArray(args)) {
-      console.warn('[Memory] 工具参数为数组格式，只使用第一个元素')
+      logger.warn('工具参数为数组格式，只使用第一个元素')
       if (args.length > 0 && typeof args[0] === 'object' && args[0] !== null && !Array.isArray(args[0])) {
         return this._sanitizeObject(args[0] as Record<string, unknown>)
       }
@@ -348,7 +350,7 @@ ${conversationLines.join('\n')}`
       return this._sanitizeObject(args)
     }
 
-    console.warn(`[Memory] 未知的参数类型: ${typeof args}`)
+    logger.warn({ type: typeof args }, '未知的参数类型')
     return null
   }
 
@@ -360,7 +362,7 @@ ${conversationLines.join('\n')}`
   private _sanitizeObject(obj: Record<string, unknown>, depth = 0): Record<string, unknown> {
     // 防止无限递归
     if (depth > 10) {
-      console.warn('[Memory] 对象嵌套过深，已截断')
+      logger.warn('对象嵌套过深，已截断')
       return {}
     }
 
@@ -369,7 +371,7 @@ ${conversationLines.join('\n')}`
     for (const key of Object.keys(obj)) {
       // 跳过危险属性名
       if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
-        console.warn(`[Memory] 跳过危险属性: ${key}`)
+        logger.warn({ key }, '跳过危险属性')
         continue
       }
 
@@ -398,7 +400,7 @@ ${conversationLines.join('\n')}`
         // 深度清理嵌套对象
         result[key] = this._sanitizeObject(value as Record<string, unknown>, depth + 1)
       } else {
-        console.warn(`[Memory] 跳过不安全的值类型: ${valueType}`)
+        logger.warn({ valueType }, '跳过不安全的值类型')
       }
     }
 

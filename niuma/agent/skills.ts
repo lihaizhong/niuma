@@ -9,11 +9,14 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { dirname } from "node:path";
+import { createLogger } from "../log";
 import * as yaml from "js-yaml";
 
 // 获取当前文件所在目录
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
+const logger = createLogger("skills");
 
 /**
  * 技能信息
@@ -314,7 +317,7 @@ export class SkillsLoader {
 
       return parsed as SkillMetadata;
     } catch (error) {
-      console.warn("[SkillsLoader] YAML 解析失败:", error);
+      logger.warn({ error }, "YAML 解析失败");
       return {};
     }
   }

@@ -14,11 +14,14 @@ import { readFile } from "node:fs/promises";
 import { join, normalize } from "node:path";
 import * as path from "node:path";
 import { platform, machine } from "node:os";
+import { createLogger } from "../log";
 import type { ChatMessage, MessageContentPart } from "../types";
 import type { MediaContent } from "../types/message";
 import type { ToolCall } from "../types/tool";
 import { MemoryStore } from "./memory";
 import { SkillsLoader } from "./skills";
+
+const logger = createLogger("context");
 
 // ============================================
 // 常量定义
@@ -440,7 +443,7 @@ Reply directly with text for conversations. Only use the 'message' tool to send 
     for (const item of media) {
       // 只处理图片类型，其他类型暂不支持
       if (item.type !== "image") {
-        console.warn(`[ContextBuilder] 暂不支持 ${item.type} 类型媒体，已忽略`);
+        logger.warn({ type: item.type }, "暂不支持的媒体类型，已忽略");
         continue;
       }
 
@@ -529,7 +532,7 @@ Reply directly with text for conversations. Only use the 'message' tool to send 
         
         // 确保解析后的路径在工作区内（防止路径遍历攻击）
         if (!resolved.startsWith(normalizedWorkspace + path.sep)) {
-          console.warn(`[ContextBuilder] 路径遍历尝试被阻止: ${filePath}`);
+          logger.warn({ filePath }, "路径遍历尝试被阻止");
           return null;
         }
         absolutePath = resolved;
