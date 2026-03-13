@@ -5,7 +5,19 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { writeFile, mkdir, rm } from 'node:fs/promises'
 import { join } from 'node:path'
-import { readFileTool, writeFileTool, editFileTool, listDirTool } from '../agent/tools/filesystem'
+import {
+  readFileTool,
+  writeFileTool,
+  editFileTool,
+  listDirTool,
+  fileSearchTool,
+  fileMoveTool,
+  fileCopyTool,
+  fileDeleteTool,
+  fileInfoTool,
+  dirCreateTool,
+  dirDeleteTool,
+} from '../agent/tools/filesystem'
 import { ToolExecutionError } from '../types/error'
 
 describe('ReadFileTool', () => {
@@ -166,6 +178,357 @@ describe('ListDirTool', () => {
 
   it('应该抛出错误当目录不存在', async () => {
     await expect(listDirTool.execute({ path: '/nonexistent/dir' })).rejects.toThrow(
+      ToolExecutionError
+    )
+  })
+})
+
+describe('FileSearchTool', () => {
+  const testDir = '/tmp/niuma-test-filesearch'
+  const testFile = join(testDir, 'test.txt')
+
+  beforeEach(async () => {
+    await mkdir(testDir, { recursive: true })
+  })
+
+  afterEach(async () => {
+    await rm(testDir, { recursive: true, force: true })
+  })
+
+  it('应该成功搜索匹配内容', async () => {
+    const content = 'Hello World\nHello Universe\nGoodbye World'
+    await writeFile(testFile, content, 'utf-8')
+    const result = await fileSearchTool.execute({ path: testFile, pattern: 'Hello' })
+    expect(result).toContain('找到 2 行匹配')
+    expect(result).toContain('共 2 个匹配项')
+  })
+
+  it('应该支持大小写不敏感搜索', async () => {
+    const content = 'Hello World\nhello universe'
+    await writeFile(testFile, content, 'utf-8')
+    const result = await fileSearchTool.execute({ path: testFile, pattern: 'hello' })
+    expect(result).toContain('找到 2 行匹配')
+  })
+
+  it('应该支持大小写敏感搜索', async () => {
+    const content = 'Hello World\nhello universe'
+    await writeFile(testFile, content, 'utf-8')
+    const result = await fileSearchTool.execute({ path: testFile, pattern: 'hello', caseSensitive: true })
+    expect(result).toContain('找到 1 行匹配')
+  })
+
+  it('应该返回空结果当无匹配项', async () => {
+    const content = 'Hello World'
+    await writeFile(testFile, content, 'utf-8')
+    const result = await fileSearchTool.execute({ path: testFile, pattern: 'nonexistent' })
+    expect(result).toBe('未找到匹配项')
+  })
+
+  it('应该抛出错误当文件不存在', async () => {
+    await expect(fileSearchTool.execute({ path: '/nonexistent/file.txt', pattern: 'test' })).rejects.toThrow(
+      ToolExecutionError
+    )
+  })
+
+  it('应该限制匹配数量', async () => {
+    const content = 'line1\ntest\nline2\ntest\nline3\ntest'
+    await writeFile(testFile, content, 'utf-8')
+    const result = await fileSearchTool.execute({ path: testFile, pattern: 'test', maxMatches: 2 })
+    expect(result).toContain('共 2 个匹配项')
+  })
+})
+
+describe('FileMoveTool', () => {
+  const testDir = '/tmp/niuma-test-filemove'
+  const sourceFile = join(testDir, 'source.txt')
+  const destFile = join(testDir, 'dest.txt')
+
+  beforeEach(async () => {
+    await mkdir(testDir, { recursive: true })
+  })
+
+  afterEach(async () => {
+    await rm(testDir, { recursive: true, force: true })
+  })
+
+  it('应该成功移动文件', async () => {
+    await writeFile(sourceFile, 'test content', 'utf-8')
+    const result = await fileMoveTool.execute({ source: sourceFile, dest: destFile })
+    expect(result).toContain('成功移动文件')
+
+    // 验证源文件已被删除
+    await expect(readFileTool.execute({ path: sourceFile })).rejects.toThrow(ToolExecutionError)
+    // 验证目标文件存在
+    const destContent = await readFileTool.execute({ path: destFile })
+    expect(destContent).toBe('test content')
+  })
+
+  it('应该支持移动并重命名', async () => {
+    await writeFile(sourceFile, 'test content', 'utf-8')
+    const newFile = join(testDir, 'renamed.txt')
+    await fileMoveTool.execute({ source: sourceFile, dest: newFile })
+    const content = await readFileTool.execute({ path: newFile })
+    expect(content).toBe('test content')
+  })
+
+  it('应该自动创建目标目录', async () => {
+    await writeFile(sourceFile, 'test content', 'utf-8')
+    const nestedFile = join(testDir, 'nested', 'dir', 'dest.txt')
+    await fileMoveTool.execute({ source: sourceFile, dest: nestedFile })
+    const content = await readFileTool.execute({ path: nestedFile })
+    expect(content).toBe('test content')
+  })
+
+  it('应该抛出错误当源文件不存在', async () => {
+    await expect(fileMoveTool.execute({ source: '/nonexistent/file.txt', dest: destFile })).rejects.toThrow(
+      ToolExecutionError
+    )
+  })
+})
+
+describe('FileCopyTool', () => {
+  const testDir = '/tmp/niuma-test-filecopy'
+  const sourceFile = join(testDir, 'source.txt')
+  const destFile = join(testDir, 'dest.txt')
+
+  beforeEach(async () => {
+    await mkdir(testDir, { recursive: true })
+  })
+
+  afterEach(async () => {
+    await rm(testDir, { recursive: true, force: true })
+  })
+
+  it('应该成功复制文件', async () => {
+    await writeFile(sourceFile, 'test content', 'utf-8')
+    const result = await fileCopyTool.execute({ source: sourceFile, dest: destFile })
+    expect(result).toContain('成功复制文件')
+
+    // 验证源文件仍然存在
+    const sourceContent = await readFileTool.execute({ path: sourceFile })
+    expect(sourceContent).toBe('test content')
+    // 验证目标文件存在
+    const destContent = await readFileTool.execute({ path: destFile })
+    expect(destContent).toBe('test content')
+  })
+
+  it('应该支持复制并重命名', async () => {
+    await writeFile(sourceFile, 'test content', 'utf-8')
+    const newFile = join(testDir, 'copied.txt')
+    await fileCopyTool.execute({ source: sourceFile, dest: newFile })
+    const content = await readFileTool.execute({ path: newFile })
+    expect(content).toBe('test content')
+  })
+
+  it('应该自动创建目标目录', async () => {
+    await writeFile(sourceFile, 'test content', 'utf-8')
+    const nestedFile = join(testDir, 'nested', 'dir', 'dest.txt')
+    await fileCopyTool.execute({ source: sourceFile, dest: nestedFile })
+    const content = await readFileTool.execute({ path: nestedFile })
+    expect(content).toBe('test content')
+  })
+
+  it('应该抛出错误当源文件不存在', async () => {
+    await expect(fileCopyTool.execute({ source: '/nonexistent/file.txt', dest: destFile })).rejects.toThrow(
+      ToolExecutionError
+    )
+  })
+})
+
+describe('FileDeleteTool', () => {
+  const testDir = '/tmp/niuma-test-filedelete'
+  const testFile = join(testDir, 'test.txt')
+
+  beforeEach(async () => {
+    await mkdir(testDir, { recursive: true })
+  })
+
+  afterEach(async () => {
+    await rm(testDir, { recursive: true, force: true })
+  })
+
+  it('应该成功删除文件（已确认）', async () => {
+    await writeFile(testFile, 'test content', 'utf-8')
+    const result = await fileDeleteTool.execute({ path: testFile, confirm: true })
+    expect(result).toContain('成功删除文件')
+
+    // 验证文件已被删除
+    await expect(readFileTool.execute({ path: testFile })).rejects.toThrow(ToolExecutionError)
+  })
+
+  it('应该拒绝删除（未确认）', async () => {
+    await writeFile(testFile, 'test content', 'utf-8')
+    await expect(fileDeleteTool.execute({ path: testFile, confirm: false })).rejects.toThrow(
+      ToolExecutionError
+    )
+    await expect(fileDeleteTool.execute({ path: testFile })).rejects.toThrow(ToolExecutionError)
+  })
+
+  it('应该抛出错误当文件不存在', async () => {
+    await expect(fileDeleteTool.execute({ path: '/nonexistent/file.txt', confirm: true })).rejects.toThrow(
+      ToolExecutionError
+    )
+  })
+
+  it('应该抛出错误当路径是目录', async () => {
+    const testDir2 = join(testDir, 'subdir')
+    await mkdir(testDir2, { recursive: true })
+    await expect(fileDeleteTool.execute({ path: testDir2, confirm: true })).rejects.toThrow(
+      ToolExecutionError
+    )
+  })
+})
+
+describe('FileInfoTool', () => {
+  const testDir = '/tmp/niuma-test-fileinfo'
+  const testFile = join(testDir, 'test.txt')
+
+  beforeEach(async () => {
+    await mkdir(testDir, { recursive: true })
+  })
+
+  afterEach(async () => {
+    await rm(testDir, { recursive: true, force: true })
+  })
+
+  it('应该成功获取文件信息', async () => {
+    const content = 'test content'
+    await writeFile(testFile, content, 'utf-8')
+    const result = await fileInfoTool.execute({ path: testFile })
+    const info = JSON.parse(result)
+
+    expect(info.type).toBe('file')
+    expect(info.isFile).toBe(true)
+    expect(info.isDirectory).toBe(false)
+    expect(info.size).toBe(content.length)
+    expect(info.name).toBe('test.txt')
+    expect(info.path).toBe(testFile)
+  })
+
+  it('应该成功获取目录信息', async () => {
+    const result = await fileInfoTool.execute({ path: testDir })
+    const info = JSON.parse(result)
+
+    expect(info.type).toBe('directory')
+    expect(info.isFile).toBe(false)
+    expect(info.isDirectory).toBe(true)
+  })
+
+  it('应该抛出错误当路径不存在', async () => {
+    await expect(fileInfoTool.execute({ path: '/nonexistent/path' })).rejects.toThrow(
+      ToolExecutionError
+    )
+  })
+})
+
+describe('DirCreateTool', () => {
+  const testDir = '/tmp/niuma-test-dircreate'
+  const testSubDir = join(testDir, 'subdir')
+
+  beforeEach(async () => {
+    await mkdir(testDir, { recursive: true })
+  })
+
+  afterEach(async () => {
+    await rm(testDir, { recursive: true, force: true })
+  })
+
+  it('应该成功创建单层目录', async () => {
+    const result = await dirCreateTool.execute({ path: testSubDir, recursive: false })
+    expect(result).toContain('成功创建目录')
+
+    // 验证目录存在
+    const info = await fileInfoTool.execute({ path: testSubDir })
+    const parsed = JSON.parse(info)
+    expect(parsed.isDirectory).toBe(true)
+  })
+
+  it('应该递归创建目录', async () => {
+    const nestedDir = join(testDir, 'nested', 'deep', 'dir')
+    const result = await dirCreateTool.execute({ path: nestedDir, recursive: true })
+    expect(result).toContain('成功创建目录')
+
+    // 验证目录存在
+    const info = await fileInfoTool.execute({ path: nestedDir })
+    const parsed = JSON.parse(info)
+    expect(parsed.isDirectory).toBe(true)
+  })
+
+  it('应该处理目录已存在的情况', async () => {
+    await mkdir(testSubDir, { recursive: true })
+    const result = await dirCreateTool.execute({ path: testSubDir })
+    expect(result).toContain('成功创建目录')
+  })
+})
+
+describe('DirDeleteTool', () => {
+  const testDir = '/tmp/niuma-test-dirdelete'
+  const testSubDir = join(testDir, 'subdir')
+
+  beforeEach(async () => {
+    await mkdir(testDir, { recursive: true })
+  })
+
+  afterEach(async () => {
+    await rm(testDir, { recursive: true, force: true })
+  })
+
+  it('应该成功删除空目录（已确认）', async () => {
+    await mkdir(testSubDir, { recursive: true })
+    const result = await dirDeleteTool.execute({ path: testSubDir, confirm: true, recursive: false })
+    expect(result).toContain('成功删除目录')
+
+    // 验证目录已被删除
+    await expect(fileInfoTool.execute({ path: testSubDir })).rejects.toThrow(ToolExecutionError)
+  })
+
+  it('应该递归删除目录（已确认）', async () => {
+    const nestedFile = join(testSubDir, 'file.txt')
+    await mkdir(testSubDir, { recursive: true })
+    await writeFile(nestedFile, 'content', 'utf-8')
+
+    const result = await dirDeleteTool.execute({ path: testSubDir, confirm: true, recursive: true })
+    expect(result).toContain('成功删除目录')
+
+    // 验证目录已被删除
+    await expect(fileInfoTool.execute({ path: testSubDir })).rejects.toThrow(ToolExecutionError)
+  })
+
+  it('应该拒绝删除（未确认）', async () => {
+    await mkdir(testSubDir, { recursive: true })
+    await expect(dirDeleteTool.execute({ path: testSubDir, confirm: false })).rejects.toThrow(
+      ToolExecutionError
+    )
+  })
+
+  it('应该抛出错误当目录不为空且不递归', async () => {
+    const nestedFile = join(testSubDir, 'file.txt')
+    await mkdir(testSubDir, { recursive: true })
+    await writeFile(nestedFile, 'content', 'utf-8')
+
+    await expect(dirDeleteTool.execute({ path: testSubDir, confirm: true, recursive: false })).rejects.toThrow(
+      ToolExecutionError
+    )
+  })
+
+  it('应该抛出错误当目录不存在', async () => {
+    await expect(dirDeleteTool.execute({ path: '/nonexistent/dir', confirm: true })).rejects.toThrow(
+      ToolExecutionError
+    )
+  })
+
+  it('应该抛出错误当路径是文件', async () => {
+    const testFile = join(testDir, 'file.txt')
+    await writeFile(testFile, 'content', 'utf-8')
+    await expect(dirDeleteTool.execute({ path: testFile, confirm: true })).rejects.toThrow(
+      ToolExecutionError
+    )
+  })
+
+  it('应该拒绝删除受保护路径', async () => {
+    // 尝试删除用户主目录（应该被拒绝）
+    const homeDir = process.env.HOME || '/'
+    await expect(dirDeleteTool.execute({ path: homeDir, confirm: true })).rejects.toThrow(
       ToolExecutionError
     )
   })

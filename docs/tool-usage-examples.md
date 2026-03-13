@@ -53,7 +53,7 @@ await editFileTool.execute({
 
 ### list_dir
 
-列出目录内容。
+列出目录内容，支持完整的 glob 语法（使用 fast-glob）。
 
 ```typescript
 // 列出根目录
@@ -65,12 +65,222 @@ const content = await listDirTool.execute({
   recursive: true
 })
 
-// 使用模式过滤
+// 使用简单模式过滤
 const content = await listDirTool.execute({
   path: '/path/to/dir',
   pattern: '*.ts'
 })
+
+// 使用完整的 glob 语法
+const content = await listDirTool.execute({
+  path: '/path/to/dir',
+  pattern: '**/*.test.{ts,js}',  // 递归匹配所有测试文件
+  recursive: true
+})
+
+// 使用 ignore 忽略特定文件
+const content = await listDirTool.execute({
+  path: '/path/to/dir',
+  pattern: '**/*.ts',
+  ignore: ['**/node_modules/**', '**/*.test.ts']  // 忽略 node_modules 和测试文件
+})
 ```
+
+### file_search
+
+在文件中搜索内容，支持正则表达式。
+
+```typescript
+// 基本搜索
+const result = await fileSearchTool.execute({
+  path: '/path/to/file.txt',
+  pattern: 'function\\s+\\w+'  // 搜索函数定义
+})
+
+// 大小写敏感搜索
+const result = await fileSearchTool.execute({
+  path: '/path/to/file.txt',
+  pattern: 'Error',
+  caseSensitive: true
+})
+
+// 限制匹配数量
+const result = await fileSearchTool.execute({
+  path: '/path/to/file.txt',
+  pattern: 'TODO',
+  maxMatches: 50
+})
+
+// 搜索多个匹配项
+const result = await fileSearchTool.execute({
+  path: '/path/to/file.txt',
+  pattern: '(import|export)\\s+.*from'
+})
+```
+
+**安全特性：**
+- 文件大小限制：10MB
+- 正则表达式安全检查：防止 ReDoS 攻击
+- 单行匹配数限制：100 个
+
+### file_move
+
+移动文件到新位置。
+
+```typescript
+// 移动文件
+const result = await fileMoveTool.execute({
+  source: '/path/to/source.txt',
+  dest: '/path/to/destination.txt'
+})
+
+// 移动并重命名
+const result = await fileMoveTool.execute({
+  source: '/path/to/source.txt',
+  dest: '/path/to/renamed.txt'
+})
+
+// 自动创建目标目录
+const result = await fileMoveTool.execute({
+  source: '/path/to/source.txt',
+  dest: '/path/to/nested/dir/file.txt'
+})
+```
+
+**安全特性：**
+- 文件大小限制：100MB
+- 使用 fs.rename 保证原子性（同文件系统）
+- 跨设备移动自动回退到复制+删除
+
+### file_copy
+
+复制文件到新位置。
+
+```typescript
+// 复制文件
+const result = await fileCopyTool.execute({
+  source: '/path/to/source.txt',
+  dest: '/path/to/destination.txt'
+})
+
+// 复制并重命名
+const result = await fileCopyTool.execute({
+  source: '/path/to/source.txt',
+  dest: '/path/to/renamed.txt'
+})
+
+// 自动创建目标目录
+const result = await fileCopyTool.execute({
+  source: '/path/to/source.txt',
+  dest: '/path/to/nested/dir/file.txt'
+})
+```
+
+**安全特性：**
+- 文件大小限制：100MB
+- 自动创建目标目录
+
+### file_delete
+
+安全删除文件（需要确认）。
+
+```typescript
+// 删除文件（已确认）
+const result = await fileDeleteTool.execute({
+  path: '/path/to/file.txt',
+  confirm: true  // 必须设置为 true
+})
+
+// 尝试删除未确认（会抛出错误）
+try {
+  await fileDeleteTool.execute({
+    path: '/path/to/file.txt',
+    confirm: false  // 或不设置 confirm 参数
+  })
+} catch (error) {
+  console.error('删除需要确认')
+}
+```
+
+**安全特性：**
+- 必须设置 `confirm: true` 才能执行
+- 防止意外删除重要文件
+
+### file_info
+
+获取文件详细信息。
+
+```typescript
+// 获取文件信息
+const result = await fileInfoTool.execute({ path: '/path/to/file.txt' })
+const info = JSON.parse(result)
+
+console.log('文件名:', info.name)
+console.log('类型:', info.type)  // 'file' 或 'directory'
+console.log('大小:', info.size)
+console.log('修改时间:', info.modified)
+console.log('是否为文件:', info.isFile)
+console.log('是否为目录:', info.isDirectory)
+```
+
+### dir_create
+
+创建目录（支持递归）。
+
+```typescript
+// 创建单层目录
+const result = await dirCreateTool.execute({
+  path: '/path/to/newdir',
+  recursive: false
+})
+
+// 递归创建目录（默认）
+const result = await dirCreateTool.execute({
+  path: '/path/to/nested/deep/dir',
+  recursive: true  // 或省略，默认为 true
+})
+
+// 目录已存在不会报错
+const result = await dirCreateTool.execute({
+  path: '/path/to/existing-dir'
+})
+```
+
+### dir_delete
+
+安全删除目录（需要确认，支持递归）。
+
+```typescript
+// 删除空目录（已确认）
+const result = await dirDeleteTool.execute({
+  path: '/path/to/empty-dir',
+  confirm: true,
+  recursive: false
+})
+
+// 递归删除目录及其内容（已确认）
+const result = await dirDeleteTool.execute({
+  path: '/path/to/non-empty-dir',
+  confirm: true,
+  recursive: true
+})
+
+// 尝试删除非空目录但未设置递归（会抛出错误）
+try {
+  await dirDeleteTool.execute({
+    path: '/path/to/non-empty-dir',
+    confirm: true,
+    recursive: false  // 目录不为空时会报错
+  })
+} catch (error) {
+  console.error('目录不为空，请设置 recursive: true')
+}
+```
+
+**安全特性：**
+- 必须设置 `confirm: true` 才能执行
+- 受保护路径列表（防止删除项目根目录、用户主目录、系统目录等）
+- 递归删除需要显式设置
 
 ## Shell 工具
 
