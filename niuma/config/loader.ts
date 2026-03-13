@@ -12,7 +12,7 @@ let configManager: ConfigManager | null = null
 
 /**
  * 加载配置文件（向后兼容的旧 API）
- * @param configPath 配置文件路径，默认为 ~/.niuma/niuma.json
+ * @param configPath 配置文件路径，默认为 ~/.niuma/niuma.config.json
  * @returns 配置对象
  */
 export function loadConfig(configPath?: string): NiumaConfig {
@@ -23,7 +23,7 @@ export function loadConfig(configPath?: string): NiumaConfig {
 /**
  * 加载角色配置（新 API）
  * @param agentId 角色唯一标识符
- * @param configPath 配置文件路径，默认为 ~/.niuma/niuma.json
+ * @param configPath 配置文件路径，默认为 ~/.niuma/niuma.config.json
  * @returns 角色配置对象
  */
 export function loadAgentConfig(agentId: string, configPath?: string): NiumaConfig {

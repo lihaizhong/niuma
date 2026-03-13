@@ -239,7 +239,7 @@ class AgentLoop {
 
 **配置优先级**：
 ```
-命令行参数 > 角色特定配置 > 全局配置 > .env 环境变量 > 默认值
+命令行参数 > 角色特定配置 > 全局配置 > 系统环境变量 > 默认值
 ```
 
 **defaults-with-overrides 模式**：
@@ -446,7 +446,7 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A[启动应用] --> B[加载 niuma.json]
+    A[启动应用] --> B[加载 niuma.config.json]
     B --> C[JSON5 解析]
     C --> D[环境变量解析<br/>${VAR} 和 ${VAR:default}]
     D --> E[Zod 验证]
@@ -459,11 +459,11 @@ flowchart TD
 ```
 
 **详细步骤**：
-1. **加载配置文件**：读取 `~/.niuma/niuma.json`
+1. **加载配置文件**：读取 `~/.niuma/niuma.config.json`
 2. **JSON5 解析**：使用 json5 库解析配置
 3. **环境变量解析**：
    - 扫描 `${VAR}` 和 `${VAR:default}` 模式
-   - 从环境变量或 `.env` 文件中查找值
+   - 从系统环境变量中查找值
    - 替换配置中的占位符
 4. **Zod 验证**：使用 Zod Schema 验证配置
 5. **确定角色**：从命令行参数 `--agent` 或配置中的 `default` 字段确定角色
@@ -913,7 +913,7 @@ export class AsyncQueue<T> {
 
 #### 配置优先级
 ```
-命令行参数 > 角色特定配置 > 全局配置 > .env 环境变量 > 默认值
+命令行参数 > 角色特定配置 > 全局配置 > 系统环境变量 > 默认值
 ```
 
 #### 优点

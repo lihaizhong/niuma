@@ -227,8 +227,8 @@ flowchart TD
 ### 配置优先级
 1. 命令行参数
 2. 角色特定配置覆盖
-3. 全局 `~/.niuma/niuma.json`
-4. `.env` 文件中的环境变量
+3. 全局 `~/.niuma/niuma.config.json`
+4. 系统环境变量
 5. 默认值
 
 ## 开发规范

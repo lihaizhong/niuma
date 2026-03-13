@@ -144,7 +144,7 @@ describe('JSON5ConfigLoader', () => {
     it('应该返回默认配置文件路径', () => {
       const defaultPath = loader.getDefaultConfigPath()
       expect(defaultPath).toContain('.niuma')
-      expect(defaultPath).toContain('niuma.json')
+      expect(defaultPath).toContain('niuma.config.json')
     })
   })
 })

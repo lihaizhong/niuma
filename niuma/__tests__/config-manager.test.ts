@@ -22,12 +22,10 @@ describe('ConfigManager', () => {
    * 测试变量声明
    * - testDir: 测试临时目录路径
    * - configPath: 测试配置文件路径
-   * - envPath: 测试环境变量文件路径
    * - manager: ConfigManager 实例
    */
   let testDir: string
   let configPath: string
-  let envPath: string
   let manager: ConfigManager
 
   /**
@@ -35,14 +33,12 @@ describe('ConfigManager', () => {
    * 功能：
    * 1. 创建唯一的临时测试目录（避免并发测试冲突）
    * 2. 初始化配置文件路径
-   * 3. 初始化环境变量文件路径
-   * 4. 创建 ConfigManager 实例
+   * 3. 创建 ConfigManager 实例
    */
   beforeEach(() => {
     testDir = join(tmpdir(), 'niuma-manager-test-' + Date.now())
     mkdirSync(testDir, { recursive: true })
-    configPath = join(testDir, 'niuma.json')
-    envPath = join(testDir, '.env')
+    configPath = join(testDir, 'niuma.config.json')
     manager = new ConfigManager(configPath)
   })
 
@@ -50,16 +46,12 @@ describe('ConfigManager', () => {
    * 测试后置钩子：在每个测试用例执行后运行
    * 功能：
    * 1. 删除配置文件
-   * 2. 删除环境变量文件
-   * 3. 递归删除测试目录及其所有内容
+   * 2. 递归删除测试目录及其所有内容
    * 目的：确保测试环境清理，避免影响其他测试
    */
   afterEach(() => {
     if (existsSync(configPath)) {
       unlinkSync(configPath)
-    }
-    if (existsSync(envPath)) {
-      unlinkSync(envPath)
     }
     if (existsSync(testDir)) {
       rmSync(testDir, { recursive: true, force: true })
@@ -127,8 +119,7 @@ describe('ConfigManager', () => {
      * - 配置中的 ${TEST_VAR} 被正确替换为 test-value
      */
     it('应该解析环境变量引用', () => {
-      const envContent = 'TEST_VAR=test-value'
-      writeFileSync(envPath, envContent, 'utf-8')
+      process.env.TEST_VAR = 'test-value'
 
       const configContent = `
 {
@@ -144,6 +135,8 @@ describe('ConfigManager', () => {
       writeFileSync(configPath, configContent, 'utf-8')
       const config = manager.load()
       expect(config.providers.openai?.apiKey).toBe('test-value')
+
+      delete process.env.TEST_VAR
     })
 
     /**

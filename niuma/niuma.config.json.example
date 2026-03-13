@@ -1,5 +1,5 @@
 // Niuma 全局配置示例
-// 复制此文件到 ~/.niuma/niuma.json 并根据需要修改配置
+// 复制此文件到 ~/.niuma/niuma.config.json 并根据需要修改配置
 
 {
   // 元数据（自动生成，不要手动编辑）

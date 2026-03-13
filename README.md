@@ -46,30 +46,12 @@ mkdir -p ~/.niuma
 
 ```bash
 # 复制配置文件
-cp niuma/niuma.json.example ~/.niuma/niuma.json
-cp niuma/.env.example ~/.niuma/.env
+cp niuma/niuma.config.json.example ~/.niuma/niuma.config.json
 ```
 
-#### 3. 编辑环境变量
+#### 3. 配置角色
 
-编辑 `~/.niuma/.env`，填入你的 API 密钥：
-
-```bash
-# OpenAI 配置
-OPENAI_API_KEY=sk-your-openai-api-key
-OPENAI_BASE_URL=https://api.openai.com/v1
-
-# Anthropic 配置（可选）
-ANTHROPIC_API_KEY=sk-ant-your-anthropic-api-key
-
-# 其他配置
-DEBUG=false
-LOG_LEVEL=info
-```
-
-#### 4. 配置角色
-
-编辑 `~/.niuma/niuma.json`，配置你的角色：
+编辑 `~/.niuma/niuma.config.json`，配置你的角色：
 
 ```json5
 {
@@ -196,8 +178,8 @@ niuma chat --agent tester
 配置优先级：
 1. 命令行参数
 2. 角色特定配置覆盖
-3. 全局 `~/.niuma/niuma.json`
-4. `.env` 文件中的环境变量
+3. 全局 `~/.niuma/niuma.config.json`
+4. 系统环境变量
 5. 默认值
 
 ### 🧠 智能记忆系统
@@ -227,8 +209,7 @@ niuma chat --agent tester
 
 ```
 ~/.niuma/                      # 配置根目录
-├── niuma.json                 # 全局配置文件
-├── .env                       # 环境变量
+├── niuma.config.json                 # 全局配置文件
 ├── sessions/                  # 会话存储
 │   ├── manager/              #   项目经理会话
 │   ├── developer/            #   开发工程师会话
@@ -465,7 +446,7 @@ flowchart TD
 ### 示例 1：创建项目经理角色
 
 ```bash
-# 编辑 ~/.niuma/niuma.json
+# 编辑 ~/.niuma/niuma.config.json
 {
   "agents": {
     "list": [
@@ -490,11 +471,11 @@ niuma chat --agent manager
 ### 示例 2：使用环境变量
 
 ```bash
-# 编辑 ~/.niuma/.env
-OPENAI_API_KEY=sk-xxx
-MODEL=gpt-4o
+# 设置环境变量（可以放在 ~/.bashrc、~/.zshrc 或 .env 文件中）
+export OPENAI_API_KEY=sk-xxx
+export MODEL=gpt-4o
 
-# 编辑 ~/.niuma/niuma.json
+# 编辑 ~/.niuma/niuma.config.json
 {
   "providers": {
     "openai": {
@@ -558,7 +539,7 @@ niuma chat --agent <角色ID>
 
 ### Q: 如何配置不同的 LLM 提供商？
 
-在 `~/.niuma/niuma.json` 中配置：
+在 `~/.niuma/niuma.config.json` 中配置：
 
 ```json5
 {

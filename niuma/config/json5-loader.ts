@@ -18,7 +18,7 @@ import JSON5 from 'json5'
 export interface JSON5ConfigLoader {
   /**
    * 加载并解析 JSON5 配置文件
-   * @param configPath 配置文件路径（可选，默认为 ~/.niuma/niuma.json）
+   * @param configPath 配置文件路径（可选，默认为 ~/.niuma/niuma.config.json）
    * @returns 解析后的配置对象
    * @throws 配置文件不存在或解析失败时抛出错误
    */
@@ -43,7 +43,7 @@ export class JSON5ConfigLoaderImpl implements JSON5ConfigLoader {
   private readonly defaultConfigPath: string
 
   constructor() {
-    this.defaultConfigPath = join(homedir(), '.niuma', 'niuma.json')
+    this.defaultConfigPath = join(homedir(), '.niuma', 'niuma.config.json')
   }
 
   /**

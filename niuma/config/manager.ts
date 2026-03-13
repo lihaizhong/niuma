@@ -7,7 +7,7 @@ import { mkdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { homedir } from 'node:os'
 import { json5ConfigLoader } from './json5-loader'
-import { resolveEnvVarsWithEnvFile } from './env-resolver'
+import { resolveEnvVars } from './env-resolver'
 import { mergeConfigs } from './merger'
 import {
   NiumaConfig,
@@ -57,7 +57,7 @@ export class ConfigManager {
   private cache: Map<string, Partial<NiumaConfig>> = new Map()
 
   constructor(configPath?: string) {
-    this.configPath = configPath ?? join(homedir(), '.niuma', 'niuma.json')
+    this.configPath = configPath ?? join(homedir(), '.niuma', 'niuma.config.json')
   }
 
   /**
@@ -75,7 +75,7 @@ export class ConfigManager {
     const rawConfig = json5ConfigLoader.load(this.configPath)
 
     // 2. 解析环境变量引用
-    const resolvedConfig = resolveEnvVarsWithEnvFile(rawConfig, this.configPath, false)
+    const resolvedConfig = resolveEnvVars(rawConfig, { strict: false })
 
     // 3. 使用严格模式验证配置
     try {

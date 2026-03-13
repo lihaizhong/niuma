@@ -249,8 +249,8 @@ export type AgentsConfig = z.infer<typeof AgentsConfigSchema>
 export interface EnvVarResolverOptions {
   /** 是否严格模式（未知环境变量报错） */
   strict?: boolean
-  /** 环境变量来源（.env 文件和系统环境变量） */
-  env: Record<string, string>
+  /** 自定义环境变量（可选，会与系统环境变量合并） */
+  env?: Record<string, string>
 }
 
 // ============================================
