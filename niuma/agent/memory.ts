@@ -10,7 +10,8 @@
 
 import { readFile, writeFile, appendFile, rename } from "fs/promises";
 import { join } from "path";
-import fs from "fs-extra";
+import * as fs from "fs-extra";
+import { sanitizeObject } from "../utils/sanitize";
 import { createLogger } from "../log";
 import type { ToolDefinition } from "../types";
 import type { Session, SessionMessage } from "../session/manager";
@@ -362,7 +363,7 @@ ${conversationLines.join("\n")}`;
           parsed !== null &&
           !Array.isArray(parsed)
         ) {
-          return this._sanitizeObject(parsed);
+          return sanitizeObject(parsed, { keepNull: true });
         }
       } catch {
         logger.warn("JSON 解析参数失败");
@@ -380,89 +381,17 @@ ${conversationLines.join("\n")}`;
         args[0] !== null &&
         !Array.isArray(args[0])
       ) {
-        return this._sanitizeObject(args[0] as Record<string, unknown>);
+        return sanitizeObject(args[0] as Record<string, unknown>, { keepNull: true });
       }
       return null;
     }
 
     // 已经是对象，进行安全清理
     if (typeof args === "object" && args !== null && !Array.isArray(args)) {
-      return this._sanitizeObject(args);
+      return sanitizeObject(args, { keepNull: true });
     }
 
     logger.warn({ type: typeof args }, "未知的参数类型");
     return null;
-  }
-
-  /**
-   * 清理对象，防止原型链污染和恶意属性
-   * @param obj 待清理的对象
-   * @returns 清理后的安全对象
-   */
-  private _sanitizeObject(
-    obj: Record<string, unknown>,
-    depth = 0,
-  ): Record<string, unknown> {
-    // 防止无限递归
-    if (depth > 10) {
-      logger.warn("对象嵌套过深，已截断");
-      return {};
-    }
-
-    const result: Record<string, unknown> = {};
-
-    for (const key of Object.keys(obj)) {
-      // 跳过危险属性名
-      if (key === "__proto__" || key === "constructor" || key === "prototype") {
-        logger.warn({ key }, "跳过危险属性");
-        continue;
-      }
-
-      const value = obj[key];
-      const valueType = typeof value;
-
-      // 只允许基本类型和纯对象/数组
-      if (
-        value === null ||
-        valueType === "string" ||
-        valueType === "number" ||
-        valueType === "boolean"
-      ) {
-        result[key] = value;
-      } else if (Array.isArray(value)) {
-        // 数组只保留简单类型，深度清理
-        result[key] = value
-          .map((item, index) => {
-            if (
-              typeof item === "object" &&
-              item !== null &&
-              !Array.isArray(item)
-            ) {
-              return this._sanitizeObject(
-                item as Record<string, unknown>,
-                depth + 1,
-              );
-            }
-            return item;
-          })
-          .filter(
-            (item) =>
-              item === null ||
-              typeof item === "string" ||
-              typeof item === "number" ||
-              typeof item === "boolean",
-          );
-      } else if (valueType === "object") {
-        // 深度清理嵌套对象
-        result[key] = this._sanitizeObject(
-          value as Record<string, unknown>,
-          depth + 1,
-        );
-      } else {
-        logger.warn({ valueType }, "跳过不安全的值类型");
-      }
-    }
-
-    return result;
   }
 }
