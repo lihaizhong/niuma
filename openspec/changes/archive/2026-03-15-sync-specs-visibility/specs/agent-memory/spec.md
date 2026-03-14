@@ -25,7 +25,7 @@
 - Reorganized method order to follow TypeScript best practices
 - Updated all internal call sites to use private methods
 
-## Requirements
+## CHANGED Requirements
 
 ### Requirement: 双层记忆结构
 
@@ -37,6 +37,16 @@ MemoryStore SHALL 维护两个记忆层：
 
 - **WHEN** 调用 `appendHistory()` 并提供条目
 - **THEN** HISTORY.md 追加新条目，格式为 `[YYYY-MM-DD HH:MM] 内容`
+
+#### Scenario: 获取记忆上下文
+
+- **WHEN** 调用 `getMemoryContext()` 且 MEMORY.md 存在
+- **THEN** 返回 "## Long-term Memory\n{内容}"
+
+#### Scenario: 记忆为空
+
+- **WHEN** 调用 `getMemoryContext()` 且 MEMORY.md 不存在或为空
+- **THEN** 返回空字符串
 
 ### Requirement: 记忆整合
 
@@ -57,20 +67,6 @@ MemoryStore SHALL 通过 LLM 工具调用整合会话历史到记忆系统。
 - **WHEN** LLM 未返回工具调用或工具调用参数无效
 - **THEN** 返回 false，会话的 lastConsolidated 不更新
 
-### Requirement: 记忆上下文注入
-
-MemoryStore SHALL 提供格式化的记忆上下文用于 System Prompt。
-
-#### Scenario: 获取记忆上下文
-
-- **WHEN** 调用 `getMemoryContext()` 且 MEMORY.md 存在
-- **THEN** 返回 "## Long-term Memory\n{内容}"
-
-#### Scenario: 记忆为空
-
-- **WHEN** 调用 `getMemoryContext()` 且 MEMORY.md 不存在或为空
-- **THEN** 返回空字符串
-
 ### Requirement: 整合时机控制
 
 MemoryStore SHALL 支持两种整合模式：
@@ -86,6 +82,18 @@ MemoryStore SHALL 支持两种整合模式：
 
 - **WHEN** 调用 `consolidate()` 并设置 archiveAll=true
 - **THEN** 整合所有消息，会话清空
+
+---
+
+## REMOVED Requirements
+
+### Requirement: 读取长期记忆
+
+**已移除** - `_readLongTerm()` 现在是私有方法，不属于公共 API
+
+### Requirement: 写入长期记忆
+
+**已移除** - `_writeLongTerm()` 现在是私有方法，不属于公共 API
 
 ---
 

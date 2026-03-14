@@ -25,7 +25,7 @@
 - Flexibility: Can change internal logic without breaking API
 - Clarity: Public API clearly separates interface from implementation
 
-## Requirements
+## CHANGED Requirements
 
 ### Requirement: System Prompt 构建
 
@@ -112,7 +112,13 @@ ContextBuilder SHALL 支持 Bootstrap 文件缓存。
 
 ---
 
-## TypeScript Interfaces
+## REMOVED Requirements
+
+无
+
+---
+
+## CHANGED TypeScript Interfaces
 
 ```typescript
 interface ContextBuilder {
