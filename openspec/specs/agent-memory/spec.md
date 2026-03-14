@@ -1,20 +1,37 @@
-## ADDED Requirements
+## Historical Context
+
+### Code Evolution (Git History)
+
+**Initial Implementation (d35cf4e - 2026-03-10)**
+- Implemented Phase 2 Agent Core
+- Added `readLongTerm()` and `writeLongTerm()` as public methods
+- Basic dual-layer memory system (MEMORY.md + HISTORY.md)
+
+**Code Quality Refactor (50c85d3 - 2026-03-14)**
+- Reorganized code structure with clear comment separators
+- Unified import style (removed `node:` prefix)
+- Kept `readLongTerm()` and `writeLongTerm()` as public methods
+- 343 lines changed in memory.ts
+
+**Security Enhancement (57de5d5 - 2026-03-14)**
+- Replaced custom object sanitization with `fast-clean` library
+- Created common sanitize utility (`niuma/utils/sanitize.ts`)
+- Removed `_sanitizeObject` method (76 lines)
+- Improved maintainability and security
+
+**Current State (Uncommitted)**
+- Changed `readLongTerm()` and `writeLongTerm()` to private methods
+- Reason: These are internal implementation details
+- Reorganized method order to follow TypeScript best practices
+- Updated all internal call sites to use private methods
+
+## Requirements
 
 ### Requirement: 双层记忆结构
 
 MemoryStore SHALL 维护两个记忆层：
 - **MEMORY.md** - 长期结构化知识
 - **HISTORY.md** - 时间线日志（grep 可搜索）
-
-#### Scenario: 读取长期记忆
-
-- **WHEN** 调用 `readLongTerm()` 且 MEMORY.md 存在
-- **THEN** 返回文件内容
-
-#### Scenario: 写入长期记忆
-
-- **WHEN** 调用 `writeLongTerm()` 并提供内容
-- **THEN** MEMORY.md 被覆盖写入
 
 #### Scenario: 追加历史条目
 
@@ -76,10 +93,8 @@ MemoryStore SHALL 支持两种整合模式：
 
 ```typescript
 interface MemoryStore {
-  readLongTerm(): string
-  writeLongTerm(content: string): void
-  appendHistory(entry: string): void
-  getMemoryContext(): string
+  appendHistory(entry: string): Promise<void>
+  getMemoryContext(): Promise<string>
   consolidate(options: {
     session: Session
     provider: LLMProvider
@@ -94,3 +109,10 @@ interface MemoryStore {
 
 - `niuma/session/manager.ts` - Session
 - `niuma/providers/base.ts` - LLMProvider
+
+## Implementation Notes
+
+- `_readLongTerm()` 和 `_writeLongTerm()` 是私有方法，仅内部使用
+- 所有公共方法都是异步的（返回 Promise）
+- `appendHistory()` 使用原子写入（通过 fs-extra 确保目录存在）
+- `getMemoryContext()` 直接调用私有方法 `_readLongTerm()` 获取内容
