@@ -3,8 +3,8 @@
  * 提供子智能体创建和管理、定时任务调度等功能
  */
 
-import { join } from 'node:path'
-import { existsSync, mkdirSync } from 'node:fs'
+import { join } from 'path'
+import fs from 'fs-extra'
 
 import { z } from 'zod'
 import { nanoid } from 'nanoid'
@@ -110,9 +110,7 @@ export class SpawnTool extends BaseTool {
     try {
       // 1. 创建工作区
       const workspaceDir = join(process.cwd(), '.niuma', 'subagents', agentId)
-      if (!existsSync(workspaceDir)) {
-        mkdirSync(workspaceDir, { recursive: true })
-      }
+      await fs.ensureDir(workspaceDir)
 
       // 2. 创建独立配置
       const subagentConfig: SubagentConfig = {

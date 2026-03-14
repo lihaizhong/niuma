@@ -3,7 +3,7 @@
  * 支持多角色配置，向后兼容旧的 API
  */
 
-import { resolve } from 'node:path'
+import { resolve } from 'path'
 import type { NiumaConfig } from './schema'
 import { ConfigManager } from './manager'
 

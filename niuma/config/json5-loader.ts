@@ -3,9 +3,9 @@
  * 支持加载 JSON5 和 JSON 格式的配置文件
  */
 
-import { existsSync, readFileSync } from 'node:fs'
-import { join } from 'node:path'
-import { homedir } from 'node:os'
+import { existsSync, readFileSync } from 'fs'
+import { join } from 'path'
+import { homedir } from 'os'
 import JSON5 from 'json5'
 
 // ============================================

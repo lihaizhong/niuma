@@ -3,9 +3,9 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { existsSync, unlinkSync, writeFileSync, mkdirSync } from 'node:fs'
-import { join } from 'node:path'
-import { tmpdir } from 'node:os'
+import { existsSync, unlinkSync, writeFileSync, mkdirSync } from 'fs'
+import { join } from 'path'
+import { tmpdir } from 'os'
 import { JSON5ConfigLoaderImpl } from '../config/json5-loader'
 
 describe('JSON5ConfigLoader', () => {

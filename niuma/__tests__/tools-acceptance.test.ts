@@ -18,7 +18,7 @@ import { messageTool } from '../agent/tools/message'
 import { spawnTool, cronTool } from '../agent/tools/agent'
 import { ToolExecutionError } from '../types/error'
 import { z } from 'zod'
-import { rm } from 'node:fs/promises'
+import { rm } from 'fs/promises'
 
 describe('10.1 验证所有工具继承自 BaseTool', () => {
   it('ReadFileTool 应该继承自 BaseTool', () => {

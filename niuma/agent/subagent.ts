@@ -5,7 +5,7 @@
  * 子智能体与主 Agent 隔离运行，完成后通过事件通知主 Agent。
  */
 
-import { randomUUID } from 'node:crypto'
+import { randomUUID } from 'crypto'
 import type { LLMProvider } from '../providers/base'
 import type { ToolRegistry } from './tools/registry'
 import type { EventBus } from '../bus/events'
@@ -185,30 +185,31 @@ const SUBAGENT_SYSTEM_PROMPT = `你是一个专业的后台任务执行助手。
  * ```
  */
 export class SubagentManager {
+  // ============================================
+  // 配置属性
+  // ============================================
+
   /** LLM 提供商 */
   private provider: LLMProvider
-
   /** 工具注册表 */
   private tools: ToolRegistry
-
   /** 事件总线 */
   private bus: EventBus
-
   /** 工作空间路径 */
   private workspace: string
-
   /** 默认模型 */
   private model?: string
-
   /** 采样温度 */
   private temperature?: number
-
   /** 最大 token 数 */
   private maxTokens?: number
 
+  // ============================================
+  // 运行时属性
+  // ============================================
+
   /** 运行中的任务 */
   private runningTasks: Map<string, RunningTask> = new Map()
-
   /** 会话到任务的映射 */
   private sessionToTasks: Map<string, Set<string>> = new Map()
 

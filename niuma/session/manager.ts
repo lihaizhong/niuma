@@ -5,14 +5,14 @@
 
 import {
   existsSync,
-  mkdirSync,
   readdirSync,
   unlinkSync,
-} from "node:fs";
-import { readFile, writeFile, rename, unlink } from "node:fs/promises";
-import { join } from "node:path";
-import { homedir } from "node:os";
-import { createHash } from "node:crypto";
+} from "fs";
+import { readFile, writeFile, rename, unlink } from "fs/promises";
+import fs from "fs-extra";
+import { join } from "path";
+import { homedir } from "os";
+import { createHash } from "crypto";
 import type { ChatMessage } from "../types";
 
 /**
@@ -152,9 +152,7 @@ export class SessionManager {
     session.updatedAt = new Date();
 
     // 确保目录存在
-    if (!existsSync(this.sessionsDir)) {
-      mkdirSync(this.sessionsDir, { recursive: true });
-    }
+    await fs.ensureDir(this.sessionsDir);
 
     // 使用原子写入：先写入临时文件，然后重命名
     const filePath = this._getSessionFilePath(session.key);
@@ -237,19 +235,6 @@ export class SessionManager {
    */
   invalidate(sessionKey: string): void {
     this.cache.delete(sessionKey);
-  }
-
-  /**
-   * 清理过期缓存
-   * @description 删除所有过期的缓存项
-   */
-  private _cleanExpiredCache(): void {
-    const now = Date.now();
-    for (const [key, value] of this.cache.entries()) {
-      if (now - value.timestamp >= this.CACHE_TTL) {
-        this.cache.delete(key);
-      }
-    }
   }
 
   /**

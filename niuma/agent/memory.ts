@@ -8,29 +8,30 @@
  * @see 参考 nanobot: https://github.com/HKUDS/nanobot/blob/main/nanobot/agent/memory.py
  */
 
-import { mkdir, readFile, writeFile, appendFile, rename } from 'node:fs/promises'
-import { join } from 'node:path'
-import { createLogger } from '../log'
-import type { ToolDefinition } from '../types'
-import type { Session, SessionMessage } from '../session/manager'
-import type { LLMProvider } from '../providers/base'
+import { readFile, writeFile, appendFile, rename } from "fs/promises";
+import { join } from "path";
+import fs from "fs-extra";
+import { createLogger } from "../log";
+import type { ToolDefinition } from "../types";
+import type { Session, SessionMessage } from "../session/manager";
+import type { LLMProvider } from "../providers/base";
 
-const logger = createLogger('memory')
+const logger = createLogger("memory");
 
 /**
  * 记忆整合选项
  */
 export interface ConsolidateOptions {
   /** 会话对象 */
-  session: Session
+  session: Session;
   /** LLM 提供商 */
-  provider: LLMProvider
+  provider: LLMProvider;
   /** 使用的模型 */
-  model: string
+  model: string;
   /** 是否全量归档（默认 false） */
-  archiveAll?: boolean
+  archiveAll?: boolean;
   /** 记忆窗口大小 */
-  memoryWindow: number
+  memoryWindow: number;
 }
 
 /**
@@ -38,27 +39,27 @@ export interface ConsolidateOptions {
  * @description 用于 LLM 调用以保存记忆整合结果
  */
 export const SAVE_MEMORY_TOOL: ToolDefinition = {
-  name: 'save_memory',
-  description: 'Save the memory consolidation result to persistent storage.',
+  name: "save_memory",
+  description: "Save the memory consolidation result to persistent storage.",
   parameters: {
-    type: 'object',
+    type: "object",
     properties: {
       history_entry: {
-        type: 'string',
+        type: "string",
         description:
-          'A paragraph (2-5 sentences) summarizing key events/decisions/topics. ' +
-          'Start with [YYYY-MM-DD HH:MM]. Include detail useful for grep search.',
+          "A paragraph (2-5 sentences) summarizing key events/decisions/topics. " +
+          "Start with [YYYY-MM-DD HH:MM]. Include detail useful for grep search.",
       },
       memory_update: {
-        type: 'string',
+        type: "string",
         description:
-          'Full updated long-term memory as markdown. Include all existing ' +
-          'facts plus new ones. Return unchanged if nothing new.',
+          "Full updated long-term memory as markdown. Include all existing " +
+          "facts plus new ones. Return unchanged if nothing new.",
       },
     },
-    required: ['history_entry', 'memory_update'],
+    required: ["history_entry", "memory_update"],
   },
-}
+};
 
 /**
  * 记忆存储类
@@ -66,34 +67,34 @@ export const SAVE_MEMORY_TOOL: ToolDefinition = {
  * 存储位置：workspace/memory/
  */
 export class MemoryStore {
+  // ============================================
+  // 属性
+  // ============================================
+
   /** 记忆目录路径 */
-  private readonly memoryDir: string
+  private readonly memoryDir: string;
   /** MEMORY.md 文件路径 */
-  private readonly memoryFile: string
+  private readonly memoryFile: string;
   /** HISTORY.md 文件路径 */
-  private readonly historyFile: string
+  private readonly historyFile: string;
+
+  // ============================================
+  // 构造函数
+  // ============================================
 
   /**
    * 创建记忆存储实例
    * @param workspace 工作区根目录，记忆将存储在 workspace/memory/
    */
   constructor(workspace: string) {
-    this.memoryDir = join(workspace, 'memory')
-    this.memoryFile = join(this.memoryDir, 'MEMORY.md')
-    this.historyFile = join(this.memoryDir, 'HISTORY.md')
+    this.memoryDir = join(workspace, "memory");
+    this.memoryFile = join(this.memoryDir, "MEMORY.md");
+    this.historyFile = join(this.memoryDir, "HISTORY.md");
   }
 
-  /**
-   * 确保记忆目录存在
-   * @description 如果目录不存在则创建
-   */
-  private async _ensureDir(): Promise<void> {
-    try {
-      await mkdir(this.memoryDir, { recursive: true })
-    } catch {
-      // 目录已存在，忽略错误
-    }
-  }
+  // ============================================
+  // 公共方法 - 文件操作
+  // ============================================
 
   /**
    * 读取长期记忆
@@ -102,9 +103,9 @@ export class MemoryStore {
    */
   async readLongTerm(): Promise<string> {
     try {
-      return await readFile(this.memoryFile, 'utf-8')
+      return await readFile(this.memoryFile, "utf-8");
     } catch {
-      return ''
+      return "";
     }
   }
 
@@ -114,11 +115,11 @@ export class MemoryStore {
    * @param content 要写入的内容
    */
   async writeLongTerm(content: string): Promise<void> {
-    await this._ensureDir()
+    await fs.ensureDir(this.memoryDir);
     // 使用原子写入：先写入临时文件，然后重命名
-    const tempPath = `${this.memoryFile}.tmp`
-    await writeFile(tempPath, content, 'utf-8')
-    await rename(tempPath, this.memoryFile)
+    const tempPath = `${this.memoryFile}.tmp`;
+    await writeFile(tempPath, content, "utf-8");
+    await rename(tempPath, this.memoryFile);
   }
 
   /**
@@ -127,9 +128,9 @@ export class MemoryStore {
    * @param entry 历史条目内容
    */
   async appendHistory(entry: string): Promise<void> {
-    await this._ensureDir()
+    await fs.ensureDir(this.memoryDir);
     // 追加条目并添加换行
-    await appendFile(this.historyFile, entry.trimEnd() + '\n\n', 'utf-8')
+    await appendFile(this.historyFile, entry.trimEnd() + "\n\n", "utf-8");
   }
 
   /**
@@ -138,12 +139,16 @@ export class MemoryStore {
    * @returns 格式化的记忆上下文，如果记忆为空则返回空字符串
    */
   async getMemoryContext(): Promise<string> {
-    const longTerm = await this.readLongTerm()
+    const longTerm = await this.readLongTerm();
     if (!longTerm) {
-      return ''
+      return "";
     }
-    return `## Long-term Memory\n${longTerm}`
+    return `## Long-term Memory\n${longTerm}`;
   }
+
+  // ============================================
+  // 公共方法 - 记忆整合
+  // ============================================
 
   /**
    * 整合记忆
@@ -152,111 +157,135 @@ export class MemoryStore {
    * @returns 整合是否成功
    */
   async consolidate(options: ConsolidateOptions): Promise<boolean> {
-    const { session, provider, model, archiveAll = false, memoryWindow } = options
+    const {
+      session,
+      provider,
+      model,
+      archiveAll = false,
+      memoryWindow,
+    } = options;
 
-    let oldMessages: SessionMessage[]
-    let keepCount = 0
+    let oldMessages: SessionMessage[];
+    let keepCount = 0;
 
     if (archiveAll) {
       // 全量归档模式：整合所有消息
-      oldMessages = session.messages
-      logger.info({ totalMessages: session.messages.length }, 'Memory 全量归档')
+      oldMessages = session.messages;
+      logger.info(
+        { totalMessages: session.messages.length },
+        "Memory 全量归档",
+      );
     } else {
       // 增量整合模式：只整合超出窗口的旧消息
-      keepCount = Math.floor(memoryWindow / 2)
+      keepCount = Math.floor(memoryWindow / 2);
 
       // 如果消息数量不超过保留数量，无需整合
       if (session.messages.length <= keepCount) {
-        return true
+        return true;
       }
 
       // 如果没有新消息需要整合，跳过
       if (session.messages.length - session.lastConsolidated <= 0) {
-        return true
+        return true;
       }
 
       // 提取需要整合的消息段
-      oldMessages = session.messages.slice(session.lastConsolidated, -keepCount)
+      oldMessages = session.messages.slice(
+        session.lastConsolidated,
+        -keepCount,
+      );
 
       if (oldMessages.length === 0) {
-        return true
+        return true;
       }
 
-      logger.info({ oldMessagesCount: oldMessages.length, keepCount }, 'Memory 增量整合')
+      logger.info(
+        { oldMessagesCount: oldMessages.length, keepCount },
+        "Memory 增量整合",
+      );
     }
 
     // 格式化消息为文本
-    const lines = this._formatMessagesForConsolidation(oldMessages)
+    const lines = this._formatMessagesForConsolidation(oldMessages);
 
     if (lines.length === 0) {
-      return true
+      return true;
     }
 
     // 获取当前长期记忆
-    const currentMemory = await this.readLongTerm()
+    const currentMemory = await this.readLongTerm();
 
     // 构建整合提示词
-    const prompt = this._buildConsolidationPrompt(currentMemory, lines)
+    const prompt = this._buildConsolidationPrompt(currentMemory, lines);
 
     try {
       // 调用 LLM 进行记忆整合
       const response = await provider.chat({
         messages: [
           {
-            role: 'system',
+            role: "system",
             content:
-              'You are a memory consolidation agent. Call the save_memory tool with your consolidation of the conversation.',
+              "You are a memory consolidation agent. Call the save_memory tool with your consolidation of the conversation.",
           },
-          { role: 'user', content: prompt },
+          { role: "user", content: prompt },
         ],
         tools: [SAVE_MEMORY_TOOL],
         model,
-      })
+      });
 
       // 检查是否有工具调用
       if (!response.hasToolCalls || !response.toolCalls?.length) {
-        logger.warn('LLM 未调用 save_memory 工具，跳过整合')
-        return false
+        logger.warn("LLM 未调用 save_memory 工具，跳过整合");
+        return false;
       }
 
       // 解析工具调用参数
-      const args = this._parseToolCallArguments(response.toolCalls[0].arguments)
+      const args = this._parseToolCallArguments(
+        response.toolCalls[0].arguments,
+      );
 
       if (!args) {
-        logger.warn('工具调用参数解析失败')
-        return false
+        logger.warn("工具调用参数解析失败");
+        return false;
       }
 
       // 处理历史条目
-      const entry = args.history_entry
+      const entry = args.history_entry;
       if (entry) {
-        const entryStr = typeof entry === 'string' ? entry : JSON.stringify(entry)
-        await this.appendHistory(entryStr)
+        const entryStr =
+          typeof entry === "string" ? entry : JSON.stringify(entry);
+        await this.appendHistory(entryStr);
       }
 
       // 处理记忆更新
-      const update = args.memory_update
+      const update = args.memory_update;
       if (update) {
-        const updateStr = typeof update === 'string' ? update : JSON.stringify(update)
+        const updateStr =
+          typeof update === "string" ? update : JSON.stringify(update);
         // 只有内容变化时才写入
         if (updateStr !== currentMemory) {
-          await this.writeLongTerm(updateStr)
+          await this.writeLongTerm(updateStr);
         }
       }
 
       // 更新会话的整合标记
-      session.lastConsolidated = archiveAll ? 0 : session.messages.length - keepCount
+      session.lastConsolidated = archiveAll
+        ? 0
+        : session.messages.length - keepCount;
 
       logger.info(
-        { totalMessages: session.messages.length, lastConsolidated: session.lastConsolidated },
-        'Memory 整合完成'
-      )
+        {
+          totalMessages: session.messages.length,
+          lastConsolidated: session.lastConsolidated,
+        },
+        "Memory 整合完成",
+      );
 
-      return true
+      return true;
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error)
-      logger.error({ error: message }, 'Memory 整合失败')
-      return false
+      const message = error instanceof Error ? error.message : String(error);
+      logger.error({ error: message }, "Memory 整合失败");
+      return false;
     }
   }
 
@@ -266,29 +295,31 @@ export class MemoryStore {
    * @param messages 消息列表
    * @returns 格式化后的行数组
    */
-  private _formatMessagesForConsolidation(messages: SessionMessage[]): string[] {
-    const lines: string[] = []
+  private _formatMessagesForConsolidation(
+    messages: SessionMessage[],
+  ): string[] {
+    const lines: string[] = [];
 
     for (const msg of messages) {
       if (!msg.content) {
-        continue
+        continue;
       }
 
       // 格式化时间戳
-      const timestamp = msg.timestamp?.slice(0, 16) || '?'
+      const timestamp = msg.timestamp?.slice(0, 16) || "?";
 
       // 格式化使用的工具
       const toolsInfo = msg.toolsUsed?.length
-        ? ` [tools: ${msg.toolsUsed.join(', ')}]`
-        : ''
+        ? ` [tools: ${msg.toolsUsed.join(", ")}]`
+        : "";
 
       // 格式化消息行
       lines.push(
-        `[${timestamp}] ${msg.role.toUpperCase()}${toolsInfo}: ${msg.content}`
-      )
+        `[${timestamp}] ${msg.role.toUpperCase()}${toolsInfo}: ${msg.content}`,
+      );
     }
 
-    return lines
+    return lines;
   }
 
   /**
@@ -300,9 +331,9 @@ export class MemoryStore {
    */
   private _buildConsolidationPrompt(
     currentMemory: string,
-    conversationLines: string[]
+    conversationLines: string[],
   ): string {
-    const memorySection = currentMemory || '(empty)'
+    const memorySection = currentMemory || "(empty)";
 
     return `Process this conversation and call the save_memory tool with your consolidation.
 
@@ -310,7 +341,7 @@ export class MemoryStore {
 ${memorySection}
 
 ## Conversation to Process
-${conversationLines.join('\n')}`
+${conversationLines.join("\n")}`;
   }
 
   /**
@@ -320,38 +351,47 @@ ${conversationLines.join('\n')}`
    * @returns 解析后的参数对象，解析失败返回 null
    */
   private _parseToolCallArguments(
-    args: Record<string, unknown> | string | unknown[]
+    args: Record<string, unknown> | string | unknown[],
   ): Record<string, unknown> | null {
     // 字符串格式，尝试 JSON 解析
-    if (typeof args === 'string') {
+    if (typeof args === "string") {
       try {
-        const parsed = JSON.parse(args)
-        if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
-          return this._sanitizeObject(parsed)
+        const parsed = JSON.parse(args);
+        if (
+          typeof parsed === "object" &&
+          parsed !== null &&
+          !Array.isArray(parsed)
+        ) {
+          return this._sanitizeObject(parsed);
         }
       } catch {
-        logger.warn('JSON 解析参数失败')
-        return null
+        logger.warn("JSON 解析参数失败");
+        return null;
       }
-      return null
+      return null;
     }
 
     // 数组格式的特殊情况
     if (Array.isArray(args)) {
-      logger.warn('工具参数为数组格式，只使用第一个元素')
-      if (args.length > 0 && typeof args[0] === 'object' && args[0] !== null && !Array.isArray(args[0])) {
-        return this._sanitizeObject(args[0] as Record<string, unknown>)
+      logger.warn("工具参数为数组格式，只使用第一个元素");
+      if (
+        args.length > 0 &&
+        typeof args[0] === "object" &&
+        args[0] !== null &&
+        !Array.isArray(args[0])
+      ) {
+        return this._sanitizeObject(args[0] as Record<string, unknown>);
       }
-      return null
+      return null;
     }
 
     // 已经是对象，进行安全清理
-    if (typeof args === 'object' && args !== null && !Array.isArray(args)) {
-      return this._sanitizeObject(args)
+    if (typeof args === "object" && args !== null && !Array.isArray(args)) {
+      return this._sanitizeObject(args);
     }
 
-    logger.warn({ type: typeof args }, '未知的参数类型')
-    return null
+    logger.warn({ type: typeof args }, "未知的参数类型");
+    return null;
   }
 
   /**
@@ -359,51 +399,70 @@ ${conversationLines.join('\n')}`
    * @param obj 待清理的对象
    * @returns 清理后的安全对象
    */
-  private _sanitizeObject(obj: Record<string, unknown>, depth = 0): Record<string, unknown> {
+  private _sanitizeObject(
+    obj: Record<string, unknown>,
+    depth = 0,
+  ): Record<string, unknown> {
     // 防止无限递归
     if (depth > 10) {
-      logger.warn('对象嵌套过深，已截断')
-      return {}
+      logger.warn("对象嵌套过深，已截断");
+      return {};
     }
 
-    const result: Record<string, unknown> = {}
+    const result: Record<string, unknown> = {};
 
     for (const key of Object.keys(obj)) {
       // 跳过危险属性名
-      if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
-        logger.warn({ key }, '跳过危险属性')
-        continue
+      if (key === "__proto__" || key === "constructor" || key === "prototype") {
+        logger.warn({ key }, "跳过危险属性");
+        continue;
       }
 
-      const value = obj[key]
-      const valueType = typeof value
+      const value = obj[key];
+      const valueType = typeof value;
 
       // 只允许基本类型和纯对象/数组
-      if (value === null || valueType === 'string' || valueType === 'number' || valueType === 'boolean') {
-        result[key] = value
+      if (
+        value === null ||
+        valueType === "string" ||
+        valueType === "number" ||
+        valueType === "boolean"
+      ) {
+        result[key] = value;
       } else if (Array.isArray(value)) {
         // 数组只保留简单类型，深度清理
         result[key] = value
           .map((item, index) => {
-            if (typeof item === 'object' && item !== null && !Array.isArray(item)) {
-              return this._sanitizeObject(item as Record<string, unknown>, depth + 1)
+            if (
+              typeof item === "object" &&
+              item !== null &&
+              !Array.isArray(item)
+            ) {
+              return this._sanitizeObject(
+                item as Record<string, unknown>,
+                depth + 1,
+              );
             }
-            return item
+            return item;
           })
-          .filter(item => 
-            item === null || 
-            typeof item === 'string' || 
-            typeof item === 'number' || 
-            typeof item === 'boolean'
-          )
-      } else if (valueType === 'object') {
+          .filter(
+            (item) =>
+              item === null ||
+              typeof item === "string" ||
+              typeof item === "number" ||
+              typeof item === "boolean",
+          );
+      } else if (valueType === "object") {
         // 深度清理嵌套对象
-        result[key] = this._sanitizeObject(value as Record<string, unknown>, depth + 1)
+        result[key] = this._sanitizeObject(
+          value as Record<string, unknown>,
+          depth + 1,
+        );
       } else {
-        logger.warn({ valueType }, '跳过不安全的值类型')
+        logger.warn({ valueType }, "跳过不安全的值类型");
       }
     }
 
-    return result
+    return result;
   }
 }

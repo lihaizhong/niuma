@@ -3,8 +3,8 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { writeFile, mkdir, rm } from 'node:fs/promises'
-import { join } from 'node:path'
+import { writeFile, mkdir, rm } from 'fs/promises'
+import { join } from 'path'
 import {
   readFileTool,
   writeFileTool,

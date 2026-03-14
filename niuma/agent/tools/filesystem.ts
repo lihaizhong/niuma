@@ -3,8 +3,9 @@
  * 提供文件读写、编辑、目录列出等功能
  */
 
-import { readFile as fsReadFile, writeFile as fsWriteFile, stat, readdir, mkdir, copyFile, unlink, rm, rename } from 'node:fs/promises'
-import { join, resolve, isAbsolute, dirname, basename } from 'node:path'
+import { readFile as fsReadFile, writeFile as fsWriteFile, stat, readdir, mkdir, copyFile, unlink, rm, rename } from 'fs/promises'
+import { join, resolve, isAbsolute, dirname, basename } from 'path'
+import fs from 'fs-extra'
 
 import { z } from 'zod'
 import fg from 'fast-glob'
@@ -92,12 +93,8 @@ export class WriteFileTool extends BaseTool {
     const resolvedPath = resolvePath(path)
 
     try {
-      // 确保目录存在
-      const dir = resolve(resolvedPath, '..')
-      await mkdir(dir, { recursive: true })
-
-      // 写入文件
-      await fsWriteFile(resolvedPath, content, 'utf-8')
+      // 写入文件（自动创建目录）
+      await fs.outputFile(resolvedPath, content)
       return `成功写入文件: ${resolvedPath}`
     } catch (error) {
       throw new ToolExecutionError(this.name, `写入文件失败: ${(error as Error).message}`)

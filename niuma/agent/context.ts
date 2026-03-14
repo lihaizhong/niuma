@@ -10,10 +10,10 @@
  * @see 参考 nanobot: https://github.com/HKUDS/nanobot/blob/main/nanobot/agent/context.py
  */
 
-import { readFile } from "node:fs/promises";
-import { join, normalize } from "node:path";
-import * as path from "node:path";
-import { platform, machine } from "node:os";
+import { readFile } from "fs/promises";
+import { join, normalize } from "path";
+import * as path from "path";
+import { platform, machine } from "os";
 import { createLogger } from "../log";
 import type { ChatMessage, MessageContentPart } from "../types";
 import type { MediaContent } from "../types/message";
@@ -106,6 +106,10 @@ export interface AddToolResultOptions {
  * @description 构建 System Prompt 和组装消息列表
  */
 export class ContextBuilder {
+  // ============================================
+  // 属性
+  // ============================================
+
   /** 工作区根目录 */
   private readonly workspace: string;
   /** 记忆存储 */
@@ -114,6 +118,10 @@ export class ContextBuilder {
   private readonly skillsLoader: SkillsLoader;
   /** Bootstrap 文件缓存 */
   private bootstrapCache: Map<string, string> | null = null;
+
+  // ============================================
+  // 构造函数
+  // ============================================
 
   /**
    * 创建上下文构建器实例
@@ -131,6 +139,10 @@ export class ContextBuilder {
     this.skillsLoader = skillsLoader;
   }
 
+  // ============================================
+  // 公共方法
+  // ============================================
+
   /**
    * 组装消息列表（异步）
    * @description 将历史消息和当前消息组装为 LLM 可用的消息列表
@@ -143,7 +155,7 @@ export class ContextBuilder {
     const messages: ChatMessage[] = [];
 
     // 1. System 消息
-    const systemPrompt = await this.buildSystemPrompt(skillNames);
+    const systemPrompt = await this._buildSystemPrompt(skillNames);
     messages.push({
       role: "system",
       content: systemPrompt,
@@ -168,12 +180,12 @@ export class ContextBuilder {
   }
 
   /**
-   * 构建完整的 System Prompt（异步）
-   * @description 从多个来源组装 System Prompt
-   * @param skillNames 额外激活的技能名称（可选）
-   * @returns 完整的 System Prompt 字符串
+   * 异步构建 System Prompt
+   * @description 异步方式构建完整的 System Prompt
+   * @param skillNames 额外激活的技能名称
+   * @returns 完整的 System Prompt
    */
-  async buildSystemPrompt(skillNames?: string[]): Promise<string> {
+  async buildSystemPromptAsync(skillNames?: string[]): Promise<string> {
     const parts: string[] = [];
 
     // 1. 核心身份信息
@@ -186,8 +198,8 @@ export class ContextBuilder {
       parts.push(bootstrapContent);
     }
 
-    // 3. 长期记忆上下文
-    const memoryContext = await this._getMemoryContext();
+    // 3. 长期记忆上下文（异步）
+    const memoryContext = await this.memoryStore.getMemoryContext();
     if (memoryContext) {
       parts.push(memoryContext);
     }
@@ -254,6 +266,246 @@ export class ContextBuilder {
     });
 
     return messages;
+  }
+
+  /**
+   * 刷新 Bootstrap 缓存
+   * @description 强制重新加载 Bootstrap 文件
+   */
+  refreshBootstrap(): void {
+    this.bootstrapCache = null;
+  }
+
+  /**
+   * 异步获取记忆上下文
+   * @description 异步方式获取长期记忆（推荐）
+   * @returns 格式化的记忆上下文
+   */
+  async getMemoryContextAsync(): Promise<string> {
+    return await this.memoryStore.getMemoryContext();
+  }
+
+  // ============================================
+  // 私有方法
+  // ============================================
+
+  /**
+   * 构建完整的 System Prompt（异步）
+   * @description 从多个来源组装 System Prompt
+   * @param skillNames 额外激活的技能名称（可选）
+   * @returns 完整的 System Prompt 字符串
+   */
+  private async _buildSystemPrompt(skillNames?: string[]): Promise<string> {
+    const parts: string[] = [];
+
+    // 1. 核心身份信息
+    const identity = this._getIdentity();
+    parts.push(identity);
+
+    // 2. Bootstrap 文件内容
+    const bootstrapContent = await this._loadBootstrapFiles();
+    if (bootstrapContent) {
+      parts.push(bootstrapContent);
+    }
+
+    // 3. 长期记忆上下文
+    const memoryContext = await this._getMemoryContext();
+    if (memoryContext) {
+      parts.push(memoryContext);
+    }
+
+    // 4. 技能上下文
+    const skillsContent = this._loadSkillsContext(skillNames);
+    if (skillsContent) {
+      parts.push(skillsContent);
+    }
+
+    return parts.join("\n\n");
+  }
+
+  /**
+   * 构建用户内容（异步）
+   * @description 将文本和媒体组合为用户消息内容
+   * @param text 文本内容
+   * @param media 媒体内容列表
+   * @param channel 渠道类型
+   * @param chatId 聊天 ID
+   * @returns 消息内容（字符串或多部分格式）
+   */
+  private async _buildUserContent(
+    text: string,
+    media?: MediaContent[],
+    channel?: string,
+    chatId?: string,
+  ): Promise<string | MessageContentPart[]> {
+    // 添加运行时上下文
+    const runtimeContext = this._buildRuntimeContext(channel, chatId);
+    const fullText = runtimeContext ? `${runtimeContext}\n\n${text}` : text;
+
+    // 没有媒体内容，直接返回文本
+    if (!media || media.length === 0) {
+      return fullText;
+    }
+
+    // 有媒体内容，构建多部分消息
+    const content: MessageContentPart[] = [];
+
+    // 添加文本部分
+    content.push({
+      type: "text",
+      text: fullText,
+    });
+
+    // 处理媒体内容
+    for (const item of media) {
+      // 只处理图片类型，其他类型暂不支持
+      if (item.type !== "image") {
+        logger.warn({ type: item.type }, "暂不支持的媒体类型，已忽略");
+        continue;
+      }
+
+      const imagePart = await this._buildImageContent(item);
+      if (imagePart) {
+        content.push(imagePart);
+      }
+    }
+
+    return content;
+  }
+
+  /**
+   * 构建运行时上下文
+   * @description 包含当前时间和渠道信息，注入到用户消息前
+   * @param channel 渠道类型
+   * @param chatId 聊天 ID
+   * @returns 运行时上下文字符串
+   */
+  private _buildRuntimeContext(channel?: string, chatId?: string): string {
+    const now = new Date();
+    const dateStr = now.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
+    const timeStr = now.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+    const weekday = now.toLocaleDateString("en-US", { weekday: "long" });
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+    const lines: string[] = [];
+    lines.push(`Current Time: ${dateStr} ${timeStr} (${weekday}) (${tz})`);
+
+    if (channel && chatId) {
+      lines.push(`Channel: ${channel}`);
+      lines.push(`Chat ID: ${chatId}`);
+    }
+
+    return `${RUNTIME_CONTEXT_TAG}\n${lines.join("\n")}`;
+  }
+
+  /**
+   * 构建图片内容部分（异步）
+   * @description 将 MediaContent 转换为 LLM 可用的图片格式
+   * @param media 媒体内容
+   * @returns 图片消息部分，无法处理则返回 null
+   */
+  private async _buildImageContent(media: MediaContent): Promise<MessageContentPart | null> {
+    // 优先使用 base64 数据
+    if (media.data) {
+      // 如果已有 base64 数据，直接使用
+      const mimeType = media.mimeType ?? DEFAULT_MIME_TYPE;
+      return {
+        type: "image_url",
+        image_url: {
+          url: `data:${mimeType};base64,${media.data}`,
+        },
+      };
+    }
+
+    // 处理 URL
+    if (media.url) {
+      // 如果是本地文件路径，读取并转换为 base64
+      if (this._isLocalPath(media.url)) {
+        const imageData = await this._readImageAsBase64(media.url);
+        if (imageData) {
+          return {
+            type: "image_url",
+            image_url: {
+              url: imageData,
+            },
+          };
+        }
+        return null;
+      }
+
+      // 远程 URL，直接使用
+      return {
+        type: "image_url",
+        image_url: {
+          url: media.url,
+        },
+      };
+    }
+
+    return null;
+  }
+
+  /**
+   * 判断是否为本地路径
+   * @param path 路径字符串
+   * @returns 是否为本地路径
+   */
+  private _isLocalPath(path: string): boolean {
+    // 绝对路径或相对路径
+    return (
+      path.startsWith("/") || path.startsWith("./") || path.startsWith("../")
+    );
+  }
+
+  /**
+   * 读取图片并转换为 base64 数据 URL（安全模式）
+   * @param filePath 本地文件路径
+   * @returns data URL 格式的 base64 字符串，读取失败返回 null
+   */
+  private async _readImageAsBase64(filePath: string): Promise<string | null> {
+    try {
+      let absolutePath = filePath;
+      
+      if (filePath.startsWith("./") || filePath.startsWith("../")) {
+        // 规范化路径并验证是否在工作区内
+        absolutePath = join(this.workspace, filePath);
+        const resolved = normalize(absolutePath);
+        const normalizedWorkspace = normalize(this.workspace);
+        
+        // 确保解析后的路径在工作区内（防止路径遍历攻击）
+        if (!resolved.startsWith(normalizedWorkspace + path.sep)) {
+          logger.warn({ filePath }, "路径遍历尝试被阻止");
+          return null;
+        }
+        absolutePath = resolved;
+      }
+
+      const buffer = await readFile(absolutePath);
+      const base64 = buffer.toString("base64");
+
+      // 根据 extension 推断 MIME 类型
+      const mimeType = this._getMimeType(absolutePath);
+      return `data:${mimeType};base64,${base64}`;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * 根据文件扩展名获取 MIME 类型
+   * @param filePath 文件路径
+   * @returns MIME 类型
+   */
+  private _getMimeType(filePath: string): string {
+    const ext = filePath.toLowerCase().split(".").pop();
+    return MIME_TYPES[ext ?? ""] ?? DEFAULT_MIME_TYPE;
   }
 
   /**
@@ -372,241 +624,5 @@ Reply directly with text for conversations. Only use the 'message' tool to send 
     }
 
     return `## 激活技能\n${skillsContent}`;
-  }
-
-  /**
-   * 构建运行时上下文
-   * @description 包含当前时间和渠道信息，注入到用户消息前
-   * @param channel 渠道类型
-   * @param chatId 聊天 ID
-   * @returns 运行时上下文字符串
-   */
-  private _buildRuntimeContext(channel?: string, chatId?: string): string {
-    const now = new Date();
-    const dateStr = now.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    });
-    const timeStr = now.toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-    const weekday = now.toLocaleDateString("en-US", { weekday: "long" });
-    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-
-    const lines: string[] = [];
-    lines.push(`Current Time: ${dateStr} ${timeStr} (${weekday}) (${tz})`);
-
-    if (channel && chatId) {
-      lines.push(`Channel: ${channel}`);
-      lines.push(`Chat ID: ${chatId}`);
-    }
-
-    return `${RUNTIME_CONTEXT_TAG}\n${lines.join("\n")}`;
-  }
-
-  /**
-   * 构建用户内容（异步）
-   * @description 将文本和媒体组合为用户消息内容
-   * @param text 文本内容
-   * @param media 媒体内容列表
-   * @param channel 渠道类型
-   * @param chatId 聊天 ID
-   * @returns 消息内容（字符串或多部分格式）
-   */
-  private async _buildUserContent(
-    text: string,
-    media?: MediaContent[],
-    channel?: string,
-    chatId?: string,
-  ): Promise<string | MessageContentPart[]> {
-    // 添加运行时上下文
-    const runtimeContext = this._buildRuntimeContext(channel, chatId);
-    const fullText = runtimeContext ? `${runtimeContext}\n\n${text}` : text;
-
-    // 没有媒体内容，直接返回文本
-    if (!media || media.length === 0) {
-      return fullText;
-    }
-
-    // 有媒体内容，构建多部分消息
-    const content: MessageContentPart[] = [];
-
-    // 添加文本部分
-    content.push({
-      type: "text",
-      text: fullText,
-    });
-
-    // 处理媒体内容
-    for (const item of media) {
-      // 只处理图片类型，其他类型暂不支持
-      if (item.type !== "image") {
-        logger.warn({ type: item.type }, "暂不支持的媒体类型，已忽略");
-        continue;
-      }
-
-      const imagePart = await this._buildImageContent(item);
-      if (imagePart) {
-        content.push(imagePart);
-      }
-    }
-
-    return content;
-  }
-
-  /**
-   * 构建图片内容部分（异步）
-   * @description 将 MediaContent 转换为 LLM 可用的图片格式
-   * @param media 媒体内容
-   * @returns 图片消息部分，无法处理则返回 null
-   */
-  private async _buildImageContent(media: MediaContent): Promise<MessageContentPart | null> {
-    // 优先使用 base64 数据
-    if (media.data) {
-      // 如果已有 base64 数据，直接使用
-      const mimeType = media.mimeType ?? DEFAULT_MIME_TYPE;
-      return {
-        type: "image_url",
-        image_url: {
-          url: `data:${mimeType};base64,${media.data}`,
-        },
-      };
-    }
-
-    // 处理 URL
-    if (media.url) {
-      // 如果是本地文件路径，读取并转换为 base64
-      if (this._isLocalPath(media.url)) {
-        const imageData = await this._readImageAsBase64(media.url);
-        if (imageData) {
-          return {
-            type: "image_url",
-            image_url: {
-              url: imageData,
-            },
-          };
-        }
-        return null;
-      }
-
-      // 远程 URL，直接使用
-      return {
-        type: "image_url",
-        image_url: {
-          url: media.url,
-        },
-      };
-    }
-
-    return null;
-  }
-
-  /**
-   * 判断是否为本地路径
-   * @param path 路径字符串
-   * @returns 是否为本地路径
-   */
-  private _isLocalPath(path: string): boolean {
-    // 绝对路径或相对路径
-    return (
-      path.startsWith("/") || path.startsWith("./") || path.startsWith("../")
-    );
-  }
-
-  /**
-   * 读取图片并转换为 base64 数据 URL（安全模式）
-   * @param filePath 本地文件路径
-   * @returns data URL 格式的 base64 字符串，读取失败返回 null
-   */
-  private async _readImageAsBase64(filePath: string): Promise<string | null> {
-    try {
-      let absolutePath = filePath;
-      
-      if (filePath.startsWith("./") || filePath.startsWith("../")) {
-        // 规范化路径并验证是否在工作区内
-        absolutePath = join(this.workspace, filePath);
-        const resolved = normalize(absolutePath);
-        const normalizedWorkspace = normalize(this.workspace);
-        
-        // 确保解析后的路径在工作区内（防止路径遍历攻击）
-        if (!resolved.startsWith(normalizedWorkspace + path.sep)) {
-          logger.warn({ filePath }, "路径遍历尝试被阻止");
-          return null;
-        }
-        absolutePath = resolved;
-      }
-
-      const buffer = await readFile(absolutePath);
-      const base64 = buffer.toString("base64");
-
-      // 根据 extension 推断 MIME 类型
-      const mimeType = this._getMimeType(absolutePath);
-      return `data:${mimeType};base64,${base64}`;
-    } catch {
-      return null;
-    }
-  }
-
-  /**
-   * 根据文件扩展名获取 MIME 类型
-   * @param filePath 文件路径
-   * @returns MIME 类型
-   */
-  private _getMimeType(filePath: string): string {
-    const ext = filePath.toLowerCase().split(".").pop();
-    return MIME_TYPES[ext ?? ""] ?? DEFAULT_MIME_TYPE;
-  }
-
-  /**
-   * 刷新 Bootstrap 缓存
-   * @description 强制重新加载 Bootstrap 文件
-   */
-  refreshBootstrap(): void {
-    this.bootstrapCache = null;
-  }
-
-  /**
-   * 异步获取记忆上下文
-   * @description 异步方式获取长期记忆（推荐）
-   * @returns 格式化的记忆上下文
-   */
-  async getMemoryContextAsync(): Promise<string> {
-    return await this.memoryStore.getMemoryContext();
-  }
-
-  /**
-   * 异步构建 System Prompt
-   * @description 异步方式构建完整的 System Prompt
-   * @param skillNames 额外激活的技能名称
-   * @returns 完整的 System Prompt
-   */
-  async buildSystemPromptAsync(skillNames?: string[]): Promise<string> {
-    const parts: string[] = [];
-
-    // 1. 核心身份信息
-    const identity = this._getIdentity();
-    parts.push(identity);
-
-    // 2. Bootstrap 文件内容
-    const bootstrapContent = await this._loadBootstrapFiles();
-    if (bootstrapContent) {
-      parts.push(bootstrapContent);
-    }
-
-    // 3. 长期记忆上下文（异步）
-    const memoryContext = await this.memoryStore.getMemoryContext();
-    if (memoryContext) {
-      parts.push(memoryContext);
-    }
-
-    // 4. 技能上下文
-    const skillsContent = this._loadSkillsContext(skillNames);
-    if (skillsContent) {
-      parts.push(skillsContent);
-    }
-
-    return parts.join("\n\n");
   }
 }

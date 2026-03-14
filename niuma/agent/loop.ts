@@ -77,7 +77,10 @@ export interface ProcessOptions {
 export type ProgressEvent =
   | { type: "thinking"; data: { content: string } }
   | { type: "content"; data: { content: string } }
-  | { type: "tool_call"; data: { toolName: string; toolArgs: Record<string, unknown> } }
+  | {
+      type: "tool_call";
+      data: { toolName: string; toolArgs: Record<string, unknown> };
+    }
   | { type: "tool_result"; data: { toolName: string; toolResult: string } }
   | { type: "error"; data: { error: string } };
 
@@ -124,6 +127,10 @@ const CONSOLIDATION_THRESHOLD_RATIO = 0.8;
  * ```
  */
 export class AgentLoop {
+  // ============================================
+  // 配置属性
+  // ============================================
+
   /** 事件总线 */
   private readonly bus: EventBus;
   /** LLM 提供商 */
@@ -145,10 +152,19 @@ export class AgentLoop {
   /** 记忆窗口大小 */
   private readonly memoryWindow: number;
 
+  // ============================================
+  // 运行时属性
+  // ============================================
+
   /** 运行状态标志 */
   private running = false;
   /** 消息队列 */
   private messageQueue: AsyncQueue<InboundMessage>;
+
+  // ============================================
+  // 缓存属性
+  // ============================================
+
   /** 上下文构建器缓存 */
   private contextBuilders: Map<string, ContextBuilder> = new Map();
   /** 记忆存储缓存 */
@@ -158,6 +174,10 @@ export class AgentLoop {
 
   /** 最大缓存数量 */
   private static readonly MAX_CACHE_SIZE = 100;
+
+  // ============================================
+  // 构造函数
+  // ============================================
 
   /**
    * 创建 Agent 循环实例
@@ -178,6 +198,10 @@ export class AgentLoop {
     // 初始化消息队列
     this.messageQueue = new AsyncQueue();
   }
+
+  // ============================================
+  // 公共方法
+  // ============================================
 
   /**
    * 启动消息处理循环
@@ -266,6 +290,10 @@ export class AgentLoop {
     return await this._processMessageInternal(message, onProgress);
   }
 
+  // ============================================
+  // 私有方法 - 消息处理
+  // ============================================
+
   /**
    * 处理单条消息
    * @description 内部消息处理流程
@@ -273,7 +301,7 @@ export class AgentLoop {
    */
   private async _processMessage(message: InboundMessage): Promise<void> {
     // 系统消息处理（子智能体通知等）
-    if (message.channel === 'system') {
+    if (message.channel === "system") {
       await this._processSystemMessage(message);
       return;
     }
@@ -380,6 +408,10 @@ export class AgentLoop {
 
     this.bus.emit("MESSAGE_SENT", { message: outbound });
   }
+
+  // ============================================
+  // 私有方法 - Agent 循环
+  // ============================================
 
   /**
    * 执行 Agent 迭代循环
@@ -489,6 +521,10 @@ export class AgentLoop {
     return lastContent;
   }
 
+  // ============================================
+  // 私有方法 - LLM 调用
+  // ============================================
+
   /**
    * 调用 LLM（带重试机制）
    * @description 指数退避重试，最多 4 次
@@ -525,8 +561,12 @@ export class AgentLoop {
       onError: (error, attempt) => {
         const attemptNumber = attempt + 1;
         logger.error(
-          { attempt: attemptNumber, maxRetries: MAX_LLM_RETRIES, error: error.message },
-          "LLM 调用失败"
+          {
+            attempt: attemptNumber,
+            maxRetries: MAX_LLM_RETRIES,
+            error: error.message,
+          },
+          "LLM 调用失败",
         );
 
         if (attemptNumber < MAX_LLM_RETRIES && onProgress) {
@@ -550,6 +590,10 @@ export class AgentLoop {
 
     return response;
   }
+
+  // ============================================
+  // 私有方法 - 工具执行
+  // ============================================
 
   /**
    * 执行工具调用
@@ -622,6 +666,10 @@ export class AgentLoop {
     }
   }
 
+  // ============================================
+  // 私有方法 - 斜杠命令
+  // ============================================
+
   /**
    * 处理斜杠命令
    */
@@ -681,14 +729,23 @@ export class AgentLoop {
 `.trim();
   }
 
+  // ============================================
+  // 私有方法 - 记忆管理
+  // ============================================
+
   /**
    * 触发记忆整合
    * @description 当消息数量超过阈值时，自动整合旧消息到记忆系统
    */
   private async _consolidateMemory(session: Session): Promise<void> {
     // 检查是否需要整合
-    const unconsolidated = Math.max(0, session.messages.length - session.lastConsolidated);
-    const threshold = Math.floor(this.memoryWindow * CONSOLIDATION_THRESHOLD_RATIO);
+    const unconsolidated = Math.max(
+      0,
+      session.messages.length - session.lastConsolidated,
+    );
+    const threshold = Math.floor(
+      this.memoryWindow * CONSOLIDATION_THRESHOLD_RATIO,
+    );
 
     if (unconsolidated < threshold) {
       return;
@@ -696,10 +753,7 @@ export class AgentLoop {
 
     const memoryStore = this._getMemoryStore(session.key);
 
-    logger.info(
-      { unconsolidated, threshold },
-      "触发记忆整合"
-    );
+    logger.info({ unconsolidated, threshold }, "触发记忆整合");
 
     try {
       await memoryStore.consolidate({
@@ -713,6 +767,10 @@ export class AgentLoop {
       logger.error({ error: message }, "记忆整合失败");
     }
   }
+
+  // ============================================
+  // 私有方法 - 缓存管理
+  // ============================================
 
   /**
    * 获取或创建上下文构建器
@@ -779,7 +837,7 @@ export class AgentLoop {
   private _evictIfNeeded(): void {
     // 获取所有缓存键，按插入顺序（LRU）
     const keys = Array.from(this.contextBuilders.keys());
-    
+
     // 持续淘汰直到满足大小限制
     while (keys.length > AgentLoop.MAX_CACHE_SIZE) {
       const keyToEvict = keys.shift()!;

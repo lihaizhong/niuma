@@ -5,10 +5,10 @@
  * 支持工作区技能和内置技能，工作区技能优先。
  */
 
-import { existsSync, readdirSync, readFileSync } from "node:fs";
-import { join } from "node:path";
-import { fileURLToPath } from "node:url";
-import { dirname } from "node:path";
+import { existsSync, readdirSync, readFileSync } from "fs";
+import { join } from "path";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
 import { createLogger } from "../log";
 import * as yaml from "js-yaml";
 
@@ -71,12 +71,20 @@ export interface SkillFullInfo extends SkillInfo {
  * 内置技能位置：代码包中的 skills 目录
  */
 export class SkillsLoader {
+  // ============================================
+  // 属性
+  // ============================================
+
   /** 工作区根目录 */
   private readonly workspaceDir: string;
   /** 内置技能目录 */
   private readonly builtinSkillsDir: string;
   /** 技能缓存 */
   private skillsCache: Map<string, SkillFullInfo> | null = null;
+
+  // ============================================
+  // 构造函数
+  // ============================================
 
   /**
    * 创建技能加载器实例
@@ -88,6 +96,10 @@ export class SkillsLoader {
     // 默认内置技能目录在 niuma/skills
     this.builtinSkillsDir = builtinDir ?? join(__dirname, "skills");
   }
+
+  // ============================================
+  // 公共方法 - 技能列表
+  // ============================================
 
   /**
    * 列出所有技能
@@ -105,6 +117,10 @@ export class SkillsLoader {
 
     return skills.map(this._toSkillInfo);
   }
+
+  // ============================================
+  // 公共方法 - 技能加载
+  // ============================================
 
   /**
    * 加载技能内容（去除 frontmatter）
@@ -147,6 +163,10 @@ export class SkillsLoader {
     return parts.join("\n\n");
   }
 
+  // ============================================
+  // 公共方法 - 技能摘要
+  // ============================================
+
   /**
    * 构建 XML 格式的技能摘要
    * @returns XML 格式的技能摘要
@@ -167,6 +187,10 @@ export class SkillsLoader {
     return `<skills>\n${skillElements}\n</skills>`;
   }
 
+  // ============================================
+  // 公共方法 - 元数据获取
+  // ============================================
+
   /**
    * 获取技能元数据
    * @param name 技能名称
@@ -179,6 +203,10 @@ export class SkillsLoader {
     return skill?.metadata ?? null;
   }
 
+  // ============================================
+  // 公共方法 - 缓存刷新
+  // ============================================
+
   /**
    * 刷新技能缓存
    * @description 强制重新扫描技能目录
@@ -187,6 +215,10 @@ export class SkillsLoader {
     this.skillsCache = null;
     this._ensureCache();
   }
+
+  // ============================================
+  // 私有方法
+  // ============================================
 
   /**
    * 确保缓存已初始化
