@@ -132,40 +132,6 @@ export class ContextBuilder {
   }
 
   /**
-   * 构建完整的 System Prompt（异步）
-   * @description 从多个来源组装 System Prompt
-   * @param skillNames 额外激活的技能名称（可选）
-   * @returns 完整的 System Prompt 字符串
-   */
-  async buildSystemPrompt(skillNames?: string[]): Promise<string> {
-    const parts: string[] = [];
-
-    // 1. 核心身份信息
-    const identity = this._getIdentity();
-    parts.push(identity);
-
-    // 2. Bootstrap 文件内容
-    const bootstrapContent = await this._loadBootstrapFiles();
-    if (bootstrapContent) {
-      parts.push(bootstrapContent);
-    }
-
-    // 3. 长期记忆上下文
-    const memoryContext = await this._getMemoryContext();
-    if (memoryContext) {
-      parts.push(memoryContext);
-    }
-
-    // 4. 技能上下文
-    const skillsContent = this._loadSkillsContext(skillNames);
-    if (skillsContent) {
-      parts.push(skillsContent);
-    }
-
-    return parts.join("\n\n");
-  }
-
-  /**
    * 组装消息列表（异步）
    * @description 将历史消息和当前消息组装为 LLM 可用的消息列表
    * @param options 构建选项
@@ -199,6 +165,40 @@ export class ContextBuilder {
     });
 
     return messages;
+  }
+
+  /**
+   * 构建完整的 System Prompt（异步）
+   * @description 从多个来源组装 System Prompt
+   * @param skillNames 额外激活的技能名称（可选）
+   * @returns 完整的 System Prompt 字符串
+   */
+  async buildSystemPrompt(skillNames?: string[]): Promise<string> {
+    const parts: string[] = [];
+
+    // 1. 核心身份信息
+    const identity = this._getIdentity();
+    parts.push(identity);
+
+    // 2. Bootstrap 文件内容
+    const bootstrapContent = await this._loadBootstrapFiles();
+    if (bootstrapContent) {
+      parts.push(bootstrapContent);
+    }
+
+    // 3. 长期记忆上下文
+    const memoryContext = await this._getMemoryContext();
+    if (memoryContext) {
+      parts.push(memoryContext);
+    }
+
+    // 4. 技能上下文
+    const skillsContent = this._loadSkillsContext(skillNames);
+    if (skillsContent) {
+      parts.push(skillsContent);
+    }
+
+    return parts.join("\n\n");
   }
 
   /**
