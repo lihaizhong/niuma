@@ -97,7 +97,16 @@ class Experience:
 
     def is_new(self) -> bool:
         """是否为新经验"""
-        return datetime.now() - self.created < timedelta(days=NEW_EXPERIENCE_DAYS)
+        # 确保时间比较时使用相同的时区
+        now = datetime.now()
+        if self.created.tzinfo is not None:
+            # 如果 created 有时区信息，将 now 转换为 UTC
+            now = datetime.utcnow().replace(tzinfo=None)
+            # 移除 created 的时区信息，使其与 now 兼容
+            created = self.created.replace(tzinfo=None)
+        else:
+            created = self.created
+        return now - created < timedelta(days=NEW_EXPERIENCE_DAYS)
 
 
 def scan_experiences(vault_path: Path) -> Dict[str, Experience]:
@@ -281,6 +290,8 @@ graph TB
         SO[解决方案]
         KN[知识点]
         CV[约定规范]
+        EX[经验日志]
+        OT[其他]
 
         IM --> EL
         IM --> PF
@@ -288,6 +299,8 @@ graph TB
         IM --> SO
         IM --> KN
         IM --> CV
+        IM --> EX
+        IM --> OT
 
         EL --> S1[具体技巧]
         EL --> P1[通用原则]
@@ -422,7 +435,7 @@ graph TB
 
 ## 🔄 更新记录
 
-- {now[:10]}: 自动更新影响力计算，{total} 条经验
+- {now_date}: 自动更新影响力计算，{total} 条经验
 
 ---
 
@@ -467,12 +480,14 @@ graph TB
 ## 📊 统计信息
 
 - **总经验数**：{total}
-- **技巧数**：{len(skills)}（展示前 20）
-- **原则数**：{len(principles)}（展示前 20）
-- **模型数**：{len(models)}（展示前 20）
-- **最高影响力**：{max_impact:.1f}
-- **平均影响力**：{avg_impact:.1f}
-- **最近更新**：{now[:10]}
+- **技巧数**：{skills_count}（展示前 20）
+- **原则数**：{principles_count}（展示前 20）
+- **模型数**：{models_count}（展示前 20）
+- **经验日志**：{experience_logs_count}
+- **其他类型**：{others_count}（未分类经验）
+- **最高影响力**：{max_impact}
+- **平均影响力**：{avg_impact}
+- **最近更新**：{now_date}
 
 ---
 
@@ -486,7 +501,29 @@ graph TB
 - [[#工作流程]] - 工作流程经验
 """
 
-    return md
+    # 替换所有占位符
+    now_date = now[:10]
+    skills_count = len(skills)
+    principles_count = len(principles)
+    models_count = len(models)
+    
+        # 计算其他类型的经验数量
+    experience_logs_count = sum(1 for exp in experiences.values() if exp.type == 'experience_log')
+    others_count = sum(1 for exp in experiences.values() 
+                      if exp.type not in ['preference', 'workflow', 'solution', 'knowledge', 'convention', 'style', 'experience_log'])
+    
+    return md.format(
+        now=now,
+        now_date=now_date,
+        total=total,
+        skills_count=skills_count,
+        principles_count=principles_count,
+        models_count=models_count,
+        experience_logs_count=experience_logs_count,
+        others_count=others_count,
+        max_impact=f"{max_impact:.1f}",
+        avg_impact=f"{avg_impact:.1f}"
+    )
 
 
 def identify_low_impact_experiences(experiences: Dict[str, Experience]) -> List[Experience]:

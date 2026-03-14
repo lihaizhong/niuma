@@ -200,7 +200,7 @@ export class AgentLoop {
     // 主循环
     while (this.running) {
       try {
-        // 等待消息
+        // 等待消息（如果没有消息，将挂起等待）
         const message = await this.messageQueue.dequeue();
 
         // 检查运行状态（可能在等待期间被停止）
@@ -208,7 +208,7 @@ export class AgentLoop {
           break;
         }
 
-        // 处理消息
+        // 处理消息（组织语言 -> 调用工具 -> 反馈结果）
         await this._processMessage(message);
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);

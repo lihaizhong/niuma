@@ -6,8 +6,11 @@
  * 用于消息缓冲的通用异步队列
  */
 export class AsyncQueue<T = unknown> {
+  /** 存储队列项目的数组 */
   private queue: T[] = []
+  /** 等待取值的 Promise 解析器数组 */
   private waitingResolvers: Array<(value: T) => void> = []
+  /** 队列最大容量，0 表示无限制 */
   private maxSize: number
 
   /**
@@ -16,6 +19,20 @@ export class AsyncQueue<T = unknown> {
    */
   constructor(maxSize: number = 0) {
     this.maxSize = maxSize
+  }
+
+  /**
+   * 获取队列大小
+   */
+  get size(): number {
+    return this.queue.length
+  }
+
+  /**
+   * 检查队列是否为空
+   */
+  get isEmpty(): boolean {
+    return this.queue.length === 0
   }
 
   /**
@@ -52,19 +69,5 @@ export class AsyncQueue<T = unknown> {
   clear(): void {
     this.queue = []
     this.waitingResolvers = []
-  }
-
-  /**
-   * 获取队列大小
-   */
-  size(): number {
-    return this.queue.length
-  }
-
-  /**
-   * 检查队列是否为空
-   */
-  isEmpty(): boolean {
-    return this.queue.length === 0
   }
 }
