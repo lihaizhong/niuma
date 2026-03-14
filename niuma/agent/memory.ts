@@ -98,32 +98,6 @@ export class MemoryStore {
   // ============================================
 
   /**
-   * 读取长期记忆
-   * @description 从 MEMORY.md 读取长期结构化知识
-   * @returns 记忆内容，如果文件不存在则返回空字符串
-   */
-  async readLongTerm(): Promise<string> {
-    try {
-      return await readFile(this.memoryFile, "utf-8");
-    } catch {
-      return "";
-    }
-  }
-
-  /**
-   * 写入长期记忆
-   * @description 覆盖写入 MEMORY.md（使用原子写入避免竞态条件）
-   * @param content 要写入的内容
-   */
-  async writeLongTerm(content: string): Promise<void> {
-    await fs.ensureDir(this.memoryDir);
-    // 使用原子写入：先写入临时文件，然后重命名
-    const tempPath = `${this.memoryFile}.tmp`;
-    await writeFile(tempPath, content, "utf-8");
-    await rename(tempPath, this.memoryFile);
-  }
-
-  /**
    * 追加历史条目
    * @description 将条目追加到 HISTORY.md
    * @param entry 历史条目内容
@@ -140,7 +114,7 @@ export class MemoryStore {
    * @returns 格式化的记忆上下文，如果记忆为空则返回空字符串
    */
   async getMemoryContext(): Promise<string> {
-    const longTerm = await this.readLongTerm();
+    const longTerm = await this._readLongTerm();
     if (!longTerm) {
       return "";
     }
@@ -214,7 +188,7 @@ export class MemoryStore {
     }
 
     // 获取当前长期记忆
-    const currentMemory = await this.readLongTerm();
+    const currentMemory = await this._readLongTerm();
 
     // 构建整合提示词
     const prompt = this._buildConsolidationPrompt(currentMemory, lines);
@@ -265,7 +239,7 @@ export class MemoryStore {
           typeof update === "string" ? update : JSON.stringify(update);
         // 只有内容变化时才写入
         if (updateStr !== currentMemory) {
-          await this.writeLongTerm(updateStr);
+          await this._writeLongTerm(updateStr);
         }
       }
 
@@ -289,6 +263,40 @@ export class MemoryStore {
       return false;
     }
   }
+
+  // ============================================
+  // 私有方法 - 文件操作
+  // ============================================
+
+  /**
+   * 读取长期记忆
+   * @description 从 MEMORY.md 读取长期结构化知识
+   * @returns 记忆内容，如果文件不存在则返回空字符串
+   */
+  private async _readLongTerm(): Promise<string> {
+    try {
+      return await readFile(this.memoryFile, "utf-8");
+    } catch {
+      return "";
+    }
+  }
+
+  /**
+   * 写入长期记忆
+   * @description 覆盖写入 MEMORY.md（使用原子写入避免竞态条件）
+   * @param content 要写入的内容
+   */
+  private async _writeLongTerm(content: string): Promise<void> {
+    await fs.ensureDir(this.memoryDir);
+    // 使用原子写入：先写入临时文件，然后重命名
+    const tempPath = `${this.memoryFile}.tmp`;
+    await writeFile(tempPath, content, "utf-8");
+    await rename(tempPath, this.memoryFile);
+  }
+
+  // ============================================
+  // 私有方法 - 辅助方法
+  // ============================================
 
   /**
    * 格式化消息用于整合
