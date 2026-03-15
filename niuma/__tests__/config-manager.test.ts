@@ -1,6 +1,6 @@
 /**
  * ConfigManager 单元测试
- * 
+ *
  * 测试范围：
  * - 配置文件加载和解析（支持 JSON5 格式）
  * - 环境变量引用解析
@@ -11,22 +11,22 @@
  * - 缓存清除功能
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { existsSync, unlinkSync, writeFileSync, mkdirSync, rmSync } from 'fs'
-import { join } from 'path'
-import { tmpdir } from 'os'
-import { ConfigManager } from '../config/manager'
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { existsSync, unlinkSync, writeFileSync, mkdirSync, rmSync } from "fs";
+import { join } from "path";
+import { tmpdir } from "os";
+import { ConfigManager } from "../config/manager";
 
-describe('ConfigManager', () => {
+describe("ConfigManager", () => {
   /**
    * 测试变量声明
    * - testDir: 测试临时目录路径
    * - configPath: 测试配置文件路径
    * - manager: ConfigManager 实例
    */
-  let testDir: string
-  let configPath: string
-  let manager: ConfigManager
+  let testDir: string;
+  let configPath: string;
+  let manager: ConfigManager;
 
   /**
    * 测试前置钩子：在每个测试用例执行前运行
@@ -36,11 +36,11 @@ describe('ConfigManager', () => {
    * 3. 创建 ConfigManager 实例
    */
   beforeEach(() => {
-    testDir = join(tmpdir(), 'niuma-manager-test-' + Date.now())
-    mkdirSync(testDir, { recursive: true })
-    configPath = join(testDir, 'niuma.config.json')
-    manager = new ConfigManager(configPath)
-  })
+    testDir = join(tmpdir(), "niuma-manager-test-" + Date.now());
+    mkdirSync(testDir, { recursive: true });
+    configPath = join(testDir, "niuma.config.json");
+    manager = new ConfigManager(configPath);
+  });
 
   /**
    * 测试后置钩子：在每个测试用例执行后运行
@@ -51,12 +51,12 @@ describe('ConfigManager', () => {
    */
   afterEach(() => {
     if (existsSync(configPath)) {
-      unlinkSync(configPath)
+      unlinkSync(configPath);
     }
     if (existsSync(testDir)) {
-      rmSync(testDir, { recursive: true, force: true })
+      rmSync(testDir, { recursive: true, force: true });
     }
-  })
+  });
 
   /**
    * load() 方法测试组
@@ -68,7 +68,7 @@ describe('ConfigManager', () => {
    * - 配置缓存机制
    * - 强制重新加载
    */
-  describe('load()', () => {
+  describe("load()", () => {
     /**
      * 测试目的：验证 ConfigManager 能够正确加载并解析有效的 JSON5 配置文件
      * 测试步骤：
@@ -81,7 +81,7 @@ describe('ConfigManager', () => {
      * - agents.list 数组正确解析
      * - agents.list[0].id 正确解析
      */
-    it('应该加载并解析有效的配置文件', () => {
+    it("应该加载并解析有效的配置文件", () => {
       const configContent = `
 {
   // 单行注释
@@ -99,14 +99,14 @@ describe('ConfigManager', () => {
     ]
   }
 }
-`
-      writeFileSync(configPath, configContent, 'utf-8')
-      const config = manager.load()
-      expect(config.workspaceDir).toBe('~/.niuma/workspace')
-      expect(config.maxIterations).toBe(40)
-      expect(config.agents.list).toHaveLength(1)
-      expect(config.agents.list[0].id).toBe('test')
-    })
+`;
+      writeFileSync(configPath, configContent, "utf-8");
+      const config = manager.load();
+      expect(config.workspaceDir).toBe("~/.niuma/workspace");
+      expect(config.maxIterations).toBe(40);
+      expect(config.agents.list).toHaveLength(1);
+      expect(config.agents.list[0].id).toBe("test");
+    });
 
     /**
      * 测试目的：验证 ConfigManager 能够正确解析配置中的环境变量引用
@@ -118,8 +118,8 @@ describe('ConfigManager', () => {
      * 验证点：
      * - 配置中的 ${TEST_VAR} 被正确替换为 test-value
      */
-    it('应该解析环境变量引用', () => {
-      process.env.TEST_VAR = 'test-value'
+    it("应该解析环境变量引用", () => {
+      process.env.TEST_VAR = "test-value";
 
       const configContent = `
 {
@@ -131,13 +131,13 @@ describe('ConfigManager', () => {
     }
   }
 }
-`
-      writeFileSync(configPath, configContent, 'utf-8')
-      const config = manager.load()
-      expect(config.providers.openai?.apiKey).toBe('test-value')
+`;
+      writeFileSync(configPath, configContent, "utf-8");
+      const config = manager.load();
+      expect(config.providers.openai?.apiKey).toBe("test-value");
 
-      delete process.env.TEST_VAR
-    })
+      delete process.env.TEST_VAR;
+    });
 
     /**
      * 测试目的：验证当配置文件不存在时，返回默认配置
@@ -149,11 +149,11 @@ describe('ConfigManager', () => {
      * - workspaceDir 使用默认值 '.niuma'
      * - maxIterations 使用默认值 40
      */
-    it('应该返回默认配置当文件不存在时', () => {
-      const config = manager.load()
-      expect(config.workspaceDir).toBe('.niuma')
-      expect(config.maxIterations).toBe(40)
-    })
+    it("应该返回默认配置当文件不存在时", () => {
+      const config = manager.load();
+      expect(config.workspaceDir).toBe(".niuma");
+      expect(config.maxIterations).toBe(40);
+    });
 
     /**
      * 测试目的：验证 ConfigManager 的缓存机制
@@ -166,17 +166,17 @@ describe('ConfigManager', () => {
      * - 两次加载的配置对象完全相等（===）
      * - 证明使用了缓存机制
      */
-    it('应该缓存配置', () => {
-      const configContent = '{"maxIterations": 50}'
-      writeFileSync(configPath, configContent, 'utf-8')
+    it("应该缓存配置", () => {
+      const configContent = '{"maxIterations": 50}';
+      writeFileSync(configPath, configContent, "utf-8");
 
-      const config1 = manager.load()
-      const config2 = manager.load()
+      const config1 = manager.load();
+      const config2 = manager.load();
 
-      expect(config1.maxIterations).toBe(50)
-      expect(config2.maxIterations).toBe(50)
-      expect(config1).toBe(config2) // 应该是同一个对象
-    })
+      expect(config1.maxIterations).toBe(50);
+      expect(config2.maxIterations).toBe(50);
+      expect(config1).toBe(config2); // 应该是同一个对象
+    });
 
     /**
      * 测试目的：验证 force 参数能够强制重新加载配置
@@ -190,18 +190,18 @@ describe('ConfigManager', () => {
      * - 第一次加载的 maxIterations 为 50
      * - 第二次强制加载的 maxIterations 为 60
      */
-    it('应该强制重新加载当指定 force 参数', () => {
-      const configContent = '{"maxIterations": 50}'
-      writeFileSync(configPath, configContent, 'utf-8')
+    it("应该强制重新加载当指定 force 参数", () => {
+      const configContent = '{"maxIterations": 50}';
+      writeFileSync(configPath, configContent, "utf-8");
 
-      const config1 = manager.load()
-      writeFileSync(configPath, '{"maxIterations": 60}', 'utf-8')
-      const config2 = manager.load(true)
+      const config1 = manager.load();
+      writeFileSync(configPath, '{"maxIterations": 60}', "utf-8");
+      const config2 = manager.load(true);
 
-      expect(config1.maxIterations).toBe(50)
-      expect(config2.maxIterations).toBe(60)
-    })
-  })
+      expect(config1.maxIterations).toBe(50);
+      expect(config2.maxIterations).toBe(60);
+    });
+  });
 
   /**
    * getAgentConfig() 方法测试组
@@ -211,7 +211,7 @@ describe('ConfigManager', () => {
    * - 全局配置继承
    * - 角色不存在时的错误处理
    */
-  describe('getAgentConfig()', () => {
+  describe("getAgentConfig()", () => {
     beforeEach(() => {
       const configContent = `
 {
@@ -237,9 +237,9 @@ describe('ConfigManager', () => {
     ]
   }
 }
-`
-      writeFileSync(configPath, configContent, 'utf-8')
-    })
+`;
+      writeFileSync(configPath, configContent, "utf-8");
+    });
 
     /**
      * 测试目的：验证 getAgentConfig 能够正确合并全局配置和角色特定配置
@@ -252,11 +252,11 @@ describe('ConfigManager', () => {
      * - progressMode 被角色配置覆盖为 'verbose'
      * - showReasoning 被角色配置覆盖为 true
      */
-    it('应该返回合并后的角色配置', () => {
-      const agentConfig = manager.getAgentConfig('test')
-      expect(agentConfig.agent?.progressMode).toBe('verbose')
-      expect(agentConfig.agent?.showReasoning).toBe(true)
-    })
+    it("应该返回合并后的角色配置", () => {
+      const agentConfig = manager.getAgentConfig("test");
+      expect(agentConfig.agent?.progressMode).toBe("verbose");
+      expect(agentConfig.agent?.showReasoning).toBe(true);
+    });
 
     /**
      * 测试目的：验证角色配置能够继承全局默认配置
@@ -269,11 +269,11 @@ describe('ConfigManager', () => {
      * - maxIterations 继承全局值 40
      * - workspaceDir 继承全局值 '~/.niuma/workspace'
      */
-    it('应该继承全局默认配置', () => {
-      const agentConfig = manager.getAgentConfig('test')
-      expect(agentConfig.maxIterations).toBe(40)
-      expect(agentConfig.workspaceDir).toBe('~/.niuma/workspace')
-    })
+    it("应该继承全局默认配置", () => {
+      const agentConfig = manager.getAgentConfig("test");
+      expect(agentConfig.maxIterations).toBe(40);
+      expect(agentConfig.workspaceDir).toBe("~/.niuma/workspace");
+    });
 
     /**
      * 测试目的：验证当角色不存在时抛出错误
@@ -284,10 +284,12 @@ describe('ConfigManager', () => {
      * 验证点：
      * - 抛出包含 "角色 nonexistent 不存在" 的错误
      */
-    it('应该抛出错误当角色不存在', () => {
-      expect(() => manager.getAgentConfig('nonexistent')).toThrow('角色 nonexistent 不存在')
-    })
-  })
+    it("应该抛出错误当角色不存在", () => {
+      expect(() => manager.getAgentConfig("nonexistent")).toThrow(
+        "角色 nonexistent 不存在",
+      );
+    });
+  });
 
   /**
    * getAgentWorkspaceDir() 方法测试组
@@ -296,7 +298,7 @@ describe('ConfigManager', () => {
    * - 默认工作区路径生成
    * - 自定义工作区路径使用
    */
-  describe('getAgentWorkspaceDir()', () => {
+  describe("getAgentWorkspaceDir()", () => {
     beforeEach(() => {
       const configContent = `
 {
@@ -310,9 +312,9 @@ describe('ConfigManager', () => {
     ]
   }
 }
-`
-      writeFileSync(configPath, configContent, 'utf-8')
-    })
+`;
+      writeFileSync(configPath, configContent, "utf-8");
+    });
 
     /**
      * 测试目的：验证当角色未指定 workspaceDir 时，使用默认路径
@@ -326,13 +328,13 @@ describe('ConfigManager', () => {
      * - 路径包含角色 ID 'test'
      * - 路径包含 'workspace'
      */
-    it('应该返回默认工作区路径', () => {
-      const workspaceDir = manager.getAgentWorkspaceDir('test')
-      expect(workspaceDir).toContain('.niuma')
-      expect(workspaceDir).toContain('agents')
-      expect(workspaceDir).toContain('test')
-      expect(workspaceDir).toContain('workspace')
-    })
+    it("应该返回默认工作区路径", () => {
+      const workspaceDir = manager.getAgentWorkspaceDir("test");
+      expect(workspaceDir).toContain(".niuma");
+      expect(workspaceDir).toContain("agents");
+      expect(workspaceDir).toContain("test");
+      expect(workspaceDir).toContain("workspace");
+    });
 
     /**
      * 测试目的：验证当角色指定了 workspaceDir 时，使用配置的路径
@@ -344,8 +346,8 @@ describe('ConfigManager', () => {
      * 验证点：
      * - 返回的路径与配置中指定的完全一致
      */
-    it('应该使用配置中指定的 workspaceDir', () => {
-      const customWorkspace = join(testDir, 'custom-workspace')
+    it("应该使用配置中指定的 workspaceDir", () => {
+      const customWorkspace = join(testDir, "custom-workspace");
       const configContent = `
 {
   "agents": {
@@ -359,13 +361,13 @@ describe('ConfigManager', () => {
     ]
   }
 }
-`.replace('${customWorkspace}', customWorkspace)
-      writeFileSync(configPath, configContent, 'utf-8')
-      manager.clearCache() // 清除缓存以加载新配置
-      const workspaceDir = manager.getAgentWorkspaceDir('test')
-      expect(workspaceDir).toBe(customWorkspace)
-    })
-  })
+`.replace("${customWorkspace}", customWorkspace);
+      writeFileSync(configPath, configContent, "utf-8");
+      manager.clearCache(); // 清除缓存以加载新配置
+      const workspaceDir = manager.getAgentWorkspaceDir("test");
+      expect(workspaceDir).toBe(customWorkspace);
+    });
+  });
 
   /**
    * getAgentLogPath() 方法测试组
@@ -373,7 +375,7 @@ describe('ConfigManager', () => {
    * 测试场景：
    * - 日志文件路径生成
    */
-  describe('getAgentLogPath()', () => {
+  describe("getAgentLogPath()", () => {
     beforeEach(() => {
       const configContent = `
 {
@@ -387,9 +389,9 @@ describe('ConfigManager', () => {
     ]
   }
 }
-`
-      writeFileSync(configPath, configContent, 'utf-8')
-    })
+`;
+      writeFileSync(configPath, configContent, "utf-8");
+    });
 
     /**
      * 测试目的：验证 getAgentLogPath 能够返回正确的日志文件路径
@@ -402,13 +404,13 @@ describe('ConfigManager', () => {
      * - 路径包含 'logs'
      * - 路径包含角色 ID 和扩展名 'test.log'
      */
-    it('应该返回日志文件路径', () => {
-      const logPath = manager.getAgentLogPath('test')
-      expect(logPath).toContain('.niuma')
-      expect(logPath).toContain('logs')
-      expect(logPath).toContain('test.log')
-    })
-  })
+    it("应该返回日志文件路径", () => {
+      const logPath = manager.getAgentLogPath("test");
+      expect(logPath).toContain(".niuma");
+      expect(logPath).toContain("logs");
+      expect(logPath).toContain("test.log");
+    });
+  });
 
   /**
    * getAgentSessionDir() 方法测试组
@@ -416,7 +418,7 @@ describe('ConfigManager', () => {
    * 测试场景：
    * - 会话目录路径生成
    */
-  describe('getAgentSessionDir()', () => {
+  describe("getAgentSessionDir()", () => {
     beforeEach(() => {
       const configContent = `
 {
@@ -430,9 +432,9 @@ describe('ConfigManager', () => {
     ]
   }
 }
-`
-      writeFileSync(configPath, configContent, 'utf-8')
-    })
+`;
+      writeFileSync(configPath, configContent, "utf-8");
+    });
 
     /**
      * 测试目的：验证 getAgentSessionDir 能够返回正确的会话存储路径
@@ -445,13 +447,13 @@ describe('ConfigManager', () => {
      * - 路径包含 'sessions'
      * - 路径包含角色 ID 'test'
      */
-    it('应该返回会话存储路径', () => {
-      const sessionDir = manager.getAgentSessionDir('test')
-      expect(sessionDir).toContain('.niuma')
-      expect(sessionDir).toContain('sessions')
-      expect(sessionDir).toContain('test')
-    })
-  })
+    it("应该返回会话存储路径", () => {
+      const sessionDir = manager.getAgentSessionDir("test");
+      expect(sessionDir).toContain(".niuma");
+      expect(sessionDir).toContain("sessions");
+      expect(sessionDir).toContain("test");
+    });
+  });
 
   /**
    * listAgents() 方法测试组
@@ -461,7 +463,7 @@ describe('ConfigManager', () => {
    * - 空角色列表处理
    * - 配置摘要包含
    */
-  describe('listAgents()', () => {
+  describe("listAgents()", () => {
     /**
      * 测试目的：验证 listAgents 能够返回所有角色
      * 测试步骤：
@@ -473,7 +475,7 @@ describe('ConfigManager', () => {
      * - 第一个角色 ID 为 'agent1'
      * - 第二个角色 ID 为 'agent2'
      */
-    it('应该返回所有角色', () => {
+    it("应该返回所有角色", () => {
       const configContent = `
 {
   "agents": {
@@ -491,13 +493,13 @@ describe('ConfigManager', () => {
     ]
   }
 }
-`
-      writeFileSync(configPath, configContent, 'utf-8')
-      const agents = manager.listAgents()
-      expect(agents).toHaveLength(2)
-      expect(agents[0].id).toBe('agent1')
-      expect(agents[1].id).toBe('agent2')
-    })
+`;
+      writeFileSync(configPath, configContent, "utf-8");
+      const agents = manager.listAgents();
+      expect(agents).toHaveLength(2);
+      expect(agents[0].id).toBe("agent1");
+      expect(agents[1].id).toBe("agent2");
+    });
 
     /**
      * 测试目的：验证当没有角色时返回空数组
@@ -508,7 +510,7 @@ describe('ConfigManager', () => {
      * 验证点：
      * - 返回数组长度为 0
      */
-    it('应该返回空数组当没有角色时', () => {
+    it("应该返回空数组当没有角色时", () => {
       const configContent = `
 {
   "agents": {
@@ -516,11 +518,11 @@ describe('ConfigManager', () => {
     "list": []
   }
 }
-`
-      writeFileSync(configPath, configContent, 'utf-8')
-      const agents = manager.listAgents()
-      expect(agents).toHaveLength(0)
-    })
+`;
+      writeFileSync(configPath, configContent, "utf-8");
+      const agents = manager.listAgents();
+      expect(agents).toHaveLength(0);
+    });
 
     /**
      * 测试目的：验证返回的角色信息包含配置摘要
@@ -532,7 +534,7 @@ describe('ConfigManager', () => {
      * - config.agent 为 true（有覆盖）
      * - config.providers 为 false（无覆盖）
      */
-    it('应该包含配置摘要', () => {
+    it("应该包含配置摘要", () => {
       const configContent = `
 {
   "agents": {
@@ -548,13 +550,13 @@ describe('ConfigManager', () => {
     ]
   }
 }
-`
-      writeFileSync(configPath, configContent, 'utf-8')
-      const agents = manager.listAgents()
-      expect(agents[0].config.agent).toBe(true)
-      expect(agents[0].config.providers).toBe(false)
-    })
-  })
+`;
+      writeFileSync(configPath, configContent, "utf-8");
+      const agents = manager.listAgents();
+      expect(agents[0].config.agent).toBe(true);
+      expect(agents[0].config.providers).toBe(false);
+    });
+  });
 
   /**
    * getDefaultAgentId() 方法测试组
@@ -564,7 +566,7 @@ describe('ConfigManager', () => {
    * - 无默认角色时返回第一个角色 ID
    * - 无角色时返回空字符串
    */
-  describe('getDefaultAgentId()', () => {
+  describe("getDefaultAgentId()", () => {
     /**
      * 测试目的：验证能够返回标记为默认的角色 ID
      * 测试步骤：
@@ -574,7 +576,7 @@ describe('ConfigManager', () => {
      * 验证点：
      * - 返回 'agent2'（标记为 default 的角色）
      */
-    it('应该返回标记为默认的角色 ID', () => {
+    it("应该返回标记为默认的角色 ID", () => {
       const configContent = `
 {
   "agents": {
@@ -592,11 +594,11 @@ describe('ConfigManager', () => {
     ]
   }
 }
-`
-      writeFileSync(configPath, configContent, 'utf-8')
-      const defaultAgentId = manager.getDefaultAgentId()
-      expect(defaultAgentId).toBe('agent2')
-    })
+`;
+      writeFileSync(configPath, configContent, "utf-8");
+      const defaultAgentId = manager.getDefaultAgentId();
+      expect(defaultAgentId).toBe("agent2");
+    });
 
     /**
      * 测试目的：验证当没有默认角色时，返回第一个角色 ID
@@ -607,7 +609,7 @@ describe('ConfigManager', () => {
      * 验证点：
      * - 返回 'agent1'（列表中的第一个角色）
      */
-    it('应该返回第一个角色 ID 当没有默认角色时', () => {
+    it("应该返回第一个角色 ID 当没有默认角色时", () => {
       const configContent = `
 {
   "agents": {
@@ -624,11 +626,11 @@ describe('ConfigManager', () => {
     ]
   }
 }
-`
-      writeFileSync(configPath, configContent, 'utf-8')
-      const defaultAgentId = manager.getDefaultAgentId()
-      expect(defaultAgentId).toBe('agent1')
-    })
+`;
+      writeFileSync(configPath, configContent, "utf-8");
+      const defaultAgentId = manager.getDefaultAgentId();
+      expect(defaultAgentId).toBe("agent1");
+    });
 
     /**
      * 测试目的：验证当没有角色时返回空字符串
@@ -639,7 +641,7 @@ describe('ConfigManager', () => {
      * 验证点：
      * - 返回空字符串 ''
      */
-    it('应该返回空字符串当没有角色时', () => {
+    it("应该返回空字符串当没有角色时", () => {
       const configContent = `
 {
   "agents": {
@@ -647,12 +649,12 @@ describe('ConfigManager', () => {
     "list": []
   }
 }
-`
-      writeFileSync(configPath, configContent, 'utf-8')
-      const defaultAgentId = manager.getDefaultAgentId()
-      expect(defaultAgentId).toBe('')
-    })
-  })
+`;
+      writeFileSync(configPath, configContent, "utf-8");
+      const defaultAgentId = manager.getDefaultAgentId();
+      expect(defaultAgentId).toBe("");
+    });
+  });
 
   /**
    * hasAgent() 方法测试组
@@ -661,7 +663,7 @@ describe('ConfigManager', () => {
    * - 角色存在时返回 true
    * - 角色不存在时返回 false
    */
-  describe('hasAgent()', () => {
+  describe("hasAgent()", () => {
     beforeEach(() => {
       const configContent = `
 {
@@ -675,9 +677,9 @@ describe('ConfigManager', () => {
     ]
   }
 }
-`
-      writeFileSync(configPath, configContent, 'utf-8')
-    })
+`;
+      writeFileSync(configPath, configContent, "utf-8");
+    });
 
     /**
      * 测试目的：验证 hasAgent 能够正确检测角色是否存在
@@ -688,9 +690,9 @@ describe('ConfigManager', () => {
      * 验证点：
      * - 返回 true（角色存在）
      */
-    it('应该返回 true 当角色存在时', () => {
-      expect(manager.hasAgent('test')).toBe(true)
-    })
+    it("应该返回 true 当角色存在时", () => {
+      expect(manager.hasAgent("test")).toBe(true);
+    });
 
     /**
      * 测试目的：验证 hasAgent 能够正确检测角色不存在
@@ -701,10 +703,10 @@ describe('ConfigManager', () => {
      * 验证点：
      * - 返回 false（角色不存在）
      */
-    it('应该返回 false 当角色不存在时', () => {
-      expect(manager.hasAgent('nonexistent')).toBe(false)
-    })
-  })
+    it("应该返回 false 当角色不存在时", () => {
+      expect(manager.hasAgent("nonexistent")).toBe(false);
+    });
+  });
 
   /**
    * clearCache() 方法测试组
@@ -712,7 +714,7 @@ describe('ConfigManager', () => {
    * 测试场景：
    * - 缓存清除后能够加载新配置
    */
-  describe('clearCache()', () => {
+  describe("clearCache()", () => {
     /**
      * 测试目的：验证 clearCache 能够清除配置缓存
      * 测试步骤：
@@ -725,19 +727,19 @@ describe('ConfigManager', () => {
      * - 清除缓存后，能够加载新的配置值
      * - maxIterations 从 50 变为 60
      */
-    it('应该清除配置缓存', () => {
-      const configContent = '{"maxIterations": 50}'
-      writeFileSync(configPath, configContent, 'utf-8')
+    it("应该清除配置缓存", () => {
+      const configContent = '{"maxIterations": 50}';
+      writeFileSync(configPath, configContent, "utf-8");
 
-      manager.load()
-      manager.clearCache()
+      manager.load();
+      manager.clearCache();
 
       // 修改配置文件
-      writeFileSync(configPath, '{"maxIterations": 60}', 'utf-8')
+      writeFileSync(configPath, '{"maxIterations": 60}', "utf-8");
 
       // 重新加载应该获取新配置
-      const config = manager.load(true)
-      expect(config.maxIterations).toBe(60)
-    })
-  })
-})
+      const config = manager.load(true);
+      expect(config.maxIterations).toBe(60);
+    });
+  });
+});

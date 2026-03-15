@@ -6,35 +6,35 @@
  * 支持的渠道类型
  */
 export type ChannelType =
-  | 'telegram'
-  | 'discord'
-  | 'feishu'
-  | 'dingtalk'
-  | 'slack'
-  | 'whatsapp'
-  | 'email'
-  | 'qq'
-  | 'cli'
-  | 'system' // 系统内部消息（用于子智能体通知等）
+  | "telegram"
+  | "discord"
+  | "feishu"
+  | "dingtalk"
+  | "slack"
+  | "whatsapp"
+  | "email"
+  | "qq"
+  | "cli"
+  | "system"; // 系统内部消息（用于子智能体通知等）
 
 /**
  * 媒体内容类型
  */
 export interface MediaContent {
   /** 媒体类型（图片、视频、音频、文档等） */
-  type: 'image' | 'video' | 'audio' | 'document' | 'file'
+  type: "image" | "video" | "audio" | "document" | "file";
   /** 媒体 URL 或 base64 数据 */
-  url?: string
+  url?: string;
   /** Base64 编码数据 */
-  data?: string
+  data?: string;
   /** MIME 类型 */
-  mimeType?: string
+  mimeType?: string;
   /** 文件名 */
-  filename?: string
+  filename?: string;
   /** 文件大小（字节） */
-  size?: number
+  size?: number;
   /** 附加元数据 */
-  metadata?: Record<string, unknown>
+  metadata?: Record<string, unknown>;
 }
 
 /**
@@ -42,25 +42,25 @@ export interface MediaContent {
  */
 export interface InboundMessage {
   /** 渠道类型 */
-  channel: ChannelType
+  channel: ChannelType;
   /** 发送者标识 */
-  senderId: string
+  senderId: string;
   /** 聊天/会话标识 */
-  chatId: string
+  chatId: string;
   /** 消息内容（文本） */
-  content: string
+  content: string;
   /** 媒体附件 */
-  media?: MediaContent[]
+  media?: MediaContent[];
   /** 渠道附加元数据 */
-  metadata?: Record<string, unknown>
+  metadata?: Record<string, unknown>;
   /** 会话键（用于对话跟踪） */
-  sessionKey?: string
+  sessionKey?: string;
   /** 消息时间戳 */
-  timestamp?: number
+  timestamp?: number;
   /** 渠道原始消息 ID */
-  messageId?: string
+  messageId?: string;
   /** 回复的消息 ID */
-  replyTo?: string
+  replyTo?: string;
 }
 
 /**
@@ -68,17 +68,17 @@ export interface InboundMessage {
  */
 export interface OutboundMessage {
   /** 目标渠道类型 */
-  channel: ChannelType
+  channel: ChannelType;
   /** 目标聊天/会话标识 */
-  chatId: string
+  chatId: string;
   /** 消息内容（文本） */
-  content: string
+  content: string;
   /** 附加元数据 */
-  metadata?: Record<string, unknown>
+  metadata?: Record<string, unknown>;
   /** 媒体附件 */
-  media?: MediaContent[]
+  media?: MediaContent[];
   /** 要回复的消息 ID */
-  replyTo?: string
+  replyTo?: string;
 }
 
 /**
@@ -86,13 +86,13 @@ export interface OutboundMessage {
  */
 export interface MessageMetadata {
   /** 消息 ID */
-  id: string
+  id: string;
   /** 时间戳 */
-  timestamp: number
+  timestamp: number;
   /** 来源渠道 */
-  channel: ChannelType
+  channel: ChannelType;
   /** 是否处理成功 */
-  processed?: boolean
+  processed?: boolean;
   /** 处理失败的错误信息 */
-  error?: string
+  error?: string;
 }

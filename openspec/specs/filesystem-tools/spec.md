@@ -1,8 +1,9 @@
-# filesystem-tools Specification
+# filesystem-tools 规格
 
-## Purpose
-TBD - created by archiving change builtin-tools-implementation. Update Purpose after archive.
-## Requirements
+## 目的
+TBD - 由归档变更 builtin-tools-implementation 创建。归档后更新目的。
+
+## 需求
 ### Requirement: read_file 工具读取文件内容
 
 系统 SHALL 提供 read_file 工具，能够读取文件内容并返回给 Agent。

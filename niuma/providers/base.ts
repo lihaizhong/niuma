@@ -8,7 +8,7 @@ import type {
   LLMResponse,
   LLMStreamChunk,
   ChatOptions,
-} from '../types'
+} from "../types";
 
 /**
  * LLM 提供商接口
@@ -18,7 +18,7 @@ export interface LLMProvider {
   /**
    * 获取提供商配置
    */
-  getConfig(): LLMConfig
+  getConfig(): LLMConfig;
 
   /**
    * 同步聊天接口
@@ -37,7 +37,7 @@ export interface LLMProvider {
    * })
    * ```
    */
-  chat(options: ChatOptions): Promise<LLMResponse>
+  chat(options: ChatOptions): Promise<LLMResponse>;
 
   /**
    * 流式聊天接口（可选）
@@ -61,7 +61,7 @@ export interface LLMProvider {
    * }
    * ```
    */
-  chatStream?(options: ChatOptions): AsyncIterable<LLMStreamChunk>
+  chatStream?(options: ChatOptions): AsyncIterable<LLMStreamChunk>;
 
   /**
    * 获取默认模型名称
@@ -71,7 +71,7 @@ export interface LLMProvider {
    *
    * @returns 默认模型名称（如 'gpt-4o'、'claude-3-opus'）
    */
-  getDefaultModel(): string
+  getDefaultModel(): string;
 
   /**
    * 检查提供商是否可用（可选）
@@ -81,7 +81,7 @@ export interface LLMProvider {
    *
    * @returns 如果提供商可用返回 true，否则返回 false
    */
-  isAvailable?(): Promise<boolean>
+  isAvailable?(): Promise<boolean>;
 }
 
 /**
@@ -92,10 +92,10 @@ export class ProviderError extends Error {
   constructor(
     message: string,
     public readonly code?: string,
-    public readonly cause?: Error
+    public readonly cause?: Error,
   ) {
-    super(message)
-    this.name = 'ProviderError'
+    super(message);
+    this.name = "ProviderError";
   }
 }
 
@@ -106,5 +106,5 @@ export class ProviderError extends Error {
 export function createProvider(config: LLMConfig): LLMProvider {
   // 这里可以根据配置类型返回不同的提供商实现
   // 例如 OpenAIProvider, AnthropicProvider 等
-  throw new Error('createProvider not implemented')
+  throw new Error("createProvider not implemented");
 }

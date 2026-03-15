@@ -1,8 +1,9 @@
-# shell-tool Specification
+# shell-tool 规格
 
-## Purpose
-TBD - created by archiving change builtin-tools-implementation. Update Purpose after archive.
-## Requirements
+## 目的
+TBD - 由归档变更 builtin-tools-implementation 创建。归档后更新目的。
+
+## 需求
 ### Requirement: exec 工具执行 Shell 命令
 
 系统 SHALL 提供 exec 工具，能够安全地执行 Shell 命令并返回结果。

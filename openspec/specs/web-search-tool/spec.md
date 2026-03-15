@@ -1,8 +1,9 @@
-# web-search-tool Specification
+# web-search-tool 规格
 
-## Purpose
-TBD - created by archiving change builtin-tools-implementation. Update Purpose after archive.
-## Requirements
+## 目的
+TBD - 由归档变更 builtin-tools-implementation 创建。归档后更新目的。
+
+## 需求
 ### Requirement: web_search 工具执行网页搜索
 
 系统 SHALL 提供 web_search 工具，能够使用搜索引擎查找信息。

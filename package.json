@@ -1,6 +1,6 @@
 {
   "name": "niuma",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "description": "Niuma (牛马) - 智能生活助手，提供陪伴感和情绪价值的智能精灵",
   "main": "dist/index.js",

@@ -389,7 +389,9 @@ ${conversationLines.join("\n")}`;
         args[0] !== null &&
         !Array.isArray(args[0])
       ) {
-        return sanitizeObject(args[0] as Record<string, unknown>, { keepNull: true });
+        return sanitizeObject(args[0] as Record<string, unknown>, {
+          keepNull: true,
+        });
       }
       return null;
     }

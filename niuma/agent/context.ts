@@ -411,7 +411,9 @@ export class ContextBuilder {
    * @param media 媒体内容
    * @returns 图片消息部分，无法处理则返回 null
    */
-  private async _buildImageContent(media: MediaContent): Promise<MessageContentPart | null> {
+  private async _buildImageContent(
+    media: MediaContent,
+  ): Promise<MessageContentPart | null> {
     // 优先使用 base64 数据
     if (media.data) {
       // 如果已有 base64 数据，直接使用
@@ -472,13 +474,13 @@ export class ContextBuilder {
   private async _readImageAsBase64(filePath: string): Promise<string | null> {
     try {
       let absolutePath = filePath;
-      
+
       if (filePath.startsWith("./") || filePath.startsWith("../")) {
         // 规范化路径并验证是否在工作区内
         absolutePath = join(this.workspace, filePath);
         const resolved = normalize(absolutePath);
         const normalizedWorkspace = normalize(this.workspace);
-        
+
         // 确保解析后的路径在工作区内（防止路径遍历攻击）
         if (!resolved.startsWith(normalizedWorkspace + path.sep)) {
           logger.warn({ filePath }, "路径遍历尝试被阻止");

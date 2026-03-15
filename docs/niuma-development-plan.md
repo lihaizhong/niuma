@@ -323,19 +323,28 @@ flowchart TD
 
 ---
 
-### 🔄 Phase 3.2: Git 操作
+### ✅ Phase 3.2: Git 操作
 
+**完成日期：** 2026-03-15
 **优先级：** 高
-**预计工时：** 2-3 天
+**实际工时：** 1 天
 
 | 工具 | 文件 | 功能 | 状态 |
 |------|------|------|------|
-| git_status | `agent/tools/git.ts` | 查看状态 | ⏸️ 待开发 |
-| git_commit | `agent/tools/git.ts` | 提交代码 | ⏸️ 待开发 |
-| git_push | `agent/tools/git.ts` | 推送代码 | ⏸️ 待开发 |
-| git_pull | `agent/tools/git.ts` | 拉取代码 | ⏸️ 待开发 |
-| git_branch | `agent/tools/git.ts` | 分支管理 | ⏸️ 待开发 |
-| git_log | `agent/tools/git.ts` | 查看提交历史 | ⏸️ 待开发 |
+| git_status | `agent/tools/git.ts` | 查看状态 | ✅ 已完成 |
+| git_commit | `agent/tools/git.ts` | 提交代码 | ✅ 已完成 |
+| git_push | `agent/tools/git.ts` | 推送代码 | ✅ 已完成 |
+| git_pull | `agent/tools/git.ts` | 拉取代码 | ✅ 已完成 |
+| git_branch | `agent/tools/git.ts` | 分支管理 | ✅ 已完成 |
+| git_log | `agent/tools/git.ts` | 查看提交历史 | ✅ 已完成 |
+
+**核心特性：**
+- 使用 `child_process.spawn` 执行 Git 命令，避免 shell 解析问题
+- 完整的错误处理和参数验证
+- 支持非 Git 目录检测
+- 输出格式化（清理 ANSI 颜色代码）
+- 30 秒命令超时保护
+- 100% 测试覆盖（16/16 测试通过）
 
 ---
 

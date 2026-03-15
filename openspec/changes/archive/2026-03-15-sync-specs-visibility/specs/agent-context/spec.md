@@ -1,31 +1,31 @@
-## Historical Context
+## 历史背景
 
-### Code Evolution (Git History)
+### 代码演进（Git 历史）
 
-**Initial Implementation (d35cf4e - 2026-03-10)**
-- Implemented Phase 2 Agent Core
-- Added context builder for System Prompt construction
-- Initial methods: `buildSystemPrompt()`, `buildMessages()`, etc.
+**初始实现（d35cf4e - 2026-03-10）**
+- 实现了 Phase 2 Agent Core
+- 添加上下文构建器用于 System Prompt 构建
+- 初始方法：`buildSystemPrompt()`, `buildMessages()` 等
 
-**Code Quality Refactor (50c85d3 - 2026-03-14)**
-- Reorganized code structure with clear comment separators
-- Unified import style (removed `node:` prefix)
-- Added `buildSystemPromptAsync()` as public async method
-- Kept `_buildSystemPrompt()` as private implementation
-- 366 lines changed in context.ts
+**代码质量重构（50c85d3 - 2026-03-14）**
+- 重新组织代码结构，添加清晰的注释分隔符
+- 统一导入风格（移除 `node:` 前缀）
+- 添加 `buildSystemPromptAsync()` 作为公共异步方法
+- 保留 `_buildSystemPrompt()` 作为私有实现
+- context.ts 改动了 366 行
 
-**Current State (Uncommitted)**
-- `_buildSystemPrompt()` is private (internal implementation)
-- `buildSystemPromptAsync()` is the public async API
-- `buildMessages()` is async and uses private methods internally
-- Added `refreshBootstrap()` and `getMemoryContextAsync()` for cache management
+**当前状态（未提交）**
+- `_buildSystemPrompt()` 是私有方法（内部实现）
+- `buildSystemPromptAsync()` 是公共异步 API
+- `buildMessages()` 是异步方法，内部使用私有方法
+- 添加 `refreshBootstrap()` 和 `getMemoryContextAsync()` 用于缓存管理
 
-**Why Private Methods?**
-- Encapsulation: Hide implementation details
-- Flexibility: Can change internal logic without breaking API
-- Clarity: Public API clearly separates interface from implementation
+**为什么使用私有方法？**
+- 封装性：隐藏实现细节
+- 灵活性：可以在不破坏 API 的情况下更改内部逻辑
+- 清晰性：公共 API 清晰地区分接口和实现
 
-## CHANGED Requirements
+## 修改的需求
 
 ### Requirement: System Prompt 构建
 

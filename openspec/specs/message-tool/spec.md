@@ -1,8 +1,9 @@
-# message-tool Specification
+# message-tool 规格
 
-## Purpose
-TBD - created by archiving change builtin-tools-implementation. Update Purpose after archive.
-## Requirements
+## 目的
+TBD - 由归档变更 builtin-tools-implementation 创建。归档后更新目的。
+
+## 需求
 ### Requirement: message 工具发送消息
 
 系统 SHALL 提供 message 工具，能够通过配置的渠道发送消息。

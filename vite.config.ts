@@ -1,12 +1,12 @@
-import { defineConfig } from 'vite'
+import { defineConfig } from "vite";
 
 export default defineConfig({
   resolve: {
     alias: {
-      '@': '/niuma',
+      "@": "/niuma",
     },
   },
   optimizeDeps: {
-    include: ['@sqliteai/sqlite-wasm'],
+    include: ["@sqliteai/sqlite-wasm"],
   },
-})
+});
