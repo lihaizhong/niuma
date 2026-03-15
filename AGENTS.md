@@ -239,6 +239,11 @@ flowchart TD
 - 使用 ES Module (`"type": "module"`)
 - **注释必须使用中文**，代码标识符使用英文
 - **图表必须使用 mermaid 语法**
+- **OpenSpec specs 必须使用中文**：
+  - spec 标题必须使用中文（如：`# Specification` → `# 规格`）
+  - 主内容（Requirements、Scenarios 等）必须使用中文
+  - 保持中英文术语的一致性（如：`Requirement` → `需求`，`Scenario` → `场景`）
+  - 适用于 `openspec/specs/` 和 `openspec/changes/archive/*/specs/` 下的所有 spec 文件
 
 ### 提交规范
 - 遵循 Conventional Commits 规范
