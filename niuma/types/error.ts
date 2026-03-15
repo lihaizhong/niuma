@@ -7,20 +7,20 @@
  */
 export class NiumaError extends Error {
   /** 错误代码（用于分类） */
-  readonly code: string
+  readonly code: string;
   /** 附加错误详情 */
-  readonly details?: Record<string, unknown>
+  readonly details?: Record<string, unknown>;
 
   constructor(
     message: string,
     code: string,
-    details?: Record<string, unknown>
+    details?: Record<string, unknown>,
   ) {
-    super(message)
-    this.name = 'NiumaError'
-    this.code = code
-    this.details = details
-    Error.captureStackTrace?.(this, this.constructor)
+    super(message);
+    this.name = "NiumaError";
+    this.code = code;
+    this.details = details;
+    Error.captureStackTrace?.(this, this.constructor);
   }
 
   /** 转换为 JSON（用于日志/序列化） */
@@ -31,7 +31,7 @@ export class NiumaError extends Error {
       code: this.code,
       details: this.details,
       stack: this.stack,
-    }
+    };
   }
 }
 
@@ -40,12 +40,16 @@ export class NiumaError extends Error {
  */
 export class ToolExecutionError extends NiumaError {
   /** 导致错误的工具名称 */
-  readonly toolName: string
+  readonly toolName: string;
 
-  constructor(toolName: string, message: string, details?: Record<string, unknown>) {
-    super(message, 'TOOL_EXECUTION_ERROR', { toolName, ...details })
-    this.name = 'ToolExecutionError'
-    this.toolName = toolName
+  constructor(
+    toolName: string,
+    message: string,
+    details?: Record<string, unknown>,
+  ) {
+    super(message, "TOOL_EXECUTION_ERROR", { toolName, ...details });
+    this.name = "ToolExecutionError";
+    this.toolName = toolName;
   }
 }
 
@@ -54,8 +58,8 @@ export class ToolExecutionError extends NiumaError {
  */
 export class ConfigError extends NiumaError {
   constructor(message: string, details?: Record<string, unknown>) {
-    super(message, 'CONFIG_ERROR', details)
-    this.name = 'ConfigError'
+    super(message, "CONFIG_ERROR", details);
+    this.name = "ConfigError";
   }
 }
 
@@ -64,12 +68,16 @@ export class ConfigError extends NiumaError {
  */
 export class ValidationError extends NiumaError {
   /** 验证失败的字段 */
-  readonly field?: string
+  readonly field?: string;
 
-  constructor(message: string, field?: string, details?: Record<string, unknown>) {
-    super(message, 'VALIDATION_ERROR', { field, ...details })
-    this.name = 'ValidationError'
-    this.field = field
+  constructor(
+    message: string,
+    field?: string,
+    details?: Record<string, unknown>,
+  ) {
+    super(message, "VALIDATION_ERROR", { field, ...details });
+    this.name = "ValidationError";
+    this.field = field;
   }
 }
 
@@ -78,20 +86,20 @@ export class ValidationError extends NiumaError {
  */
 export class ProviderError extends NiumaError {
   /** 提供商名称 */
-  readonly provider: string
+  readonly provider: string;
   /** HTTP 状态码（如果适用） */
-  readonly statusCode?: number
+  readonly statusCode?: number;
 
   constructor(
     provider: string,
     message: string,
     statusCode?: number,
-    details?: Record<string, unknown>
+    details?: Record<string, unknown>,
   ) {
-    super(message, 'PROVIDER_ERROR', { provider, statusCode, ...details })
-    this.name = 'ProviderError'
-    this.provider = provider
-    this.statusCode = statusCode
+    super(message, "PROVIDER_ERROR", { provider, statusCode, ...details });
+    this.name = "ProviderError";
+    this.provider = provider;
+    this.statusCode = statusCode;
   }
 }
 
@@ -100,12 +108,16 @@ export class ProviderError extends NiumaError {
  */
 export class ChannelError extends NiumaError {
   /** 渠道类型 */
-  readonly channel: string
+  readonly channel: string;
 
-  constructor(channel: string, message: string, details?: Record<string, unknown>) {
-    super(message, 'CHANNEL_ERROR', { channel, ...details })
-    this.name = 'ChannelError'
-    this.channel = channel
+  constructor(
+    channel: string,
+    message: string,
+    details?: Record<string, unknown>,
+  ) {
+    super(message, "CHANNEL_ERROR", { channel, ...details });
+    this.name = "ChannelError";
+    this.channel = channel;
   }
 }
 
@@ -114,11 +126,15 @@ export class ChannelError extends NiumaError {
  */
 export class SessionError extends NiumaError {
   /** 会话 ID */
-  readonly sessionId?: string
+  readonly sessionId?: string;
 
-  constructor(message: string, sessionId?: string, details?: Record<string, unknown>) {
-    super(message, 'SESSION_ERROR', { sessionId, ...details })
-    this.name = 'SessionError'
-    this.sessionId = sessionId
+  constructor(
+    message: string,
+    sessionId?: string,
+    details?: Record<string, unknown>,
+  ) {
+    super(message, "SESSION_ERROR", { sessionId, ...details });
+    this.name = "SessionError";
+    this.sessionId = sessionId;
   }
 }

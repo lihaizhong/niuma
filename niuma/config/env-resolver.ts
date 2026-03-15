@@ -3,7 +3,7 @@
  * 支持在配置文件中引用环境变量，使用 ${VAR} 和 ${VAR:default} 语法
  */
 
-import type { EnvVarResolverOptions } from './schema'
+import type { EnvVarResolverOptions } from "./schema";
 
 // ============================================
 // 函数定义
@@ -16,26 +16,33 @@ import type { EnvVarResolverOptions } from './schema'
  * @param strict 是否严格模式
  * @returns 解析后的字符串
  */
-function resolveStringValue(value: string, env: Record<string, string>, strict: boolean): string {
+function resolveStringValue(
+  value: string,
+  env: Record<string, string>,
+  strict: boolean,
+): string {
   // 匹配 ${VAR} 或 ${VAR:default} 语法
-  return value.replace(/\$\{(\w+)(?::([^}]*))?\}/g, (_, varName, defaultValue) => {
-    const envValue = env[varName]
+  return value.replace(
+    /\$\{(\w+)(?::([^}]*))?\}/g,
+    (_, varName, defaultValue) => {
+      const envValue = env[varName];
 
-    if (envValue !== undefined) {
-      return envValue
-    }
+      if (envValue !== undefined) {
+        return envValue;
+      }
 
-    if (defaultValue !== undefined) {
-      return defaultValue
-    }
+      if (defaultValue !== undefined) {
+        return defaultValue;
+      }
 
-    if (strict) {
-      throw new Error(`环境变量 ${varName} 未定义`)
-    }
+      if (strict) {
+        throw new Error(`环境变量 ${varName} 未定义`);
+      }
 
-    // 非严格模式，保持原样
-    return `\${${varName}}`
-  })
+      // 非严格模式，保持原样
+      return `\${${varName}}`;
+    },
+  );
 }
 
 /**
@@ -45,14 +52,18 @@ function resolveStringValue(value: string, env: Record<string, string>, strict: 
  * @param strict 是否严格模式
  * @returns 解析后的对象
  */
-function resolveObject(obj: Record<string, unknown>, env: Record<string, string>, strict: boolean): Record<string, unknown> {
-  const result: Record<string, unknown> = {}
+function resolveObject(
+  obj: Record<string, unknown>,
+  env: Record<string, string>,
+  strict: boolean,
+): Record<string, unknown> {
+  const result: Record<string, unknown> = {};
 
   for (const [key, value] of Object.entries(obj)) {
-    result[key] = resolveValue(value, env, strict)
+    result[key] = resolveValue(value, env, strict);
   }
 
-  return result
+  return result;
 }
 
 /**
@@ -62,8 +73,12 @@ function resolveObject(obj: Record<string, unknown>, env: Record<string, string>
  * @param strict 是否严格模式
  * @returns 解析后的数组
  */
-function resolveArray(arr: unknown[], env: Record<string, string>, strict: boolean): unknown[] {
-  return arr.map(item => resolveValue(item, env, strict))
+function resolveArray(
+  arr: unknown[],
+  env: Record<string, string>,
+  strict: boolean,
+): unknown[] {
+  return arr.map((item) => resolveValue(item, env, strict));
 }
 
 /**
@@ -73,20 +88,24 @@ function resolveArray(arr: unknown[], env: Record<string, string>, strict: boole
  * @param strict 是否严格模式
  * @returns 解析后的值
  */
-function resolveValue(value: unknown, env: Record<string, string>, strict: boolean): unknown {
-  if (typeof value === 'string') {
-    return resolveStringValue(value, env, strict)
+function resolveValue(
+  value: unknown,
+  env: Record<string, string>,
+  strict: boolean,
+): unknown {
+  if (typeof value === "string") {
+    return resolveStringValue(value, env, strict);
   }
 
   if (Array.isArray(value)) {
-    return resolveArray(value, env, strict)
+    return resolveArray(value, env, strict);
   }
 
-  if (typeof value === 'object' && value !== null) {
-    return resolveObject(value as Record<string, unknown>, env, strict)
+  if (typeof value === "object" && value !== null) {
+    return resolveObject(value as Record<string, unknown>, env, strict);
   }
 
-  return value
+  return value;
 }
 
 /**
@@ -95,14 +114,17 @@ function resolveValue(value: unknown, env: Record<string, string>, strict: boole
  * @param options 解析选项
  * @returns 解析后的配置对象
  */
-export function resolveEnvVars<T = unknown>(config: T, options: EnvVarResolverOptions): T {
-  const { strict = false, env: customEnv } = options
+export function resolveEnvVars<T = unknown>(
+  config: T,
+  options: EnvVarResolverOptions,
+): T {
+  const { strict = false, env: customEnv } = options;
 
   // 合并环境变量：自定义环境变量 > 系统环境变量
   const env: Record<string, string> = {
     ...(process.env as Record<string, string>),
-    ...customEnv
-  }
+    ...customEnv,
+  };
 
-  return resolveValue(config, env, strict) as T
+  return resolveValue(config, env, strict) as T;
 }

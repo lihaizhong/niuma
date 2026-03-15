@@ -3,12 +3,12 @@
  * 支持多角色配置，向后兼容旧的 API
  */
 
-import { resolve } from 'path'
-import type { NiumaConfig } from './schema'
-import { ConfigManager } from './manager'
+import { resolve } from "path";
+import type { NiumaConfig } from "./schema";
+import { ConfigManager } from "./manager";
 
 // 全局配置管理器实例
-let configManager: ConfigManager | null = null
+let configManager: ConfigManager | null = null;
 
 /**
  * 加载配置文件（向后兼容的旧 API）
@@ -16,8 +16,8 @@ let configManager: ConfigManager | null = null
  * @returns 配置对象
  */
 export function loadConfig(configPath?: string): NiumaConfig {
-  const manager = getConfigManager(configPath)
-  return manager.load()
+  const manager = getConfigManager(configPath);
+  return manager.load();
 }
 
 /**
@@ -26,9 +26,12 @@ export function loadConfig(configPath?: string): NiumaConfig {
  * @param configPath 配置文件路径，默认为 ~/.niuma/niuma.config.json
  * @returns 角色配置对象
  */
-export function loadAgentConfig(agentId: string, configPath?: string): NiumaConfig {
-  const manager = getConfigManager(configPath)
-  return manager.getAgentConfig(agentId)
+export function loadAgentConfig(
+  agentId: string,
+  configPath?: string,
+): NiumaConfig {
+  const manager = getConfigManager(configPath);
+  return manager.getAgentConfig(agentId);
 }
 
 /**
@@ -36,14 +39,14 @@ export function loadAgentConfig(agentId: string, configPath?: string): NiumaConf
  * @param config 配置对象或角色 ID
  */
 export function getWorkspaceDir(config: NiumaConfig | string): string {
-  if (typeof config === 'string') {
+  if (typeof config === "string") {
     // 如果是角色 ID，使用 ConfigManager
-    const manager = getConfigManager()
-    return manager.getAgentWorkspaceDir(config)
+    const manager = getConfigManager();
+    return manager.getAgentWorkspaceDir(config);
   }
-  
+
   // 向后兼容：如果是配置对象，直接使用 workspaceDir
-  return resolve(config.workspaceDir)
+  return resolve(config.workspaceDir);
 }
 
 /**
@@ -52,8 +55,8 @@ export function getWorkspaceDir(config: NiumaConfig | string): string {
  * @param configPath 配置文件路径
  */
 export function getSessionDir(agentId: string, configPath?: string): string {
-  const manager = getConfigManager(configPath)
-  return manager.getAgentSessionDir(agentId)
+  const manager = getConfigManager(configPath);
+  return manager.getAgentSessionDir(agentId);
 }
 
 /**
@@ -62,8 +65,8 @@ export function getSessionDir(agentId: string, configPath?: string): string {
  * @param configPath 配置文件路径
  */
 export function getLogPath(agentId: string, configPath?: string): string {
-  const manager = getConfigManager(configPath)
-  return manager.getAgentLogPath(agentId)
+  const manager = getConfigManager(configPath);
+  return manager.getAgentLogPath(agentId);
 }
 
 /**
@@ -71,8 +74,8 @@ export function getLogPath(agentId: string, configPath?: string): string {
  * @param configPath 配置文件路径
  */
 export function listAgents(configPath?: string) {
-  const manager = getConfigManager(configPath)
-  return manager.listAgents()
+  const manager = getConfigManager(configPath);
+  return manager.listAgents();
 }
 
 /**
@@ -80,8 +83,8 @@ export function listAgents(configPath?: string) {
  * @param configPath 配置文件路径
  */
 export function getDefaultAgentId(configPath?: string): string {
-  const manager = getConfigManager(configPath)
-  return manager.getDefaultAgentId()
+  const manager = getConfigManager(configPath);
+  return manager.getDefaultAgentId();
 }
 
 /**
@@ -90,14 +93,14 @@ export function getDefaultAgentId(configPath?: string): string {
  */
 function getConfigManager(configPath?: string): ConfigManager {
   if (!configManager) {
-    configManager = new ConfigManager(configPath)
+    configManager = new ConfigManager(configPath);
   }
-  return configManager
+  return configManager;
 }
 
 /**
  * 重置配置管理器（主要用于测试）
  */
 export function resetConfigManager(): void {
-  configManager = null
+  configManager = null;
 }

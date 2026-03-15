@@ -93,16 +93,6 @@ function getCacheKey(query: string, engine: string): string {
 // ==================== 类定义 ====================
 
 /**
- * 搜索引擎接口
- */
-interface SearchProvider {
-  name: string;
-  search(query: string, options: { num: number }): Promise<SearchResult[]>;
-  requiresApiKey: boolean;
-  validateApiKey?(key: string): Promise<boolean>;
-}
-
-/**
  * Brave Search 提供商
  */
 class BraveSearchProvider implements SearchProvider {

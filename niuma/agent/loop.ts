@@ -678,7 +678,7 @@ export class AgentLoop {
     content: string,
     session: Session,
   ): Promise<string> {
-    const whitespaceRegex = new RE2('\\s+', 'g');
+    const whitespaceRegex = new RE2("\\s+", "g");
     const command = content.toLowerCase().split(whitespaceRegex)[0];
 
     switch (command) {

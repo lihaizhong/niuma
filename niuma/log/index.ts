@@ -7,30 +7,30 @@
  * - 可配置的日志级别
  */
 
-import pino, { type Logger } from 'pino'
+import pino, { type Logger } from "pino";
 
 /**
  * 默认日志配置
  */
 const DEFAULT_CONFIG = {
-  level: process.env.LOG_LEVEL || 'info',
+  level: process.env.LOG_LEVEL || "info",
   transport:
-    process.env.NODE_ENV === 'development'
+    process.env.NODE_ENV === "development"
       ? {
-          target: 'pino-pretty',
+          target: "pino-pretty",
           options: {
             colorize: true,
-            translateTime: 'HH:MM:ss Z',
-            ignore: 'pid,hostname',
+            translateTime: "HH:MM:ss Z",
+            ignore: "pid,hostname",
           },
         }
       : undefined,
-}
+};
 
 /**
  * 默认 logger 实例
  */
-export const logger: Logger = pino(DEFAULT_CONFIG)
+export const logger: Logger = pino(DEFAULT_CONFIG);
 
 /**
  * 创建带上下文的 logger
@@ -41,5 +41,5 @@ export function createLogger(context: string): Logger {
   return pino({
     ...DEFAULT_CONFIG,
     name: context,
-  })
+  });
 }

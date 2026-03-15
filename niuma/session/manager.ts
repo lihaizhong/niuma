@@ -3,11 +3,7 @@
  * @description 提供会话的生命周期管理，包括创建、持久化、历史记录查询和清理
  */
 
-import {
-  existsSync,
-  readdirSync,
-  unlinkSync,
-} from "fs";
+import { existsSync, readdirSync, unlinkSync } from "fs";
 import { readFile, writeFile, rename, unlink } from "fs/promises";
 import fs from "fs-extra";
 import { join } from "path";
@@ -81,8 +77,9 @@ export interface SessionManagerConfig {
  */
 export class SessionManager {
   /** 内存缓存（带时间戳） */
-  private cache: Map<string, { session: Session; timestamp: number }> = new Map();
-  
+  private cache: Map<string, { session: Session; timestamp: number }> =
+    new Map();
+
   /** 缓存 TTL（毫秒） */
   private readonly CACHE_TTL = 5 * 60 * 1000; // 5 分钟
 
@@ -111,13 +108,13 @@ export class SessionManager {
    */
   async getOrCreate(sessionKey: string): Promise<Session> {
     const now = Date.now();
-    
+
     // 优先从内存缓存获取（检查是否过期）
     const cached = this.cache.get(sessionKey);
-    if (cached && (now - cached.timestamp) < this.CACHE_TTL) {
+    if (cached && now - cached.timestamp < this.CACHE_TTL) {
       return cached.session;
     }
-    
+
     // 缓存过期，删除
     if (cached) {
       this.cache.delete(sessionKey);
@@ -203,10 +200,14 @@ export class SessionManager {
     content: string,
     toolsUsed?: string[],
   ): void {
-    const validRoles: SessionMessage["role"][] = ['user', 'assistant', 'system']
+    const validRoles: SessionMessage["role"][] = [
+      "user",
+      "assistant",
+      "system",
+    ];
     const safeRole = validRoles.includes(role as SessionMessage["role"])
       ? (role as SessionMessage["role"])
-      : 'user'  // 默认值
+      : "user"; // 默认值
 
     session.messages.push({
       role: safeRole,

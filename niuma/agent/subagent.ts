@@ -5,11 +5,16 @@
  * 子智能体与主 Agent 隔离运行，完成后通过事件通知主 Agent。
  */
 
-import { randomUUID } from 'crypto'
-import type { LLMProvider } from '../providers/base'
-import type { ToolRegistry } from './tools/registry'
-import type { EventBus } from '../bus/events'
-import type { ChatMessage, ToolCall, OutboundMessage, ToolDefinition } from '../types'
+import { randomUUID } from "crypto";
+import type { LLMProvider } from "../providers/base";
+import type { ToolRegistry } from "./tools/registry";
+import type { EventBus } from "../bus/events";
+import type {
+  ChatMessage,
+  ToolCall,
+  OutboundMessage,
+  ToolDefinition,
+} from "../types";
 
 // ============================================
 // 类型定义
@@ -20,15 +25,15 @@ import type { ChatMessage, ToolCall, OutboundMessage, ToolDefinition } from '../
  */
 export interface SubagentSpawnOptions {
   /** 任务描述 */
-  task: string
+  task: string;
   /** 任务标签（用于显示） */
-  label?: string
+  label?: string;
   /** 来源渠道 */
-  originChannel: string
+  originChannel: string;
   /** 来源聊天 ID */
-  originChatId: string
+  originChatId: string;
   /** 会话键（用于任务关联） */
-  sessionKey?: string
+  sessionKey?: string;
 }
 
 /**
@@ -36,19 +41,19 @@ export interface SubagentSpawnOptions {
  */
 export interface SubagentManagerConfig {
   /** LLM 提供商 */
-  provider: LLMProvider
+  provider: LLMProvider;
   /** 工具注册表 */
-  tools: ToolRegistry
+  tools: ToolRegistry;
   /** 事件总线 */
-  bus: EventBus
+  bus: EventBus;
   /** 工作空间路径 */
-  workspace?: string
+  workspace?: string;
   /** 模型名称 */
-  model?: string
+  model?: string;
   /** 采样温度 */
-  temperature?: number
+  temperature?: number;
   /** 最大 token 数 */
-  maxTokens?: number
+  maxTokens?: number;
 }
 
 /**
@@ -56,40 +61,40 @@ export interface SubagentManagerConfig {
  */
 interface RunningTask {
   /** 任务 ID */
-  taskId: string
+  taskId: string;
   /** 任务描述 */
-  task: string
+  task: string;
   /** 任务标签 */
-  label: string
+  label: string;
   /** 来源渠道 */
-  originChannel: string
+  originChannel: string;
   /** 来源聊天 ID */
-  originChatId: string
+  originChatId: string;
   /** 会话键 */
-  sessionKey?: string
+  sessionKey?: string;
   /** AbortController 用于取消任务 */
-  controller: AbortController
+  controller: AbortController;
   /** 任务 Promise */
-  promise: Promise<void>
+  promise: Promise<void>;
   /** 开始时间 */
-  startTime: number
+  startTime: number;
 }
 
 /**
  * 任务执行状态
  */
-type TaskStatus = 'success' | 'error' | 'cancelled'
+type TaskStatus = "success" | "error" | "cancelled";
 
 /**
  * 任务完成结果
  */
 interface TaskResult {
   /** 状态 */
-  status: TaskStatus
+  status: TaskStatus;
   /** 结果内容 */
-  content: string
+  content: string;
   /** 错误信息 */
-  error?: string
+  error?: string;
 }
 
 // ============================================
@@ -105,21 +110,21 @@ interface TaskResult {
  * 4. 远小于主 Agent 的 40 次迭代，确保主 Agent 有更多资源处理用户请求
  * @note 可通过配置覆盖，但建议保持默认值
  */
-const MAX_ITERATIONS = 15
+const MAX_ITERATIONS = 15;
 
 /**
  * 最大并发子智能体数量
  * @description 限制同时运行的子智能体数量，避免资源耗尽
  * @note 超过此限制时，spawn 方法会拒绝新任务
  */
-const MAX_CONCURRENT_TASKS = 5
+const MAX_CONCURRENT_TASKS = 5;
 
 /**
  * 子智能体任务超时时间（毫秒）
  * @description 单个子智能体任务的最大执行时间
  * @note 默认 10 分钟，超时后任务将被取消
  */
-const TASK_TIMEOUT = 10 * 60 * 1000
+const TASK_TIMEOUT = 10 * 60 * 1000;
 
 /** 子智能体 System Prompt */
 const SUBAGENT_SYSTEM_PROMPT = `你是一个专业的后台任务执行助手。你的职责是独立完成分配给你的任务。
@@ -149,7 +154,7 @@ const SUBAGENT_SYSTEM_PROMPT = `你是一个专业的后台任务执行助手。
 2. 创建或修改的文件列表
 3. 需要注意的事项（如果有）
 
-如果任务失败，说明失败原因和建议的解决方案。`
+如果任务失败，说明失败原因和建议的解决方案。`;
 
 // ============================================
 // SubagentManager 类
@@ -190,28 +195,28 @@ export class SubagentManager {
   // ============================================
 
   /** LLM 提供商 */
-  private provider: LLMProvider
+  private provider: LLMProvider;
   /** 工具注册表 */
-  private tools: ToolRegistry
+  private tools: ToolRegistry;
   /** 事件总线 */
-  private bus: EventBus
+  private bus: EventBus;
   /** 工作空间路径 */
-  private workspace: string
+  private workspace: string;
   /** 默认模型 */
-  private model?: string
+  private model?: string;
   /** 采样温度 */
-  private temperature?: number
+  private temperature?: number;
   /** 最大 token 数 */
-  private maxTokens?: number
+  private maxTokens?: number;
 
   // ============================================
   // 运行时属性
   // ============================================
 
   /** 运行中的任务 */
-  private runningTasks: Map<string, RunningTask> = new Map()
+  private runningTasks: Map<string, RunningTask> = new Map();
   /** 会话到任务的映射 */
-  private sessionToTasks: Map<string, Set<string>> = new Map()
+  private sessionToTasks: Map<string, Set<string>> = new Map();
 
   /**
    * 创建子智能体管理器
@@ -219,13 +224,13 @@ export class SubagentManager {
    * @param config - 管理器配置
    */
   constructor(config: SubagentManagerConfig) {
-    this.provider = config.provider
-    this.tools = config.tools
-    this.bus = config.bus
-    this.workspace = config.workspace ?? process.cwd()
-    this.model = config.model
-    this.temperature = config.temperature
-    this.maxTokens = config.maxTokens
+    this.provider = config.provider;
+    this.tools = config.tools;
+    this.bus = config.bus;
+    this.workspace = config.workspace ?? process.cwd();
+    this.model = config.model;
+    this.temperature = config.temperature;
+    this.maxTokens = config.maxTokens;
   }
 
   // ============================================
@@ -253,10 +258,10 @@ export class SubagentManager {
    * ```
    */
   async spawn(options: SubagentSpawnOptions): Promise<string> {
-    const taskId = `subagent-${randomUUID().slice(0, 8)}`
-    const label = options.label ?? '后台任务'
+    const taskId = `subagent-${randomUUID().slice(0, 8)}`;
+    const label = options.label ?? "后台任务";
 
-    const controller = new AbortController()
+    const controller = new AbortController();
 
     // 创建任务 Promise
     const promise = this._runSubagent(
@@ -267,8 +272,8 @@ export class SubagentManager {
         channel: options.originChannel,
         chatId: options.originChatId,
       },
-      controller.signal
-    )
+      controller.signal,
+    );
 
     // 注册运行中任务
     const task: RunningTask = {
@@ -281,26 +286,26 @@ export class SubagentManager {
       controller,
       promise,
       startTime: Date.now(),
-    }
+    };
 
-    this.runningTasks.set(taskId, task)
+    this.runningTasks.set(taskId, task);
 
     // 检查是否超过限制（先创建再检查，避免竞态条件）
     if (this.runningTasks.size > MAX_CONCURRENT_TASKS) {
       // 超过限制，取消刚创建的任务
-      this.runningTasks.delete(taskId)
-      controller.abort()
+      this.runningTasks.delete(taskId);
+      controller.abort();
       throw new Error(
-        `已达到最大并发子智能体数量 (${MAX_CONCURRENT_TASKS})，请稍后再试`
-      )
+        `已达到最大并发子智能体数量 (${MAX_CONCURRENT_TASKS})，请稍后再试`,
+      );
     }
 
     // 如果有会话键，建立关联
     if (options.sessionKey) {
       if (!this.sessionToTasks.has(options.sessionKey)) {
-        this.sessionToTasks.set(options.sessionKey, new Set())
+        this.sessionToTasks.set(options.sessionKey, new Set());
       }
-      this.sessionToTasks.get(options.sessionKey)!.add(taskId)
+      this.sessionToTasks.get(options.sessionKey)!.add(taskId);
     }
 
     // 任务完成后清理
@@ -309,10 +314,10 @@ export class SubagentManager {
         // 错误已在 _runSubagent 中处理
       })
       .finally(() => {
-        this._cleanupTask(taskId)
-      })
+        this._cleanupTask(taskId);
+      });
 
-    return taskId
+    return taskId;
   }
 
   /**
@@ -324,31 +329,37 @@ export class SubagentManager {
    * @returns 取消的任务数量
    */
   async cancelBySession(sessionKey: string): Promise<number> {
-    const taskIds = this.sessionToTasks.get(sessionKey)
+    const taskIds = this.sessionToTasks.get(sessionKey);
     if (!taskIds || taskIds.size === 0) {
-      return 0
+      return 0;
     }
 
-    let cancelledCount = 0
+    let cancelledCount = 0;
 
     for (const taskId of Array.from(taskIds)) {
-      const task = this.runningTasks.get(taskId)
+      const task = this.runningTasks.get(taskId);
       if (task) {
-        task.controller.abort()
-        cancelledCount++
+        task.controller.abort();
+        cancelledCount++;
 
         // 通知取消
-        this._announceResult(taskId, task.label, task.task, {
-          status: 'cancelled',
-          content: '任务已取消（会话关闭）',
-        }, {
-          channel: task.originChannel,
-          chatId: task.originChatId,
-        })
+        this._announceResult(
+          taskId,
+          task.label,
+          task.task,
+          {
+            status: "cancelled",
+            content: "任务已取消（会话关闭）",
+          },
+          {
+            channel: task.originChannel,
+            chatId: task.originChatId,
+          },
+        );
       }
     }
 
-    return cancelledCount
+    return cancelledCount;
   }
 
   /**
@@ -358,23 +369,29 @@ export class SubagentManager {
    * @returns 是否成功取消
    */
   cancel(taskId: string): boolean {
-    const task = this.runningTasks.get(taskId)
+    const task = this.runningTasks.get(taskId);
     if (!task) {
-      return false
+      return false;
     }
 
-    task.controller.abort()
+    task.controller.abort();
 
     // 通知取消
-    this._announceResult(taskId, task.label, task.task, {
-      status: 'cancelled',
-      content: '任务已取消',
-    }, {
-      channel: task.originChannel,
-      chatId: task.originChatId,
-    })
+    this._announceResult(
+      taskId,
+      task.label,
+      task.task,
+      {
+        status: "cancelled",
+        content: "任务已取消",
+      },
+      {
+        channel: task.originChannel,
+        chatId: task.originChatId,
+      },
+    );
 
-    return true
+    return true;
   }
 
   /**
@@ -383,7 +400,7 @@ export class SubagentManager {
    * @returns 当前运行中的子智能体数量
    */
   getRunningCount(): number {
-    return this.runningTasks.size
+    return this.runningTasks.size;
   }
 
   /**
@@ -392,20 +409,20 @@ export class SubagentManager {
    * @returns 任务信息列表
    */
   getRunningTasks(): Array<{
-    taskId: string
-    task: string
-    label: string
-    startTime: number
-    duration: number
+    taskId: string;
+    task: string;
+    label: string;
+    startTime: number;
+    duration: number;
   }> {
-    const now = Date.now()
+    const now = Date.now();
     return Array.from(this.runningTasks.values()).map((t) => ({
       taskId: t.taskId,
       task: t.task,
       label: t.label,
       startTime: t.startTime,
       duration: now - t.startTime,
-    }))
+    }));
   }
 
   /**
@@ -415,18 +432,20 @@ export class SubagentManager {
    * @returns 完成的任务数
    */
   async waitForAll(timeout: number = 60000): Promise<number> {
-    const tasks = Array.from(this.runningTasks.values())
+    const tasks = Array.from(this.runningTasks.values());
     if (tasks.length === 0) {
-      return 0
+      return 0;
     }
 
     const timeoutPromise = new Promise<number>((resolve) => {
-      setTimeout(() => resolve(tasks.length), timeout)
-    })
+      setTimeout(() => resolve(tasks.length), timeout);
+    });
 
-    const allPromise = Promise.all(tasks.map((t) => t.promise)).then(() => tasks.length)
+    const allPromise = Promise.all(tasks.map((t) => t.promise)).then(
+      () => tasks.length,
+    );
 
-    return Promise.race([allPromise, timeoutPromise])
+    return Promise.race([allPromise, timeoutPromise]);
   }
 
   // ============================================
@@ -444,42 +463,42 @@ export class SubagentManager {
     task: string,
     label: string,
     origin: { channel: string; chatId: string },
-    signal: AbortSignal
+    signal: AbortSignal,
   ): Promise<void> {
-    const timeoutController = new AbortController()
+    const timeoutController = new AbortController();
 
     // 合并外部 signal 和 timeout signal
-    const combinedSignal = new AbortController()
-    const abortHandler = () => combinedSignal.abort()
-    signal.addEventListener('abort', abortHandler)
-    timeoutController.signal.addEventListener('abort', abortHandler)
+    const combinedSignal = new AbortController();
+    const abortHandler = () => combinedSignal.abort();
+    signal.addEventListener("abort", abortHandler);
+    timeoutController.signal.addEventListener("abort", abortHandler);
 
     // 设置超时
     const timeoutId = setTimeout(() => {
-      timeoutController.abort()
-    }, TASK_TIMEOUT)
+      timeoutController.abort();
+    }, TASK_TIMEOUT);
 
     try {
       // 检查是否已取消
       if (combinedSignal.signal.aborted) {
-        return
+        return;
       }
 
       // 构建消息历史
       const messages: ChatMessage[] = [
-        { role: 'system', content: this._buildSubagentPrompt() },
-        { role: 'user', content: task },
-      ]
+        { role: "system", content: this._buildSubagentPrompt() },
+        { role: "user", content: task },
+      ];
 
       // 获取隔离的工具定义（排除 message 和 spawn）
-      const tools = this._getIsolatedTools()
+      const tools = this._getIsolatedTools();
 
       // 执行循环
-      let iteration = 0
-      let lastContent = ''
+      let iteration = 0;
+      let lastContent = "";
 
       while (iteration < MAX_ITERATIONS && !combinedSignal.signal.aborted) {
-        iteration++
+        iteration++;
 
         // 调用 LLM
         const response = await this.provider.chat({
@@ -488,78 +507,91 @@ export class SubagentManager {
           model: this.model,
           temperature: this.temperature,
           maxTokens: this.maxTokens,
-        })
+        });
 
         // 添加助手回复到历史
         messages.push({
-          role: 'assistant',
+          role: "assistant",
           content: response.content,
           toolCalls: response.toolCalls,
-        })
+        });
 
         // 如果没有工具调用，任务完成
         if (!response.hasToolCalls || !response.toolCalls?.length) {
-          lastContent = response.content
-          break
+          lastContent = response.content;
+          break;
         }
 
         // 执行工具调用
         for (const toolCall of response.toolCalls) {
           if (combinedSignal.signal.aborted) {
-            break
+            break;
           }
 
-          const result = await this._executeToolCall(toolCall)
+          const result = await this._executeToolCall(toolCall);
 
           // 添加工具结果到历史
           messages.push({
-            role: 'tool',
+            role: "tool",
             toolCallId: toolCall.id,
             name: toolCall.name,
             content: result,
-          })
+          });
         }
       }
 
       // 检查是否被取消
       if (combinedSignal.signal.aborted) {
-        return
+        return;
       }
 
       // 如果达到最大迭代次数，添加提示
       if (iteration >= MAX_ITERATIONS) {
-        const lastMsg = messages[messages.length - 1]
-        lastContent = typeof lastMsg?.content === 'string' 
-          ? lastMsg.content 
-          : '任务执行达到最大迭代次数，可能未完全完成。'
+        const lastMsg = messages[messages.length - 1];
+        lastContent =
+          typeof lastMsg?.content === "string"
+            ? lastMsg.content
+            : "任务执行达到最大迭代次数，可能未完全完成。";
         if (!lastContent) {
-          lastContent = '任务执行达到最大迭代次数，可能未完全完成。'
+          lastContent = "任务执行达到最大迭代次数，可能未完全完成。";
         }
       }
 
       // 通知结果
-      this._announceResult(taskId, label, task, {
-        status: 'success',
-        content: lastContent,
-      }, origin)
-
+      this._announceResult(
+        taskId,
+        label,
+        task,
+        {
+          status: "success",
+          content: lastContent,
+        },
+        origin,
+      );
     } catch (error) {
       // 如果是取消导致的错误，不通知
       if (combinedSignal.signal.aborted) {
-        return
+        return;
       }
 
-      const errorMessage = error instanceof Error ? error.message : String(error)
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
 
       // 通知错误
-      this._announceResult(taskId, label, task, {
-        status: 'error',
-        content: '任务执行失败',
-        error: errorMessage,
-      }, origin)
+      this._announceResult(
+        taskId,
+        label,
+        task,
+        {
+          status: "error",
+          content: "任务执行失败",
+          error: errorMessage,
+        },
+        origin,
+      );
     } finally {
-      clearTimeout(timeoutId)
-      signal.removeEventListener('abort', abortHandler)
+      clearTimeout(timeoutId);
+      signal.removeEventListener("abort", abortHandler);
     }
   }
 
@@ -567,21 +599,19 @@ export class SubagentManager {
    * 构建子智能体 System Prompt
    */
   private _buildSubagentPrompt(): string {
-    let prompt = SUBAGENT_SYSTEM_PROMPT
+    let prompt = SUBAGENT_SYSTEM_PROMPT;
 
     // 添加工作空间信息
-    prompt += `\n\n当前工作空间: ${this.workspace}`
+    prompt += `\n\n当前工作空间: ${this.workspace}`;
 
     // 添加可用工具列表
-    const availableTools = this._getIsolatedTools()
+    const availableTools = this._getIsolatedTools();
     if (availableTools.length > 0) {
-      const toolNames = availableTools
-        .map((t) => t.name)
-        .join(', ')
-      prompt += `\n\n可用工具: ${toolNames}`
+      const toolNames = availableTools.map((t) => t.name).join(", ");
+      prompt += `\n\n可用工具: ${toolNames}`;
     }
 
-    return prompt
+    return prompt;
   }
 
   /**
@@ -590,22 +620,22 @@ export class SubagentManager {
    * 子智能体不能发送消息或创建更多子智能体。
    */
   private _getIsolatedTools(): ToolDefinition[] {
-    const allTools = this.tools.getDefinitions()
+    const allTools = this.tools.getDefinitions();
 
     // 精确匹配排除的工具名称
     const excludedTools = new Set([
-      'message',
-      'spawn',
-      'send_message',
-      'create_subagent',
-      'task',
-      'subagent'
-    ])
+      "message",
+      "spawn",
+      "send_message",
+      "create_subagent",
+      "task",
+      "subagent",
+    ]);
 
     return allTools.filter((tool) => {
       // 使用精确匹配而非包含，避免误判
-      return !excludedTools.has(tool.name.toLowerCase())
-    })
+      return !excludedTools.has(tool.name.toLowerCase());
+    });
   }
 
   /**
@@ -613,11 +643,11 @@ export class SubagentManager {
    */
   private async _executeToolCall(toolCall: ToolCall): Promise<string> {
     try {
-      const args = toolCall.arguments as Record<string, unknown>
-      return await this.tools.execute(toolCall.name, args)
+      const args = toolCall.arguments as Record<string, unknown>;
+      return await this.tools.execute(toolCall.name, args);
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error)
-      return `工具执行错误: ${message}`
+      const message = error instanceof Error ? error.message : String(error);
+      return `工具执行错误: ${message}`;
     }
   }
 
@@ -631,28 +661,28 @@ export class SubagentManager {
     label: string,
     task: string,
     result: TaskResult,
-    origin: { channel: string; chatId: string }
+    origin: { channel: string; chatId: string },
   ): void {
     // 构建结果消息
-    let content: string
+    let content: string;
 
     switch (result.status) {
-      case 'success':
-        content = `✅ [${label}] 任务完成\n\n${result.content}`
-        break
-      case 'error':
-        content = `❌ [${label}] 任务失败\n\n错误: ${result.error ?? result.content}`
-        break
-      case 'cancelled':
-        content = `⏹️ [${label}] 任务已取消\n\n${result.content}`
-        break
+      case "success":
+        content = `✅ [${label}] 任务完成\n\n${result.content}`;
+        break;
+      case "error":
+        content = `❌ [${label}] 任务失败\n\n错误: ${result.error ?? result.content}`;
+        break;
+      case "cancelled":
+        content = `⏹️ [${label}] 任务已取消\n\n${result.content}`;
+        break;
       default:
-        content = `[${label}] 任务状态未知\n\n${result.content}`
+        content = `[${label}] 任务状态未知\n\n${result.content}`;
     }
 
     // 发送系统消息
     const message: OutboundMessage = {
-      channel: origin.channel as OutboundMessage['channel'],
+      channel: origin.channel as OutboundMessage["channel"],
       chatId: origin.chatId,
       content,
       metadata: {
@@ -661,32 +691,32 @@ export class SubagentManager {
         taskStatus: result.status,
         originalTask: task,
       },
-    }
+    };
 
     // 通过事件总线发送
-    this.bus.emit('MESSAGE_SENT', { message })
+    this.bus.emit("MESSAGE_SENT", { message });
   }
 
   /**
    * 清理完成的任务
    */
   private _cleanupTask(taskId: string): void {
-    const task = this.runningTasks.get(taskId)
+    const task = this.runningTasks.get(taskId);
     if (!task) {
-      return
+      return;
     }
 
     // 从运行中任务列表移除
-    this.runningTasks.delete(taskId)
+    this.runningTasks.delete(taskId);
 
     // 从会话映射中移除
     if (task.sessionKey) {
-      const sessionTasks = this.sessionToTasks.get(task.sessionKey)
+      const sessionTasks = this.sessionToTasks.get(task.sessionKey);
       if (sessionTasks) {
-        sessionTasks.delete(taskId)
+        sessionTasks.delete(taskId);
         // 如果会话没有其他任务，清理映射
         if (sessionTasks.size === 0) {
-          this.sessionToTasks.delete(task.sessionKey)
+          this.sessionToTasks.delete(task.sessionKey);
         }
       }
     }
