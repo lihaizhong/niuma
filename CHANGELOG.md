@@ -4,6 +4,51 @@
 
 ## [Unreleased]
 
+### v0.1.3 (2026-03-15)
+
+**Phase 3.6：加密与解密工具**
+- ✅ 新增 encrypt 工具：使用 AES-256-GCM 算法加密数据
+- ✅ 新增 decrypt 工具：使用 AES-256-GCM 算法解密数据
+- ✅ 新增 hash 工具：计算 SHA-256、SHA-512、MD5 哈希值
+- ✅ 使用 Node.js 内置 crypto 模块，无额外依赖
+- ✅ 完整的错误处理和中文错误消息
+
+**核心特性：**
+- AES-256-GCM 认证加密，同时保证机密性和完整性
+- 自动生成随机 IV，避免 IV 重用攻击
+- 完整的参数验证（密钥长度、IV 长度、认证标签长度）
+- 支持空字符串和大文件内容（10MB+）
+
+**测试覆盖**
+- ✅ 新增 25 个测试用例，覆盖所有场景
+- ✅ 所有测试通过（333/333）
+- ✅ 更新工具注册测试，工具数量从 23 增加到 26
+
+**BREAKING CHANGE: 删除 archive 工具**
+- ✅ 移除 archive 和 extract 工具（压缩与解压）
+- ✅ 删除依赖：adm-zip、archiver、tar
+- ✅ 删除类型定义：@types/adm-zip、@types/archiver、@types/tar
+
+**理由**：Archive 工具对本地资源消耗大，处理大文件时占用大量 CPU 和内存。根据 MCP 优先架构，此类资源密集型功能应通过 MCP Server 提供，以保持 Niuma 核心轻量级。
+
+**迁移建议**：用户可通过 MCP 对接专业的压缩工具。配置示例：
+
+```json5
+{
+  "mcp": {
+    "servers": {
+      "filesystem": {
+        "transport": "stdio",
+        "command": "npx",
+        "args": ["-y", "@modelcontextprotocol/server-filesystem"],
+        "args": ["/path/to/allowed/directory"],
+        "enabled": true
+      }
+    }
+  }
+}
+```
+
 ### v0.1.2 (2026-03-15)
 
 **Phase 3.3-3.5：新增工具实现**

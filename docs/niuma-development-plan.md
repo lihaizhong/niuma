@@ -53,15 +53,16 @@
 | Phase 3 | 内置工具实现 | 2026-03-12 | ✅ 已完成 |
 | Phase 3.1 | 高级文件操作 | 2026-03-13 | ✅ 已完成 |
 | Phase 3.2 | Git 操作 | 2026-03-15 | ✅ 已完成 |
-| Phase 3.3 | 压缩与解压 | 2026-03-15 | ✅ 已完成 |
+| Phase 3.3 | 压缩与解压 | 2026-03-15 | ❌ 已删除 |
 | Phase 3.4 | 网络工具 | 2026-03-15 | ✅ 已完成 |
 | Phase 3.5 | 数据处理工具 | 2026-03-15 | ✅ 已完成 |
+| Phase 3.6 | 加密与解密 | 2026-03-15 | ✅ 已完成 |
 
 ### 📊 项目统计
 
 - **核心模块：** 25+ 个文件
 - **代码行数：** ~12000+ 行 TypeScript
-- **内置工具：** 25 个（文件系统、Shell、Web、消息、Agent、Git、压缩解压、网络、数据处理）
+- **内置工具：** 26 个（文件系统、Shell、Web、消息、Agent、Git、网络、数据处理、加密解密）
 - **MCP 支持：** 完整的 MCP 客户端实现
 - **测试覆盖：** 100% 通过（318/318 测试）
 - **文档完善度：** OpenSpec 变更记录完整
@@ -373,14 +374,18 @@ flowchart TD
 
 ---
 
-### ✅ Phase 3.3: 压缩与解压
+### ❌ Phase 3.3: 压缩与解压（已删除）
 
-**完成日期：** 2026-03-15
+**删除日期：** 2026-03-15
 
 | 工具 | 文件 | 功能 | 状态 |
 |------|------|------|------|
-| archive | `agent/tools/archive.ts` | 压缩文件/目录（zip, tar, tar.gz） | ✅ 已完成 |
-| extract | `agent/tools/archive.ts` | 解压文件 | ✅ 已完成 |
+| archive | - | 压缩文件/目录（zip, tar, tar.gz） | ❌ 已删除 |
+| extract | - | 解压文件 | ❌ 已删除 |
+
+**删除原因：** Archive 工具对本地资源消耗大，处理大文件时占用大量 CPU 和内存。根据 MCP 优先架构，此类资源密集型功能应通过 MCP Server 提供，以保持 Niuma 核心轻量级。
+
+**迁移建议：** 用户可通过 MCP 对接专业的压缩工具（如 @modelcontextprotocol/server-filesystem）。
 
 ---
 
@@ -406,6 +411,27 @@ flowchart TD
 | json_stringify | `agent/tools/data.ts` | 序列化为 JSON | ✅ 已完成 |
 | yaml_parse | `agent/tools/data.ts` | 解析 YAML | ✅ 已完成 |
 | yaml_stringify | `agent/tools/data.ts` | 序列化为 YAML | ✅ 已完成 |
+
+---
+
+### ✅ Phase 3.6: 加密与解密
+
+**完成日期：** 2026-03-15
+
+| 工具 | 文件 | 功能 | 状态 |
+|------|------|------|------|
+| encrypt | `agent/tools/crypto.ts` | 加密数据（AES-256-GCM） | ✅ 已完成 |
+| decrypt | `agent/tools/crypto.ts` | 解密数据（AES-256-GCM） | ✅ 已完成 |
+| hash | `agent/tools/crypto.ts` | 计算哈希值（SHA-256/512、MD5） | ✅ 已完成 |
+
+**核心特性：**
+- AES-256-GCM 认证加密，同时保证机密性和完整性
+- 自动生成随机 IV，避免 IV 重用攻击
+- 完整的参数验证（密钥长度、IV 长度、认证标签长度）
+- 支持空字符串和大文件内容（10MB+）
+
+**测试覆盖：**
+- 100% 测试覆盖（25/25 测试通过）
 
 ---
 
