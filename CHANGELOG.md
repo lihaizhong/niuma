@@ -4,6 +4,29 @@
 
 ## [Unreleased]
 
+### v0.2.0 (2026-03-16)
+
+**Phase 4：LLM 提供商扩展**
+- ✅ 新增 Anthropic 提供商：支持 Claude 3.5 Sonnet、3 Opus 等模型
+- ✅ 新增 OpenRouter 提供商：多模型网关，兼容 OpenAI API
+- ✅ 新增 DeepSeek 提供商：支持 DeepSeek Chat 和 Coder 模型
+- ✅ 新增自定义提供商：支持任意 OpenAI 兼容端点（Azure OpenAI、Ollama、vLLM）
+- ✅ 实现智能匹配机制：显式指定 > 关键词匹配 > 网关回退 > 默认提供商
+- ✅ 提供商注册表：支持两步式注册（spec + config field）、批量注册和动态查询
+
+**核心特性：**
+- 多提供商架构：统一的提供商抽象接口
+- 智能模型匹配：支持多种匹配策略
+- 配置扩展：支持多提供商配置和环境变量引用
+- 向后兼容：保持对旧配置格式的支持
+
+**依赖更新**
+- ✅ 新增依赖：@anthropic-ai/sdk ^0.78.0
+
+**OpenSpec 变更**
+- ✅ 完整的提案、设计、规格和任务文档
+- ✅ 6 个规格文件定义了详细的 REQUIREMENTS
+
 ### v0.1.4 (2026-03-15)
 
 **Phase 3.7：环境变量与进程管理工具**

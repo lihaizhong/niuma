@@ -4,7 +4,6 @@
 
 Niuma（牛马）是一个企业级多角色 AI 助手系统，基于 TypeScript + Node.js 构建。支持创建多个完全独立的 AI 角色，每个角色拥有独立的配置、工作区、会话、记忆和日志。
 
-**当前版本：** v0.1.4
 **项目状态：** 核心基础设施、Agent 核心、多角色配置系统、系统工具已完成
 
 ## 行为指导
@@ -248,10 +247,7 @@ flowchart TD
 - 提交信息格式：`type: description`
 
 ### 版本管理
-- **版本号一致性** - 修改版本号时需同步更新以下文件：
-  - `package.json` - 主版本号
-  - `AGENTS.md` - 当前版本引用
-  - `CHANGELOG.md` - 版本历史记录
+- **版本号管理** - 修改版本号时需更新 `package.json` 和 `CHANGELOG.md`
 - **遵循语义化版本** - 使用 Semantic Versioning (semver) 规范
 
 ### 分支策略
