@@ -11,6 +11,10 @@ project: niuma
 batch_id: <batch_id>
 knowledge_type: [概念/技术/工具/API/最佳实践]
 proficiency_level: [入门/掌握/精通/专家]
+impact_score: 0
+backlinks: 0
+referenced_weight: 0
+last_impact_update: 2026-03-11T13:02:45Z
 ---
 
 # 知识点：[简明描述，如"React Hooks 使用注意事项"]

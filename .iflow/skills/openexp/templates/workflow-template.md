@@ -9,6 +9,10 @@ effective: true
 tags: [workflow, <category>]
 project: niuma
 batch_id: <batch_id>
+impact_score: 0
+backlinks: 0
+referenced_weight: 0
+last_impact_update: 2026-03-11T13:02:45Z
 ---
 
 # 工作流程：[简明描述，如"代码提交前的检查流程"]

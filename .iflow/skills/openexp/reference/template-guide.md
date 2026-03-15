@@ -1,25 +1,43 @@
 # 模板使用指南
 
-本指南说明了如何为不同类型的经验选择合适的模板。
+本指南说明如何为不同类型的经验选择合适的模板，以及如何正确填写模板中的各个字段。
 
-## 📁 目录结构
+## 📋 标准字段说明
 
-```
-.iflow/skills/openexp/
-├── SKILL.md                    # 技能主文档
-├── reference/                  # 参考文档（本目录）
-│   └── template-guide.md      # 模板使用指南
-├── templates/                  # Obsidian 模板文件
-│   ├── experience-log-template.md
-│   ├── preference-template.md
-│   ├── workflow-template.md
-│   ├── solution-template.md
-│   ├── knowledge-template.md
-│   ├── convention-template.md
-│   └── index-map-template.md
-└── scripts/                    # Shell 脚本
-    └── obsidian-cli.sh
-```
+所有经验模板都包含以下标准字段：
+
+### 核心标识字段
+- **id**: 唯一标识符，格式为 `exp_<timestamp>_<seq>`
+- **type**: 经验类型（experience_log, preference, workflow, solution, knowledge, convention）
+- **created**: 创建时间（ISO 8601 格式）
+- **updated**: 最后更新时间（ISO 8601 格式）
+
+### 可靠性和使用统计
+- **confidence**: 置信度（0-1），反映经验的可靠性
+- **usage_count**: 使用次数，记录该经验被应用的次数
+- **effective**: 是否有效（true/false）
+
+### 标签和分类
+- **tags**: 标签数组，用于分类和检索
+- **project**: 项目名称
+- **batch_id**: 批次ID，用于关联同一批次创建的经验
+
+### 影响力计算字段
+- **impact_score**: 总影响力分数，计算公式：`usage_count * 5 + confidence * 50 + backlinks * 10 + referenced_weight`
+- **backlinks**: 反向链接数，被其他经验引用的次数
+- **referenced_weight**: 引用权重，获得被引用经验的影响力份额
+- **last_impact_update**: 最后一次影响力更新时间
+
+### 特定类型字段
+根据经验类型不同，还包含特定字段：
+- **complexity**: 复杂度（仅 experience_log）
+- **status**: 状态（仅 experience_log）
+- **knowledge_type**: 知识类型（仅 knowledge）
+- **proficiency_level**: 熟练度等级（仅 knowledge）
+- **problem_severity**: 问题严重性（仅 solution）
+- **solution_type**: 解决方案类型（仅 solution）
+- **convention_type**: 约定类型（仅 convention）
+- **enforcement_level**: 强制级别（仅 convention）
 
 ---
 
@@ -68,6 +86,17 @@ flowchart TD
 - 结构化的问题分析（目标、障碍、操作、原因）
 - 提炼三个层次的结论：技巧、原则、模型
 - 记录待验证假设和后续问题
+- 使用标准化的影响力计算字段
+
+**章节结构**：
+1. 描述 - 经验背景和目的
+2. 初始目标与问题 - 目标和遇到的障碍
+3. 关键操作与提示词迭代 - 迭代过程
+4. 根本原因分析 - 技术、提示词、工作流原因
+5. 提炼的核心经验 - 技巧、原则、模型
+6. 待验证假设与后续问题
+7. 关联 - 相关经验链接
+8. 使用建议 - 实际应用建议
 
 ---
 
@@ -299,5 +328,6 @@ cp .iflow/skills/openexp/templates/experience-log-template.md ~/Exp\ Vault/exp_$
 ## 📖 参考资源
 
 - [SKILL.md](../SKILL.md) - 经验管理技能主文档
+- [impact-calculation.md](./impact-calculation.md) - 影响力计算逻辑
 - [scripts/obsidian-cli.sh](../scripts/obsidian-cli.sh) - Obsidian CLI 封装脚本
 - [Obsidian 文档](https://help.obsidian.md/) - Obsidian 官方文档
