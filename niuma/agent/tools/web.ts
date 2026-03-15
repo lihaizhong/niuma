@@ -3,51 +3,22 @@
  * 提供 Web 搜索和网页内容抓取功能
  */
 
+// ==================== 第三方库 ====================
 import pino from 'pino'
 import * as cheerio from 'cheerio'
 import RE2 from 're2'
-
 import { z } from 'zod'
 
+// ==================== 本地模块 ====================
 import { BaseTool } from './base'
 import { ToolExecutionError } from '../../types/error'
 
+// ==================== 常量定义 ====================
 const logger = pino({ level: 'info' })
-
-/**
- * 搜索缓存条目
- */
-interface SearchCacheEntry {
-  query: string
-  engine: string
-  results: SearchResult[]
-  timestamp: number
-}
-
-/**
- * 搜索缓存存储（内存实现，缓存 1 小时）
- */
-const searchCache: Map<string, SearchCacheEntry> = new Map()
 const CACHE_TTL = 60 * 60 * 1000 // 1 小时
+const searchCache: Map<string, SearchCacheEntry> = new Map()
 
-/**
- * 清理过期缓存
- */
-function cleanExpiredCache(): void {
-  const now = Date.now()
-  for (const [key, entry] of searchCache.entries()) {
-    if (now - entry.timestamp > CACHE_TTL) {
-      searchCache.delete(key)
-    }
-  }
-}
-
-/**
- * 获取缓存键
- */
-function getCacheKey(query: string, engine: string): string {
-  return `${engine}:${query.toLowerCase().trim()}`
-}
+// ==================== 类型定义 ====================
 
 /**
  * 搜索结果
@@ -57,6 +28,16 @@ interface SearchResult {
   url: string
   snippet: string
   date?: string
+}
+
+/**
+ * 搜索缓存条目
+ */
+interface SearchCacheEntry {
+  query: string
+  engine: string
+  results: SearchResult[]
+  timestamp: number
 }
 
 /**
@@ -77,6 +58,39 @@ interface BraveSearchResult {
   description?: string
   age?: string
 }
+
+/**
+ * 搜索引擎接口
+ */
+interface SearchProvider {
+  name: string
+  search(query: string, options: { num: number }): Promise<SearchResult[]>
+  requiresApiKey: boolean
+  validateApiKey?(key: string): Promise<boolean>
+}
+
+// ==================== 工具函数 ====================
+
+/**
+ * 清理过期缓存
+ */
+function cleanExpiredCache(): void {
+  const now = Date.now()
+  for (const [key, entry] of searchCache.entries()) {
+    if (now - entry.timestamp > CACHE_TTL) {
+      searchCache.delete(key)
+    }
+  }
+}
+
+/**
+ * 获取缓存键
+ */
+function getCacheKey(query: string, engine: string): string {
+  return `${engine}:${query.toLowerCase().trim()}`
+}
+
+// ==================== 类定义 ====================
 
 /**
  * 搜索引擎接口

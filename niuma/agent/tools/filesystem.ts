@@ -3,21 +3,24 @@
  * 提供文件读写、编辑、目录列出等功能
  */
 
+// ==================== 第三方库 ====================
 import { readFile as fsReadFile, writeFile as fsWriteFile, stat, readdir, mkdir, copyFile, unlink, rm, rename } from 'fs/promises'
-import { join, resolve, isAbsolute, dirname, basename } from 'path'
+import { resolve, isAbsolute, dirname, basename } from 'path'
 import fs from 'fs-extra'
-
 import { z } from 'zod'
 import fg from 'fast-glob'
 import RE2 from 're2'
 
+// ==================== 本地模块 ====================
 import { BaseTool } from './base'
 import { ToolExecutionError } from '../../types/error'
 
-// 常量定义
+// ==================== 常量定义 ====================
 const MAX_FILE_SIZE_FOR_SEARCH = 10 * 1024 * 1024 // 10MB - 搜索文件大小限制
 const MAX_FILE_SIZE_FOR_COPY = 100 * 1024 * 1024 // 100MB - 复制/移动文件大小限制
 const MAX_MATCHES = 100 // 最大匹配数
+
+// ==================== 工具函数 ====================
 
 /**
  * 解析路径：支持绝对路径和相对路径
@@ -28,6 +31,8 @@ function resolvePath(path: string, cwd: string = process.cwd()): string {
   }
   return resolve(cwd, path)
 }
+
+// ==================== 类定义 ====================
 
 /**
  * ReadFile 工具：读取文件内容

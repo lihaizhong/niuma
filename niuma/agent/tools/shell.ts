@@ -3,14 +3,16 @@
  * 提供安全的 Shell 命令执行功能，包含危险命令黑名单防护
  */
 
+// ==================== 第三方库 ====================
 import { spawn, exec as execSync } from 'child_process'
 import { promisify } from 'util'
-
 import { z } from 'zod'
 
+// ==================== 本地模块 ====================
 import { BaseTool } from './base'
 import { ToolExecutionError } from '../../types/error'
 
+// ==================== 常量定义 ====================
 const execAsync = promisify(execSync)
 
 /**
@@ -54,6 +56,8 @@ const DENY_PATTERNS = [
   },
 ]
 
+// ==================== 工具函数 ====================
+
 /**
  * 检查命令是否危险
  */
@@ -69,6 +73,8 @@ function isDangerousCommand(command: string): { isDangerous: boolean; descriptio
   }
   return { isDangerous: false, requireConfirmation: false }
 }
+
+// ==================== 类定义 ====================
 
 /**
  * Exec 工具：执行 Shell 命令

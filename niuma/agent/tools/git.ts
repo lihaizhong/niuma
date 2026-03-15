@@ -3,20 +3,23 @@
  * 提供 Git 版本控制操作功能，包括状态查看、代码提交、推送拉取、分支管理和日志查询
  */
 
+// ==================== 第三方库 ====================
 import { spawn } from 'child_process'
 import { existsSync } from 'fs'
 import { join } from 'path'
-
 import { z } from 'zod'
 import RE2 from 're2'
 
+// ==================== 本地模块 ====================
 import { SimpleTool } from './base'
 import { ToolExecutionError } from '../../types/error'
 
-// 常量定义
+// ==================== 常量定义 ====================
 const GIT_COMMAND_TIMEOUT = 30000 // 30 秒超时
 const DEFAULT_LOG_COUNT = 10 // 默认显示 10 条提交
 const MAX_LOG_COUNT = 50 // 最大显示 50 条提交
+
+// ==================== 工具函数 ====================
 
 /**
  * Git 命令执行辅助函数
@@ -75,6 +78,8 @@ function formatGitOutput(output: string): string {
   const ansiEscapeRegex = new RE2('\\x1b\\[[0-9;]*m', 'g')
   return output.replace(ansiEscapeRegex, '')
 }
+
+// ==================== 工具实例导出 ====================
 
 /**
  * GitStatus 工具：查看 Git 仓库状态

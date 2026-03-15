@@ -3,14 +3,16 @@
  * 提供跨渠道发送消息的能力
  */
 
+// ==================== 第三方库 ====================
 import pino from 'pino'
-
 import { z } from 'zod'
 import { nanoid } from 'nanoid'
 
+// ==================== 本地模块 ====================
 import { BaseTool } from './base'
 import { ToolExecutionError } from '../../types/error'
 
+// ==================== 常量定义 ====================
 const logger = pino({ level: 'info' })
 
 /**

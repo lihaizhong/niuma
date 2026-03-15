@@ -3,18 +3,37 @@
  * 提供子智能体创建和管理、定时任务调度等功能
  */
 
+// ==================== 第三方库 ====================
 import { join } from 'path'
 import fs from 'fs-extra'
-
 import { z } from 'zod'
 import { nanoid } from 'nanoid'
 import { schedule, validate, type ScheduledTask } from 'node-cron'
 import pino from 'pino'
 
+// ==================== 本地模块 ====================
 import { BaseTool } from './base'
 import { ToolExecutionError } from '../../types/error'
 
+// ==================== 常量定义 ====================
 const logger = pino({ level: 'info' })
+
+/**
+ * 子智能体存储（内存实现）
+ */
+const subagents: Map<string, SubagentConfig> = new Map()
+
+/**
+ * 消息存储
+ */
+const agentMessages: AgentMessage[] = []
+
+/**
+ * Cron 任务存储（内存实现，生产环境应使用数据库）
+ */
+const cronTasks: Map<string, CronTask> = new Map()
+
+// ==================== 类型定义 ====================
 
 /**
  * 子智能体状态
@@ -51,11 +70,6 @@ interface SubagentConfig {
 }
 
 /**
- * 子智能体存储（内存实现）
- */
-const subagents: Map<string, SubagentConfig> = new Map()
-
-/**
  * 父子智能体通信消息
  */
 interface AgentMessage {
@@ -69,9 +83,25 @@ interface AgentMessage {
 }
 
 /**
- * 消息存储
+ * Cron 任务定义
  */
-const agentMessages: AgentMessage[] = []
+interface CronTask {
+  taskId: string
+  name: string
+  description?: string
+  cron: string
+  handler: string
+  params: Record<string, unknown>
+  enabled: boolean
+  status: 'pending' | 'running' | 'completed' | 'failed' | 'paused'
+  nextRun: Date
+  lastRun?: Date
+  executionCount: number
+  createdAt: Date
+  scheduledTask?: ScheduledTask
+}
+
+// ==================== 类定义 ====================
 
 /**
  * Spawn 工具：创建子智能体
@@ -244,11 +274,6 @@ interface CronTask {
   createdAt: Date
   scheduledTask?: ScheduledTask
 }
-
-/**
- * Cron 任务存储（内存实现，生产环境应使用数据库）
- */
-const cronTasks: Map<string, CronTask> = new Map()
 
 /**
  * Cron 工具：管理定时任务

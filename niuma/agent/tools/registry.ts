@@ -2,10 +2,11 @@
  * 工具注册中心 - 管理和执行工具
  */
 
+// ==================== 本地模块 ====================
 import type { ToolDefinition } from '../../types'
 import type { ITool } from './base'
 
-// 导入所有内置工具
+// 内置工具导入
 import {
   readFileTool,
   writeFileTool,
@@ -25,7 +26,10 @@ import {
   gitLogTool,
 } from './git'
 
+// ==================== 常量定义 ====================
 const ERROR_HINT = '\n\n[分析上述错误并尝试其他方式。]'
+
+// ==================== 导出函数 ====================
 
 /**
  * 注册所有内置工具
