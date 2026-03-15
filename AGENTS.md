@@ -98,6 +98,7 @@ Niuma（牛马）是一个企业级多角色 AI 助手系统，基于 TypeScript
   - `/opsx:propose` - 创建提案（包含 proposal、design、specs、tasks）
   - `/opsx:apply` - 实施变更（仅当 `applyReady: true` 时）
   - `/opsx:archive` - 归档变更（自动执行 `openspec archive` 命令）
+- **归档内容保护**: `openspec/changes/archive/` 下的已归档变更不可修改，这些作为历史记录保留原样
 
 #### 3. Subagent 优先级
 每个角色优先使用对应的 subagent 处理：
@@ -128,8 +129,7 @@ Niuma（牛马）是一个企业级多角色 AI 助手系统，基于 TypeScript
 | @langchain/openai | OpenAI 集成 | ^1.2.12 |
 | zod | 运行时类型验证 | ^4.3.6 |
 | json5 | JSON5 配置文件格式 | ^2.2.3 |
-| better-sqlite3 | 本地 SQLite 数据库 | ^12.6.2 |
-| sqlite-vec | 向量存储扩展 | 0.1.7-alpha.10 |
+| @sqliteai/sqlite-wasm | SQLite WASM 数据库 | ^3.50.4 |
 | cac | 命令行参数解析 | ^7.0.0 |
 | pino | 日志记录 | ^10.3.1 |
 
@@ -192,8 +192,8 @@ flowchart TD
 
 ### 数据存储
 
-- **SQLite** - 本地数据库（better-sqlite3）
-- **sqlite-vec** - 向量检索，用于语义记忆
+- **SQLite** - 本地数据库（@sqliteai/sqlite-wasm），支持 WASM 和向量检索
+- **向量搜索** - 内置向量存储，用于语义记忆
 
 ## 配置系统
 

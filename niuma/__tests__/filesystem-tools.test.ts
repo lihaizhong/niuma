@@ -361,7 +361,9 @@ describe('FileDeleteTool', () => {
     await expect(fileDeleteTool.execute({ path: testFile, confirm: false })).rejects.toThrow(
       ToolExecutionError
     )
-    await expect(fileDeleteTool.execute({ path: testFile })).rejects.toThrow(ToolExecutionError)
+    await expect(fileDeleteTool.execute({ path: testFile, confirm: false })).rejects.toThrow(
+      ToolExecutionError
+    )
   })
 
   it('应该抛出错误当文件不存在', async () => {

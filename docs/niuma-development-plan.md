@@ -52,8 +52,8 @@
 | 包管理 | pnpm | 最新 |
 | LLM 框架 | LangChain | @langchain/openai |
 | 类型验证 | Zod | ^3.0.0 |
-| 数据库 | SQLite | better-sqlite3 |
-| 向量存储 | sqlite-vec | 最新 |
+| 数据库 | SQLite | @sqliteai/sqlite-wasm |
+| 向量存储 | @sqliteai/sqlite-wasm | 内置支持 |
 | 异步 | Promise/async-await | 原生 |
 | 日志 | pino | ^9.0.0 |
 | 配置格式 | JSON5 | json5 |
@@ -522,7 +522,7 @@ interface ProviderSpec {
 {
   "dependencies": {
     "@langchain/openai": "^0.3.0",
-    "better-sqlite3": "^12.0.0",
+    "@sqliteai/sqlite-wasm": "^3.50.4",
     "cac": "^6.7.0",
     "chalk": "^5.0.0",
     "node-cron": "^3.0.0",
@@ -537,13 +537,13 @@ interface ProviderSpec {
     "node-notifier": "^10.0.0"
   },
   "devDependencies": {
-    "@types/better-sqlite3": "^7.6.0",
     "@types/node": "^22.0.0",
     "@types/node-cron": "^3.0.0",
     "tsx": "^4.0.0",
     "typescript": "^5.0.0",
     "vitest": "^2.0.0",
-    "eslint": "^9.0.0"
+    "eslint": "^9.0.0",
+    "vite": "^8.0.0"
   }
 }
 ```
