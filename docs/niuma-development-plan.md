@@ -11,13 +11,33 @@
 **Niuma 特点：**
 - 企业级多角色架构：支持多个独立角色（项目经理、开发工程师、测试工程师等）
 - 完全隔离：每个角色拥有独立的工作区、会话、记忆和日志
-- 轻量级核心：借鉴 nanobot 超轻量级设计
+- 轻量级核心：借鉴 nanobot 超轻量级设计，核心功能内置
+- MCP 优先架构：专业功能通过 MCP 对接，保持核心轻量
 - JSON5 配置：支持注释和尾随逗号的配置格式
 - 环境变量集成：支持 `${VAR}` 和 `${VAR:default}` 语法
 - 双层记忆系统：MEMORY.md + HISTORY.md
 - 技能系统：支持动态加载和依赖检查
-- MCP 协议支持：预留接口
+- MCP 协议支持：完整的 MCP 客户端实现
 - 定时任务与心跳：周期性任务支持
+
+**架构设计理念：**
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    Niuma 核心层                          │
+│  (基础工具：文件系统、Shell、加密、进程管理等)          │
+└─────────────────────────────────────────────────────────┘
+                          ↓
+┌─────────────────────────────────────────────────────────┐
+│                   MCP 客户端层                           │
+│  (MCP 协议实现、工具桥接、配置管理)                      │
+└─────────────────────────────────────────────────────────┘
+                          ↓
+┌─────────────────────────────────────────────────────────┐
+│                   MCP Server 生态                        │
+│  (图像处理、媒体处理、专业工具 - 用户自行配置)           │
+└─────────────────────────────────────────────────────────┘
+```
 
 ---
 
@@ -42,7 +62,8 @@
 - **核心模块：** 25+ 个文件
 - **代码行数：** ~12000+ 行 TypeScript
 - **内置工具：** 25 个（文件系统、Shell、Web、消息、Agent、Git、压缩解压、网络、数据处理）
-- **测试覆盖：** 100% 通过（205/205 测试）
+- **MCP 支持：** 完整的 MCP 客户端实现
+- **测试覆盖：** 100% 通过（318/318 测试）
 - **文档完善度：** OpenSpec 变更记录完整
 
 ---
@@ -390,53 +411,123 @@ flowchart TD
 
 ### 🔄 Phase 3.6: 加密与解密
 
-**优先级：** 低
+**优先级：** 中
 **预计工时：** 1-2 天
+**实现方式：** 内置工具（使用 Node.js crypto 模块）
 
 | 工具 | 文件 | 功能 | 状态 |
 |------|------|------|------|
-| encrypt | `agent/tools/crypto.ts` | 加密数据 | ⏸️ 待开发 |
+| encrypt | `agent/tools/crypto.ts` | 加密数据（AES-256-GCM） | ⏸️ 待开发 |
 | decrypt | `agent/tools/crypto.ts` | 解密数据 | ⏸️ 待开发 |
-| hash | `agent/tools/crypto.ts` | 计算哈希值 | ⏸️ 待开发 |
+| hash | `agent/tools/crypto.ts` | 计算哈希值（SHA-256/512, MD5） | ⏸️ 待开发 |
+
+**使用场景：**
+- 敏感数据存储保护（API 密钥、数据库密码）
+- 配置文件加密
+- 数据传输加密
+- 文件内容加密
+- 密码哈希存储
+- 数据完整性验证
+
+**为什么内置实现：**
+- 基础安全功能，使用频次高
+- Node.js 内置 crypto 模块，无额外依赖
+- 性能要求高，本地处理更快速
+- 不依赖外部服务，安全可控
 
 ---
 
 ### 🔄 Phase 3.7: 环境变量与进程管理
 
-**优先级：** 低
+**优先级：** 中
 **预计工时：** 1-2 天
+**实现方式：** 内置工具（使用 process.env + ps-tree + node-pty）
 
 | 工具 | 文件 | 功能 | 状态 |
 |------|------|------|------|
 | env_get | `agent/tools/system.ts` | 获取环境变量 | ⏸️ 待开发 |
-| env_set | `agent/tools/system.ts` | 设置环境变量 | ⏸️ 待开发 |
+| env_set | `agent/tools/system.ts` | 设置环境变量（仅当前进程） | ⏸️ 待开发 |
 | process_list | `agent/tools/system.ts` | 列出进程 | ⏸️ 待开发 |
 | process_kill | `agent/tools/system.ts` | 终止进程 | ⏸️ 待开发 |
+
+**使用场景：**
+- 读取系统环境配置
+- 动态设置运行时环境
+- 监控进程状态
+- 自动化运维脚本
+- 服务管理
+- 资源清理
+
+**为什么内置实现：**
+- 系统管理基础功能
+- 使用频次高，响应速度要求快
+- 跨平台兼容性好
+- 轻量级实现，无重型依赖
 
 ---
 
 ### 🔄 Phase 3.8: 图像处理
 
 **优先级：** 低
-**预计工时：** 2-3 天
+**预计工时：** 通过 MCP 对接（0.5 天）
+**实现方式：** MCP 客户端对接（用户自行配置 MCP Server）
 
-| 工具 | 文件 | 功能 | 状态 |
-|------|------|------|------|
-| image_resize | `agent/tools/image.ts` | 调整图片大小 | ⏸️ 待开发 |
-| image_crop | `agent/tools/image.ts` | 裁剪图片 | ⏸️ 待开发 |
-| image_convert | `agent/tools/image.ts` | 格式转换 | ⏸️ 待开发 |
+| 功能 | MCP Server | 说明 | 状态 |
+|------|-----------|------|------|
+| 图像处理 | `@modelcontextprotocol/server-image-tools` | 专业的图像处理 MCP Server | ⏸️ 待对接 |
+| 格式转换 | 用户自定义 | 通过 MCP 协议调用 | ⏸️ 待对接 |
+
+**使用场景：**
+- 图片压缩优化
+- 格式转换（WebP、AVIF）
+- 缩略图生成
+- 图片裁剪
+- 批量处理
+
+**为什么通过 MCP：**
+- 功能复杂，依赖大量专业库（sharp、libvips 等）
+- 更新频繁（新格式、新算法）
+- 存在成熟的 MCP 工具（如 image-tools MCP server）
+- 用户可能需要不同的处理能力（GPU 加速等）
+- 保持 Niuma 核心轻量级
+
+**MCP 对接策略：**
+- 仅实现 MCP 客户端接口
+- 用户自行配置具体的 MCP Server
+- 支持多种图像处理 MCP Server
+- 提供配置示例和文档
 
 ---
 
 ### 🔄 Phase 3.9: 媒体处理
 
 **优先级：** 低
-**预计工时：** 2-3 天
+**预计工时：** 通过 MCP 对接（0.5 天）
+**实现方式：** MCP 客户端对接（用户自行配置 MCP Server）
 
-| 工具 | 文件 | 功能 | 状态 |
-|------|------|------|------|
-| audio_transcribe | `agent/tools/media.ts` | 音频转文字（Whisper） | ⏸️ 待开发 |
-| video_transcribe | `agent/tools/media.ts` | 视频转文字 | ⏸️ 待开发 |
+| 功能 | MCP Server | 说明 | 状态 |
+|------|-----------|------|------|
+| 音频转写 | `@modelcontextprotocol/server-whisper` | Whisper 音频转写 MCP Server | ⏸️ 待对接 |
+| 视频转写 | 用户自定义 | 通过 MCP 协议调用 | ⏸️ 待对接 |
+
+**使用场景：**
+- 音频转写（会议记录、语音备忘）
+- 视频字幕生成
+- 内容分析
+- 多语言支持
+
+**为什么通过 MCP：**
+- 模型文件巨大（150MB+）
+- 计算资源消耗大
+- 存在专业的 Whisper MCP server
+- 用户可能需要云端服务或 GPU 加速
+- 保持 Niuma 核心轻量级
+
+**MCP 对接策略：**
+- 仅实现 MCP 客户端接口
+- 用户自行配置具体的 MCP Server（本地或云端）
+- 支持多种媒体处理 MCP Server
+- 提供配置示例和文档
 
 ---
 
@@ -515,14 +606,152 @@ interface ProviderSpec {
 
 ### 🔄 Phase 7: MCP 协议支持
 
-**优先级：** 低
+**优先级：** 高
 **预计工时：** 3-5 天
+**实现方式：** MCP 客户端对接 + 配置管理
 
-**功能：**
-- MCP 服务器实现
-- MCP 客户端集成
-- 工具发现和调用
-- 资源访问
+**核心理念：**
+- Niuma 仅实现 MCP 客户端对接接口
+- 具体的 MCP Server 由用户自行配置
+- 支持动态加载和卸载 MCP Server
+- 提供配置示例和最佳实践文档
+
+**功能模块：**
+
+| 模块 | 文件 | 功能 | 状态 |
+|------|------|------|------|
+| MCP 客户端 | `mcp/client.ts` | MCP 协议客户端实现 | ⏸️ 待开发 |
+| MCP 注册表 | `mcp/registry.ts` | MCP Server 注册和管理 | ⏸️ 待开发 |
+| MCP 工具桥接 | `mcp/bridge.ts` | 将 MCP 工具映射到 Niuma 工具 | ⏸️ 待开发 |
+| MCP 配置管理 | `config/mcp.ts` | MCP Server 配置加载 | ⏸️ 待开发 |
+| MCP 发现 | `mcp/discovery.ts` | 自动发现可用的 MCP 工具 | ⏸️ 待开发 |
+
+**实现策略：**
+
+1. **MCP 客户端接口**
+   - 实现标准 MCP 协议（WebSocket 和 HTTP）
+   - 支持工具发现和调用
+   - 支持资源访问
+   - 错误处理和重试机制
+
+2. **配置管理**
+   ```json5
+   {
+     "mcp": {
+       "servers": {
+         "image-tools": {
+           "transport": "stdio",
+           "command": "npx",
+           "args": ["-y", "@modelcontextprotocol/server-image-tools"],
+           "enabled": true
+         },
+         "whisper": {
+           "transport": "stdio",
+           "command": "npx",
+           "args": ["-y", "@modelcontextprotocol/server-whisper"],
+           "env": {
+             "OPENAI_API_KEY": "${OPENAI_API_KEY}"
+           },
+           "enabled": true
+         }
+       }
+     }
+   }
+   ```
+
+3. **工具桥接**
+   - 自动将 MCP 工具注册到 Niuma 工具注册表
+   - 统一工具接口和错误处理
+   - 支持工具参数验证（使用 MCP 提供的 schema）
+
+4. **动态管理**
+   - 支持运行时加载/卸载 MCP Server
+   - 支持热重载配置
+   - 提供 MCP Server 健康检查
+
+**支持的 MCP Server 类型：**
+
+| 类型 | 传输方式 | 说明 |
+|------|---------|------|
+| stdio | stdio | 最常见的方式，通过标准输入输出通信 |
+| SSE | HTTP SSE | 服务器发送事件，适合长连接 |
+| WebSocket | WebSocket | 双向实时通信 |
+
+**推荐 MCP Server：**
+
+1. **图像处理**
+   - `@modelcontextprotocol/server-image-tools` - 图像处理工具
+   - `@modelcontextprotocol/server-brave-search` - 图像搜索（可选）
+
+2. **媒体处理**
+   - `@modelcontextprotocol/server-whisper` - Whisper 音频转写
+   - `@modelcontextprotocol/server-postgres` - 如果需要存储媒体元数据
+
+3. **其他工具**
+   - `@modelcontextprotocol/server-filesystem` - 文件系统访问（增强版）
+   - `@modelcontextprotocol/server-git` - Git 操作（增强版）
+   - `@modelcontextprotocol/server-puppeteer` - 网页自动化
+
+**配置示例：**
+
+```json5
+{
+  "mcp": {
+    "enabled": true,
+    "servers": {
+      // 图像处理
+      "image-tools": {
+        "transport": "stdio",
+        "command": "npx",
+        "args": ["-y", "@modelcontextprotocol/server-image-tools"],
+        "enabled": true
+      },
+
+      // Whisper 音频转写
+      "whisper": {
+        "transport": "stdio",
+        "command": "npx",
+        "args": ["-y", "@modelcontextprotocol/server-whisper"],
+        "env": {
+          "OPENAI_API_KEY": "${OPENAI_API_KEY}"
+        },
+        "enabled": true
+      },
+
+      // 自定义 MCP Server
+      "custom-server": {
+        "transport": "sse",
+        "url": "https://my-mcp-server.example.com/sse",
+        "headers": {
+          "Authorization": "Bearer ${CUSTOM_TOKEN}"
+        },
+        "enabled": false
+      }
+    }
+  }
+}
+```
+
+**优势：**
+
+1. **轻量级核心**
+   - Niuma 保持轻量级，不包含重型依赖
+   - 用户按需配置 MCP Server
+
+2. **灵活性**
+   - 用户可以选择任何 MCP Server
+   - 支持自定义 MCP Server
+   - 支持云端和本地 MCP Server
+
+3. **可扩展性**
+   - MCP 生态系统快速增长
+   - 自动获得新功能和工具
+   - 无需修改 Niuma 核心代码
+
+4. **标准化**
+   - 遵循 MCP 标准协议
+   - 与其他 MCP 兼容工具互操作
+   - 社区驱动的生态发展
 
 ---
 
@@ -533,18 +762,30 @@ interface ProviderSpec {
   "dependencies": {
     "@langchain/openai": "^0.3.0",
     "@sqliteai/sqlite-wasm": "^3.50.4",
+    "@modelcontextprotocol/sdk": "^1.0.0",
     "cac": "^6.7.0",
     "chalk": "^5.0.0",
     "node-cron": "^3.0.0",
     "node-fetch": "^3.0.0",
     "ora": "^8.0.0",
     "pino": "^9.0.0",
-    "zod": "^3.0.0",
+    "zod": "^4.3.0",
     "json5": "^2.2.3",
     "date-fns": "^4.0.0",
     "dayjs": "^1.11.0",
     "dotenv": "^16.0.0",
-    "node-notifier": "^10.0.0"
+    "node-notifier": "^10.0.0",
+    "adm-zip": "^0.5.16",
+    "archiver": "^7.0.1",
+    "tar": "^7.5.11",
+    "ping": "^1.0.0",
+    "js-yaml": "^4.1.0",
+    "fast-glob": "^3.3.2",
+    "file-type": "^19.0.0",
+    "deepmerge": "^4.3.1",
+    "re2": "^1.23.3",
+    "secure-json-parse": "^4.1.0",
+    "fs-extra": "^11.2.0"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
