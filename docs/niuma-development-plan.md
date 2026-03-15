@@ -1,8 +1,8 @@
 # Niuma 项目开发计划
 
-> **当前版本：** v0.1.2
-> **最后更新：** 2026-03-13
-> **状态：** 已完成核心基础设施、Agent 核心和内置工具，正在进行企业级功能扩展
+> **当前版本：** v0.1.4
+> **最后更新：** 2026-03-15
+> **状态：** 已完成核心基础设施、Agent 核心、多角色配置系统、内置工具和 LLM 提供商扩展
 
 ## 项目概述
 
@@ -58,12 +58,14 @@
 | Phase 3.5 | 数据处理工具 | 2026-03-15 | ✅ 已完成 |
 | Phase 3.6 | 加密与解密 | 2026-03-15 | ✅ 已完成 |
 | Phase 3.7 | 环境变量与进程管理 | 2026-03-15 | ✅ 已完成 |
+| Phase 4 | LLM 提供商扩展 | 2026-03-15 | ✅ 已完成 |
 
 ### 📊 项目统计
 
-- **核心模块：** 26+ 个文件
-- **代码行数：** ~12500+ 行 TypeScript
+- **核心模块：** 30+ 个文件
+- **代码行数：** ~14500+ 行 TypeScript
 - **内置工具：** 30 个（文件系统、Shell、Web、消息、Agent、Git、网络、数据处理、加密解密、系统管理）
+- **LLM 提供商：** 5 个（OpenAI、Anthropic、OpenRouter、DeepSeek、Custom）
 - **MCP 支持：** 完整的 MCP 客户端实现
 - **测试覆盖：** 100% 通过（73/73 系统工具测试）
 - **文档完善度：** OpenSpec 变更记录完整
@@ -125,7 +127,12 @@ niuma/
 │   ├── heartbeat/            # 💓 主动唤醒（规划中）
 │   ├── providers/            # 🤖 LLM 提供商
 │   │   ├── base.ts           #    提供商抽象基类
-│   │   └── openai.ts         #    OpenAI 实现
+│   │   ├── openai.ts         #    OpenAI 实现
+│   │   ├── anthropic.ts      #    Anthropic Claude 实现
+│   │   ├── openrouter.ts     #    OpenRouter 多模型网关
+│   │   ├── deepseek.ts       #    DeepSeek API 实现
+│   │   ├── custom.ts         #    自定义 OpenAI 兼容端点
+│   │   └── registry.ts       #    提供商注册表
 │   ├── session/              # 💬 会话管理
 │   │   └── manager.ts        #    会话状态、历史记录、持久化
 │   ├── types/                # 📝 类型定义
@@ -143,7 +150,18 @@ niuma/
 │   │   └── archive/          #    已归档变更
 │   │       ├── 2026-03-10-core-infrastructure/
 │   │       ├── 2026-03-10-phase2-agent-core/
-│   │       └── 2026-03-11-enterprise-multi-role-config/
+│   │       ├── 2026-03-11-enterprise-multi-role-config/
+│   │       ├── 2026-03-11-sync-provider-config-params/
+│   │       ├── 2026-03-12-builtin-tools-implementation/
+│   │       ├── 2026-03-15-migrate-sqlite-to-wasm/
+│   │       ├── 2026-03-15-phase-3-1-advanced-file-operations/
+│   │       ├── 2026-03-15-phase-3-2-git-operations/
+│   │       ├── 2026-03-15-phase-3-6-crypto-tools/
+│   │       ├── 2026-03-15-phase-3-7-environment-and-process-management/
+│   │       ├── 2026-03-15-phase-3-tools-implementation/
+│   │       ├── 2026-03-15-remove-archive-tools/
+│   │       ├── 2026-03-15-sync-specs-visibility/
+│   │       └── 2026-03-15-phase-4-llm-provider-extension/
 │   └── specs/                #    规格定义
 ├── .iflow/                   # 🤖 iFlow CLI 配置
 │   ├── skills/               #    技能定义
@@ -277,8 +295,6 @@ flowchart TD
 
 ---
 
-## 已完成功能详情
-
 ### ✅ Phase 3: 内置工具实现
 
 **完成日期：** 2026-03-12
@@ -346,15 +362,9 @@ flowchart TD
 
 ---
 
-## 待开发功能
-
----
-
 ### ✅ Phase 3.2: Git 操作
 
 **完成日期：** 2026-03-15
-**优先级：** 高
-**实际工时：** 1 天
 
 | 工具 | 文件 | 功能 | 状态 |
 |------|------|------|------|
@@ -431,36 +441,7 @@ flowchart TD
 - 完整的参数验证（密钥长度、IV 长度、认证标签长度）
 - 支持空字符串和大文件内容（10MB+）
 
-**测试覆盖：**
-- 100% 测试覆盖（25/25 测试通过）
-
----
-
-### 🔄 Phase 3.6: 加密与解密
-
-**优先级：** 中
-**预计工时：** 1-2 天
-**实现方式：** 内置工具（使用 Node.js crypto 模块）
-
-| 工具 | 文件 | 功能 | 状态 |
-|------|------|------|------|
-| encrypt | `agent/tools/crypto.ts` | 加密数据（AES-256-GCM） | ⏸️ 待开发 |
-| decrypt | `agent/tools/crypto.ts` | 解密数据 | ⏸️ 待开发 |
-| hash | `agent/tools/crypto.ts` | 计算哈希值（SHA-256/512, MD5） | ⏸️ 待开发 |
-
-**使用场景：**
-- 敏感数据存储保护（API 密钥、数据库密码）
-- 配置文件加密
-- 数据传输加密
-- 文件内容加密
-- 密码哈希存储
-- 数据完整性验证
-
-**为什么内置实现：**
-- 基础安全功能，使用频次高
-- Node.js 内置 crypto 模块，无额外依赖
-- 性能要求高，本地处理更快速
-- 不依赖外部服务，安全可控
+**测试覆盖：** 100% 测试覆盖（25/25 测试通过）
 
 ---
 
@@ -493,6 +474,42 @@ flowchart TD
 - 轻量级实现，无重型依赖
 
 ---
+
+### ✅ Phase 4: LLM 提供商扩展
+
+**完成日期：** 2026-03-15
+**优先级：** 中
+**实际工时：** 4 天
+
+| 提供商 | 文件 | 功能 | 状态 |
+|--------|------|------|------|
+| Anthropic | `providers/anthropic.ts` | Claude 系列模型 | ✅ 已完成 |
+| OpenRouter | `providers/openrouter.ts` | 多模型网关 | ✅ 已完成 |
+| DeepSeek | `providers/deepseek.ts` | DeepSeek API | ✅ 已完成 |
+| 自定义 | `providers/custom.ts` | OpenAI 兼容端点 | ✅ 已完成 |
+| 注册表 | `providers/registry.ts` | 两步式注册、智能匹配 | ✅ 已完成 |
+
+**提供商注册表设计：**
+
+```typescript
+interface ProviderSpec {
+  name: string;                    // 配置字段名
+  keywords: string[];              // 模型名关键词匹配
+  envKey: string;                  // 环境变量名
+  displayName: string;             // 显示名称
+  isGateway?: boolean;             // 是否为网关
+  defaultApiBase?: string;         // 默认 API Base
+}
+
+// 匹配顺序：
+// 1. 显式前缀 (provider/model)
+// 2. 关键词匹配
+// 3. 网关回退
+```
+
+---
+
+## 待开发功能
 
 ### 🔄 Phase 3.8: 图像处理
 
@@ -556,39 +573,6 @@ flowchart TD
 - 用户自行配置具体的 MCP Server（本地或云端）
 - 支持多种媒体处理 MCP Server
 - 提供配置示例和文档
-
----
-
-### 🔄 Phase 4: LLM 提供商扩展
-
-**优先级：** 中
-**预计工时：** 3-5 天
-
-| 提供商 | 文件 | 功能 | 状态 |
-|--------|------|------|------|
-| Anthropic | `providers/anthropic.ts` | Claude 系列模型 | ⏸️ 待开发 |
-| OpenRouter | `providers/openrouter.ts` | 多模型网关 | ⏸️ 待开发 |
-| DeepSeek | `providers/deepseek.ts` | DeepSeek API | ⏸️ 待开发 |
-| 自定义 | `providers/custom.ts` | OpenAI 兼容端点 | ⏸️ 待开发 |
-| 注册表 | `providers/registry.ts` | 两步式注册、智能匹配 | ⏸️ 待开发 |
-
-**提供商注册表设计：**
-
-```typescript
-interface ProviderSpec {
-  name: string;                    // 配置字段名
-  keywords: string[];              // 模型名关键词匹配
-  envKey: string;                  // 环境变量名
-  displayName: string;             // 显示名称
-  isGateway?: boolean;             // 是否为网关
-  defaultApiBase?: string;         // 默认 API Base
-}
-
-// 匹配顺序：
-// 1. 显式前缀 (provider/model)
-// 2. 关键词匹配
-// 3. 网关回退
-```
 
 ---
 
@@ -791,6 +775,7 @@ interface ProviderSpec {
     "@langchain/openai": "^0.3.0",
     "@sqliteai/sqlite-wasm": "^3.50.4",
     "@modelcontextprotocol/sdk": "^1.0.0",
+    "@anthropic-ai/sdk": "^0.29.0",
     "cac": "^6.7.0",
     "chalk": "^5.0.0",
     "node-cron": "^3.0.0",
@@ -803,21 +788,19 @@ interface ProviderSpec {
     "dayjs": "^1.11.0",
     "dotenv": "^16.0.0",
     "node-notifier": "^10.0.0",
-    "adm-zip": "^0.5.16",
-    "archiver": "^7.0.1",
-    "tar": "^7.5.11",
-    "ping": "^1.0.0",
     "js-yaml": "^4.1.0",
     "fast-glob": "^3.3.2",
     "file-type": "^19.0.0",
     "deepmerge": "^4.3.1",
     "re2": "^1.23.3",
     "secure-json-parse": "^4.1.0",
-    "fs-extra": "^11.2.0"
+    "fs-extra": "^11.2.0",
+    "ps-tree": "^1.2.0"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
     "@types/node-cron": "^3.0.0",
+    "@types/ps-tree": "^1.1.5",
     "tsx": "^4.0.0",
     "typescript": "^5.0.0",
     "vitest": "^2.0.0",
@@ -875,66 +858,6 @@ interface ProviderSpec {
    ↓
 4. /opsx:archive (归档)
 ```
-
----
-
-## 最近变更
-
-### v0.1.2 (2026-03-13)
-
-**Phase 3.1：高级文件操作**
-- ✅ 新增 7 个高级文件操作工具（file_search、file_move、file_copy、file_delete、file_info、dir_create、dir_delete）
-- ✅ 使用 fast-glob 重构 ListDirTool（性能提升 2-10 倍）
-- ✅ 完整的安全防护机制（文件大小限制、正则表达式安全检查、受保护路径列表）
-- ✅ 100% 测试覆盖（45/45 通过）
-
-**代码质量改进：**
-- ✅ 使用 fs.rename 保证文件移动的原子性
-- ✅ 添加正则表达式 ReDoS 防护
-- ✅ 修复 DirDeleteTool 在非递归模式下的问题
-
-### v0.1.1 (2026-03-12)
-
-**Phase 3：内置工具实现**
-- ✅ 文件系统工具（read_file、write_file、edit_file、list_dir）
-- ✅ Shell 工具（exec，带危险命令黑名单防护）
-- ✅ Web 工具（web_search、web_fetch，带缓存机制）
-- ✅ 消息工具（message，支持队列和富文本）
-- ✅ Agent 工具（spawn、cron，支持子智能体和定时任务）
-- ✅ 100% 测试覆盖（332/332 通过）
-
-**代码质量改进：**
-- ✅ 完整的单元测试和集成测试
-- ✅ 工具注册和配置系统优化
-- ✅ 类型安全和错误处理完善
-
-### v0.1.0 (2026-03-11)
-
-**企业扩展：多角色配置系统**
-- ✅ JSON5 配置文件格式支持
-- ✅ 多角色架构，支持独立 AI 角色
-- ✅ 环境变量引用 `${VAR}` 和 `${VAR:default}`
-- ✅ defaults-with-overrides 配置模式
-- ✅ 角色完全隔离（工作区、会话、日志）
-- ✅ 严格 Zod 配置验证
-
-**代码质量改进：**
-- ✅ 删除未使用的变量和导入
-- ✅ 添加完整的测试用例注释
-
-### v0.1.0-beta (2026-03-10)
-
-**Phase 2：Agent 核心**
-- ✅ 上下文构建器（支持媒体、技能、记忆）
-- ✅ 双层记忆系统
-- ✅ 技能系统
-- ✅ Agent 循环（LLM ↔ 工具执行）
-
-**Phase 1：核心基础设施**
-- ✅ 核心类型系统
-- ✅ 配置管理
-- ✅ 工具框架
-- ✅ 事件总线
 
 ---
 
