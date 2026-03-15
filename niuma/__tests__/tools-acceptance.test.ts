@@ -121,6 +121,18 @@ describe('10.3 验证 Shell 工具危险命令黑名单防护', () => {
 })
 
 describe('10.4 验证文件工具支持绝对路径和相对路径', () => {
+  afterEach(async () => {
+    // 清理测试文件
+    try {
+      await rm('./acceptance-test-file.txt', { force: true })
+      await rm('./niuma-acceptance-test.txt', { force: true })
+      await rm(`${tmpdir()}/test-file.txt`, { force: true })
+      await rm(`${tmpdir()}/niuma-acceptance-test.txt`, { force: true })
+    } catch (error) {
+      // 忽略清理错误
+    }
+  })
+
   it('read_file 应该支持绝对路径', async () => {
     // 先创建文件
     const testFile = `${tmpdir()}/test-file.txt`
