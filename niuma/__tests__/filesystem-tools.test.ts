@@ -5,6 +5,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { writeFile, mkdir, rm } from 'fs/promises'
 import { join } from 'path'
+import { tmpdir } from 'os'
 import {
   readFileTool,
   writeFileTool,
@@ -26,7 +27,7 @@ describe('ReadFileTool', () => {
   const testContent = 'Hello, World!\nLine 2\nLine 3'
 
   beforeEach(async () => {
-    testDir = join('/tmp', `niuma-test-readfile-${process.pid}-${Date.now()}`)
+    testDir = join(tmpdir(), `niuma-test-readfile-${process.pid}-${Date.now()}`)
     testFile = join(testDir, 'test.txt')
     await mkdir(testDir, { recursive: true })
     await writeFile(testFile, testContent, 'utf-8')
@@ -72,7 +73,7 @@ describe('WriteFileTool', () => {
   let testFile: string
 
   beforeEach(async () => {
-    testDir = join('/tmp', `niuma-test-writefile-${process.pid}-${Date.now()}`)
+    testDir = join(tmpdir(), `niuma-test-writefile-${process.pid}-${Date.now()}`)
     testFile = join(testDir, 'test.txt')
     await mkdir(testDir, { recursive: true })
   })
@@ -112,7 +113,7 @@ describe('EditFileTool', () => {
   const testContent = 'Hello, World!\nThis is a test.\nGoodbye!'
 
   beforeEach(async () => {
-    testDir = join('/tmp', `niuma-test-editfile-${process.pid}-${Date.now()}`)
+    testDir = join(tmpdir(), `niuma-test-editfile-${process.pid}-${Date.now()}`)
     testFile = join(testDir, 'test.txt')
     await mkdir(testDir, { recursive: true })
     await writeFile(testFile, testContent, 'utf-8')
@@ -162,7 +163,7 @@ describe('ListDirTool', () => {
   let testDir: string
 
   beforeEach(async () => {
-    testDir = join('/tmp', `niuma-test-listdir-${process.pid}-${Date.now()}`)
+    testDir = join(tmpdir(), `niuma-test-listdir-${process.pid}-${Date.now()}`)
     await mkdir(testDir, { recursive: true })
     await writeFile(join(testDir, 'file1.txt'), 'content1', 'utf-8')
     await writeFile(join(testDir, 'file2.txt'), 'content2', 'utf-8')
@@ -211,7 +212,7 @@ describe('FileSearchTool', () => {
   let testFile: string
 
   beforeEach(async () => {
-    testDir = join('/tmp', `niuma-test-filesearch-${process.pid}-${Date.now()}`)
+    testDir = join(tmpdir(), `niuma-test-filesearch-${process.pid}-${Date.now()}`)
     testFile = join(testDir, 'test.txt')
     await mkdir(testDir, { recursive: true })
   })
@@ -273,7 +274,7 @@ describe('FileMoveTool', () => {
   let destFile: string
 
   beforeEach(async () => {
-    testDir = join('/tmp', `niuma-test-filemove-${process.pid}-${Date.now()}`)
+    testDir = join(tmpdir(), `niuma-test-filemove-${process.pid}-${Date.now()}`)
     sourceFile = join(testDir, 'source.txt')
     destFile = join(testDir, 'dest.txt')
     await mkdir(testDir, { recursive: true })
@@ -328,7 +329,7 @@ describe('FileCopyTool', () => {
   let destFile: string
 
   beforeEach(async () => {
-    testDir = join('/tmp', `niuma-test-filecopy-${process.pid}-${Date.now()}`)
+    testDir = join(tmpdir(), `niuma-test-filecopy-${process.pid}-${Date.now()}`)
     sourceFile = join(testDir, 'source.txt')
     destFile = join(testDir, 'dest.txt')
     await mkdir(testDir, { recursive: true })
@@ -383,7 +384,7 @@ describe('FileDeleteTool', () => {
   let testFile: string
 
   beforeEach(async () => {
-    testDir = join('/tmp', `niuma-test-filedelete-${process.pid}-${Date.now()}`)
+    testDir = join(tmpdir(), `niuma-test-filedelete-${process.pid}-${Date.now()}`)
     testFile = join(testDir, 'test.txt')
     await mkdir(testDir, { recursive: true })
   })
@@ -435,7 +436,7 @@ describe('FileInfoTool', () => {
   let testFile: string
 
   beforeEach(async () => {
-    testDir = join('/tmp', `niuma-test-fileinfo-${process.pid}-${Date.now()}`)
+    testDir = join(tmpdir(), `niuma-test-fileinfo-${process.pid}-${Date.now()}`)
     testFile = join(testDir, 'test.txt')
     await mkdir(testDir, { recursive: true })
   })
@@ -483,7 +484,7 @@ describe('DirCreateTool', () => {
   let testSubDir: string
 
   beforeEach(async () => {
-    testDir = join('/tmp', `niuma-test-dircreate-${process.pid}-${Date.now()}`)
+    testDir = join(tmpdir(), `niuma-test-dircreate-${process.pid}-${Date.now()}`)
     testSubDir = join(testDir, 'subdir')
     await mkdir(testDir, { recursive: true })
   })
@@ -529,7 +530,7 @@ describe('DirDeleteTool', () => {
   let testSubDir: string
 
   beforeEach(async () => {
-    testDir = join('/tmp', `niuma-test-dirdelete-${process.pid}-${Date.now()}`)
+    testDir = join(tmpdir(), `niuma-test-dirdelete-${process.pid}-${Date.now()}`)
     testSubDir = join(testDir, 'subdir')
     await mkdir(testDir, { recursive: true })
   })
