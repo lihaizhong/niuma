@@ -20,7 +20,7 @@ const logger = pino({ level: 'info' })
 interface SearchCacheEntry {
   query: string
   engine: string
-  results: any[]
+  results: SearchResult[]
   timestamp: number
 }
 
@@ -57,6 +57,25 @@ interface SearchResult {
   url: string
   snippet: string
   date?: string
+}
+
+/**
+ * Brave API 响应格式
+ */
+interface BraveSearchResponse {
+  web?: {
+    results?: BraveSearchResult[]
+  }
+}
+
+/**
+ * Brave 搜索结果格式
+ */
+interface BraveSearchResult {
+  title?: string
+  url?: string
+  description?: string
+  age?: string
 }
 
 /**
@@ -103,13 +122,13 @@ class BraveSearchProvider implements SearchProvider {
       throw new ToolExecutionError('web_search', `搜索失败，状态码: ${response.status}`)
     }
 
-    const data = (await response.json()) as any
+    const data = (await response.json()) as BraveSearchResponse
 
     if (!data.web?.results || data.web.results.length === 0) {
       return []
     }
 
-    return data.web.results.map((result: any) => ({
+    return data.web.results.map((result: BraveSearchResult): SearchResult => ({
       title: result.title || '',
       url: result.url || '',
       snippet: result.description || '',
