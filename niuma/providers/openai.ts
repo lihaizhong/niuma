@@ -62,7 +62,7 @@ export interface OpenAIConfig extends LLMConfig {
  */
 export class OpenAIProvider implements LLMProvider {
   /** @inheritdoc */
-  readonly name = "openai";
+  readonly name: string = "openai";
 
   /** 提供商配置 */
   private config: OpenAIConfig;

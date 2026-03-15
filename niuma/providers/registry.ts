@@ -2,9 +2,10 @@
  * 提供商注册表
  *
  * @description 管理多个 LLM 提供商的注册、查询和自动选择。
- * 支持两步式注册（spec + config field）和智能匹配机制。
+ * 支持两步式注册（spec + config field）和智能匹配机制.
  */
 
+/* eslint-disable no-undef */
 // ==================== 本地模块 ====================
 import type { LLMProvider } from "./base";
 import type { LLMConfig } from "../types";
@@ -427,6 +428,16 @@ export class ProviderRegistry {
     this.clearInstances();
     this.clearConfigs();
     this.defaultProvider = undefined;
+  }
+
+  /**
+   * 清除所有提供商规格
+   *
+   * @description 用于测试，清除所有规格、实例和配置
+   */
+  clearSpecs(): void {
+    this.specs.clear();
+    this.reset();
   }
 }
 

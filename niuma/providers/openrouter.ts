@@ -25,7 +25,7 @@ export interface OpenRouterConfig extends LLMConfig {
  */
 export class OpenRouterProvider extends OpenAIProvider {
   /** @inheritdoc */
-  readonly name = "openrouter" as const;
+  readonly name: string = "openrouter";
 
   /** 是否为网关 */
   readonly isGateway = true;

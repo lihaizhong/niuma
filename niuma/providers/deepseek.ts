@@ -21,10 +21,10 @@ export interface DeepSeekConfig extends LLMConfig {
  */
 export class DeepSeekProvider extends OpenAIProvider {
   /** @inheritdoc */
-  readonly name = "deepseek";
+  readonly name: string = "deepseek";
 
   /** 默认模型 */
-  private static readonly DEFAULT_MODEL = "deepseek-chat";
+  private static readonly DEFAULT_DEEPSEEK_MODEL = "deepseek-chat";
 
   /**
    * 创建 DeepSeek 提供商实例
@@ -36,7 +36,7 @@ export class DeepSeekProvider extends OpenAIProvider {
     const deepseekConfig = {
       ...config,
       apiBase: config.apiBase || "https://api.deepseek.com",
-      model: config.model || DeepSeekProvider.DEFAULT_MODEL,
+      model: config.model || DeepSeekProvider.DEFAULT_DEEPSEEK_MODEL,
     };
 
     super(deepseekConfig);

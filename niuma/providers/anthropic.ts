@@ -94,12 +94,9 @@ export class AnthropicProvider implements LLMProvider {
       );
     }
 
-    const beta = config.extra?.beta || config.beta || [];
-
     return new Anthropic({
       apiKey,
       baseURL: config.apiBase || process.env.ANTHROPIC_BASE_URL,
-      maxRetries: config.maxRetries ?? 2,
       timeout: config.timeout,
       defaultHeaders: {
         "anthropic-version": config.version || "2023-06-01",
@@ -133,11 +130,26 @@ export class AnthropicProvider implements LLMProvider {
     const anthropicMessages = this._convertMessages(messages);
     const systemMessage = this._extractSystemMessage(messages);
 
-    // 添加 beta 功能（暂时禁用，等待 SDK 更新）
-    // const beta = this.config.extra?.beta || this.config.beta;
-    // if (beta && beta.length > 0) {
-    //   requestParams.beta = beta as any[];
-    // }
+    // 构建请求参数
+    const requestParams: Anthropic.MessageCreateParams = {
+      model: model || this.config.model || AnthropicProvider.DEFAULT_MODEL,
+      messages: anthropicMessages,
+      max_tokens: maxTokens || this.config.maxTokens || 4096,
+    };
+
+    if (systemMessage) {
+      requestParams.system = systemMessage;
+    }
+
+    if (temperature !== undefined) {
+      requestParams.temperature = temperature;
+    } else if (this.config.temperature !== undefined) {
+      requestParams.temperature = this.config.temperature;
+    }
+
+    if (tools && tools.length > 0) {
+      requestParams.tools = this._convertTools(tools);
+    }
 
     try {
       const response = await this.client.messages.create(requestParams);
@@ -184,10 +196,10 @@ export class AnthropicProvider implements LLMProvider {
       requestParams.tools = this._convertTools(tools);
     }
 
-    // 添加 beta 功能
+    // 添加 beta 功能（使用 any 类型，因为 SDK 类型定义可能不完整）
     const beta = this.config.extra?.beta || this.config.beta;
     if (beta && beta.length > 0) {
-      requestParams.beta = beta as Anthropic.BetaParam[];
+      (requestParams as any).beta = beta;
     }
 
     try {
@@ -286,7 +298,7 @@ export class AnthropicProvider implements LLMProvider {
               role: "user" as const,
               content: msg.content as string,
             };
-          case "assistant":
+          case "assistant": {
             const assistantMessage: Anthropic.MessageParam = {
               role: "assistant" as const,
               content: (msg.content as string) || "",
@@ -302,6 +314,7 @@ export class AnthropicProvider implements LLMProvider {
             }
 
             return assistantMessage;
+          }
           case "tool":
             return {
               role: "user" as const,

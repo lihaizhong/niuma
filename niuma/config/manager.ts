@@ -14,7 +14,14 @@ import fs from "fs-extra";
 import { json5ConfigLoader } from "./json5-loader";
 import { resolveEnvVars } from "./env-resolver";
 import { mergeConfigs } from "./merger";
-import { NiumaConfig, StrictNiumaConfigSchema } from "./schema";
+import { NiumaConfig, StrictNiumaConfigSchema, ProviderConfig } from "./schema";
+import {
+  providerRegistry,
+  ProviderRegistry,
+  type ProviderSpec,
+} from "../providers/registry";
+import type { LLMProvider } from "../providers/base";
+import type { LLMConfig } from "../types";
 
 // ============================================
 // 接口定义
@@ -56,10 +63,14 @@ export class ConfigManager {
   private configPath: string;
   private config: NiumaConfig | null = null;
   private cache: Map<string, Partial<NiumaConfig>> = new Map();
+  private registry: ProviderRegistry;
+  private providersInitialized: boolean = false;
 
   constructor(configPath?: string) {
     this.configPath =
       configPath ?? join(homedir(), ".niuma", "niuma.config.json");
+    // 使用全局 ProviderRegistry 实例
+    this.registry = providerRegistry;
   }
 
   /**
@@ -242,6 +253,127 @@ export class ConfigManager {
    */
   clearCache(): void {
     this.cache.clear();
+  }
+
+  /**
+   * 初始化 ProviderRegistry
+   * @description 将配置中的提供商信息注册到 ProviderRegistry
+   * @param agentId 角色ID（可选），如果不提供则使用全局配置
+   */
+  initializeProviders(agentId?: string): void {
+    // 获取配置（角色特定配置或全局配置）
+    const config = agentId ? this.getAgentConfig(agentId) : this.load();
+
+    // 转换 ProviderConfig 为 LLMConfig 并注册
+    const providerConfigs = config.providers || {};
+
+    for (const [name, providerConfig] of Object.entries(providerConfigs)) {
+      // 转换为 LLMConfig
+      const llmConfig = this._convertToLLMConfig(providerConfig);
+
+      // 设置到注册表
+      this.registry.setProviderConfig(name, llmConfig);
+    }
+
+    // 标记已初始化
+    this.providersInitialized = true;
+  }
+
+  /**
+   * 获取提供商实例
+   * @param name 提供商名称
+   * @param agentId 角色ID（可选）
+   * @returns 提供商实例
+   */
+  getProvider(name: string, agentId?: string): LLMProvider | undefined {
+    // 确保已初始化
+    if (!this.providersInitialized) {
+      this.initializeProviders(agentId);
+    }
+
+    return this.registry.getProviderByName(name);
+  }
+
+  /**
+   * 根据模型名获取提供商实例
+   * @param model 模型名
+   * @param agentId 角色ID（可选）
+   * @returns 提供商实例
+   */
+  getProviderByModel(model: string, agentId?: string): LLMProvider | undefined {
+    // 确保已初始化
+    if (!this.providersInitialized) {
+      this.initializeProviders(agentId);
+    }
+
+    return this.registry.getProvider(model);
+  }
+
+  /**
+   * 获取默认提供商实例
+   * @param agentId 角色ID（可选）
+   * @returns 默认提供商实例
+   */
+  getDefaultProvider(agentId?: string): LLMProvider | undefined {
+    // 确保已初始化
+    if (!this.providersInitialized) {
+      this.initializeProviders(agentId);
+    }
+
+    return this.registry.getDefaultProvider();
+  }
+
+  /**
+   * 列出所有可用的提供商
+   * @param agentId 角色ID（可选）
+   * @returns 可用的提供商规格列表
+   */
+  listAvailableProviders(agentId?: string): ProviderSpec[] {
+    // 确保已初始化
+    if (!this.providersInitialized) {
+      this.initializeProviders(agentId);
+    }
+
+    return this.registry.listAvailableProviders();
+  }
+
+  /**
+   * 将 ProviderConfig 转换为 LLMConfig
+   * @param providerConfig 提供商配置
+   * @returns LLM 配置
+   */
+  private _convertToLLMConfig(providerConfig: ProviderConfig): LLMConfig {
+    const { type, model, apiKey, apiBase, ...rest } = providerConfig;
+
+    // 构建基础 LLMConfig
+    const llmConfig: LLMConfig = {
+      model,
+    };
+
+    // 添加可选字段
+    if (apiKey) llmConfig.apiKey = apiKey;
+    if (apiBase) llmConfig.apiBase = apiBase;
+
+    // 添加其他参数
+    if (rest.temperature !== undefined) llmConfig.temperature = rest.temperature;
+    if (rest.maxTokens !== undefined) llmConfig.maxTokens = rest.maxTokens;
+    if (rest.topP !== undefined) llmConfig.topP = rest.topP;
+    if (rest.stopSequences) llmConfig.stopSequences = rest.stopSequences;
+    if (rest.frequencyPenalty !== undefined) llmConfig.frequencyPenalty = rest.frequencyPenalty;
+    if (rest.presencePenalty !== undefined) llmConfig.presencePenalty = rest.presencePenalty;
+    if (rest.timeout !== undefined) llmConfig.timeout = rest.timeout;
+    if (rest.extra) llmConfig.extra = rest.extra;
+
+    return llmConfig;
+  }
+
+  /**
+   * 重置 ProviderRegistry
+   * @description 清除所有提供商实例和配置
+   */
+  resetProviders(): void {
+    this.registry.reset();
+    this.providersInitialized = false;
   }
 }
 

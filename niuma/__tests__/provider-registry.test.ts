@@ -5,15 +5,26 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { ProviderRegistry, type ProviderSpec, type LLMProvider } from "../providers/registry";
+import { ProviderRegistry, type ProviderSpec } from "../providers/registry";
+import type { LLMProvider } from "../providers/base";
 import type { LLMConfig } from "../types";
 
 // Mock 提供商实现
 class MockProvider implements LLMProvider {
   readonly name: string;
+  private instanceId: string;
 
-  constructor(private config: LLMConfig) {
-    this.name = config.model.split("/")[0] || "mock";
+  constructor(private config: LLMConfig, name?: string) {
+    // 如果传入 name 参数，使用它；否则从 model 中提取
+    if (name) {
+      this.name = name;
+    } else {
+      // 从 model 中提取 provider name（如果有 "/"），否则使用 "mock"
+      const parts = config.model.split("/");
+      this.name = parts.length > 1 ? parts[0] : "mock";
+    }
+    // 生成唯一实例 ID
+    this.instanceId = Math.random().toString(36).substring(7);
   }
 
   async chat(): Promise<any> {
@@ -35,6 +46,11 @@ class MockProvider implements LLMProvider {
   getConfig(): LLMConfig {
     return this.config;
   }
+
+  // 用于测试实例是否相同
+  getInstanceId(): string {
+    return this.instanceId;
+  }
 }
 
 describe("ProviderRegistry", () => {
@@ -43,8 +59,8 @@ describe("ProviderRegistry", () => {
   beforeEach(() => {
     // 创建新的注册表实例，不使用全局实例
     registry = new ProviderRegistry();
-    // 清除内置提供商
-    registry.reset();
+    // 清除内置提供商规格
+    registry.clearSpecs();
   });
 
   describe("注册功能", () => {
@@ -123,7 +139,7 @@ describe("ProviderRegistry", () => {
         keywords: ["gpt", "o1"],
         envKey: "OPENAI_API_KEY",
         displayName: "OpenAI",
-        factory: (config) => new MockProvider(config),
+        factory: (config) => new MockProvider(config, "openai"),
       });
 
       registry.register({
@@ -131,7 +147,7 @@ describe("ProviderRegistry", () => {
         keywords: ["claude"],
         envKey: "ANTHROPIC_API_KEY",
         displayName: "Anthropic",
-        factory: (config) => new MockProvider(config),
+        factory: (config) => new MockProvider(config, "anthropic"),
       });
 
       registry.register({
@@ -140,7 +156,7 @@ describe("ProviderRegistry", () => {
         envKey: "OPENROUTER_API_KEY",
         displayName: "OpenRouter",
         isGateway: true,
-        factory: (config) => new MockProvider(config),
+        factory: (config) => new MockProvider(config, "openrouter"),
       });
 
       // 设置配置
@@ -175,14 +191,14 @@ describe("ProviderRegistry", () => {
 
     it("应该能够回退到默认提供商", () => {
       registry.setDefaultProvider("anthropic");
-      // 移除网关
-      registry.reset();
+      // 移除网关和所有规格
+      registry.clearSpecs();
       registry.register({
         name: "anthropic",
         keywords: ["claude"],
         envKey: "ANTHROPIC_API_KEY",
         displayName: "Anthropic",
-        factory: (config) => new MockProvider(config),
+        factory: (config) => new MockProvider(config, "anthropic"),
       });
       registry.setProviderConfig("anthropic", { model: "claude-3-opus" });
       registry.setDefaultProvider("anthropic");
@@ -198,7 +214,7 @@ describe("ProviderRegistry", () => {
         keywords: ["gpt-4"],
         envKey: "TEST_API_KEY",
         displayName: "Test",
-        factory: (config) => new MockProvider(config),
+        factory: (config) => new MockProvider(config, "test"),
       });
       registry.setProviderConfig("test", { model: "test-model" });
 
@@ -214,9 +230,10 @@ describe("ProviderRegistry", () => {
         keywords: ["test"],
         envKey: "TEST_API_KEY",
         displayName: "Test",
-        factory: (config) => new MockProvider(config),
+        factory: (config) => new MockProvider(config, "test"),
       });
 
+      registry.setProviderConfig("test", { model: "test-model" });
       registry.setDefaultProvider("test");
       const provider = registry.getDefaultProvider();
 
@@ -236,7 +253,7 @@ describe("ProviderRegistry", () => {
         keywords: ["test1"],
         envKey: "TEST1_API_KEY",
         displayName: "Test 1",
-        factory: (config) => new MockProvider(config),
+        factory: (config) => new MockProvider(config, "test1"),
       });
 
       registry.register({
@@ -244,7 +261,7 @@ describe("ProviderRegistry", () => {
         keywords: ["test2"],
         envKey: "TEST2_API_KEY",
         displayName: "Test 2",
-        factory: (config) => new MockProvider(config),
+        factory: (config) => new MockProvider(config, "test2"),
       });
 
       registry.setProviderConfig("test1", { model: "test1-model" });
@@ -370,14 +387,13 @@ describe("ProviderRegistry", () => {
       registry.register(spec);
       registry.setProviderConfig("test", { model: "test-model" });
 
-      registry.getProviderByName("test"); // 创建实例
+      const provider1 = registry.getProviderByName("test") as MockProvider; // 创建实例
       registry.clearInstances();
 
       // 重新获取应该创建新实例
-      const provider1 = registry.getProviderByName("test");
-      const provider2 = registry.getProviderByName("test");
+      const provider2 = registry.getProviderByName("test") as MockProvider;
 
-      expect(provider1).not.toBe(provider2);
+      expect(provider1.getInstanceId()).not.toBe(provider2.getInstanceId());
     });
 
     it("应该能够完全重置注册表", () => {
@@ -417,7 +433,7 @@ describe("ProviderRegistry", () => {
         keywords: ["GPT"],
         envKey: "TEST_API_KEY",
         displayName: "Test",
-        factory: (config) => new MockProvider(config),
+        factory: (config) => new MockProvider(config, "test"),
       });
       registry.setProviderConfig("test", { model: "test-model" });
 

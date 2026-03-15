@@ -1,9 +1,10 @@
 /**
  * 自定义提供商实现
  *
- * @description 基于 OpenAI 提供商实现自定义 OpenAI 兼容端点。
+ * @description 基于 OpenAI 提供商实现自定义 OpenAI 兼容端点.
  */
 
+/* eslint-disable no-undef */
 import { OpenAIProvider } from "./openai";
 import type { LLMConfig } from "../types";
 import { ProviderError } from "../types";
@@ -27,7 +28,7 @@ export interface CustomConfig extends LLMConfig {
  */
 export class CustomProvider extends OpenAIProvider {
   /** @inheritdoc */
-  readonly name = "custom";
+  readonly name: string = "custom";
 
   /**
    * 创建自定义提供商实例
@@ -36,10 +37,9 @@ export class CustomProvider extends OpenAIProvider {
    * @throws {ProviderError} 当 API Base 未配置时抛出
    */
   constructor(config: CustomConfig) {
-    // 验证配置
-    this._validateConfig(config);
-
     super(config);
+    // 在 super 调用之后验证配置
+    CustomProvider._validateConfig(config);
   }
 
   /**
@@ -48,10 +48,10 @@ export class CustomProvider extends OpenAIProvider {
    * @param config - 配置参数
    * @throws {ProviderError} 当配置无效时抛出
    */
-  private _validateConfig(config: CustomConfig): void {
+  private static _validateConfig(config: CustomConfig): void {
     if (!config.apiBase) {
       throw new ProviderError(
-        this.name,
+        "custom",
         "自定义提供商必须配置 apiBase",
         undefined,
         {
@@ -65,7 +65,7 @@ export class CustomProvider extends OpenAIProvider {
       new URL(config.apiBase);
     } catch {
       throw new ProviderError(
-        this.name,
+        "custom",
         `apiBase 格式无效: ${config.apiBase}`,
         undefined,
         {
