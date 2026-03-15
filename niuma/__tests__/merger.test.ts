@@ -4,7 +4,7 @@
 
 import { describe, it, expect } from "vitest";
 import { mergeConfigs, mergeMultipleConfigs } from "../config/merger";
-import type { NiumaConfig } from "../config/schema";
+import type { NiumaConfig, AgentDefinition } from "../config/schema";
 
 describe("配置合并器", () => {
   describe("mergeConfigs()", () => {
@@ -45,7 +45,7 @@ describe("配置合并器", () => {
     };
 
     it("应该保持全局配置当角色配置为空时", () => {
-      const agentConfig: any = {
+      const agentConfig: AgentDefinition = {
         id: "test",
         name: "Test Agent",
         default: false,
@@ -57,11 +57,11 @@ describe("配置合并器", () => {
     });
 
     it("应该深度合并 agent 配置", () => {
-      const agentConfig: any = {
+      const agentConfig: AgentDefinition = {
         id: "test",
         default: false,
         agent: {
-          progressMode: "verbose" as const,
+          progressMode: "verbose",
           showReasoning: true,
         },
       };
@@ -73,8 +73,9 @@ describe("配置合并器", () => {
     });
 
     it("应该深度合并 providers 配置", () => {
-      const agentConfig: any = {
+      const agentConfig: AgentDefinition = {
         id: "test",
+        default: false,
         providers: {
           openai: {
             type: "openai",
@@ -90,8 +91,9 @@ describe("配置合并器", () => {
     });
 
     it("应该完全替换 channels 配置", () => {
-      const agentConfig: any = {
+      const agentConfig: AgentDefinition = {
         id: "test",
+        default: false,
         channels: [
           {
             type: "cli",
@@ -109,8 +111,9 @@ describe("配置合并器", () => {
     });
 
     it("应该完全替换 cronTasks 配置", () => {
-      const agentConfig: any = {
+      const agentConfig: AgentDefinition = {
         id: "test",
+        default: false,
         cronTasks: [
           {
             name: "test-task",
@@ -132,8 +135,9 @@ describe("配置合并器", () => {
     });
 
     it("应该覆盖 debug 配置", () => {
-      const agentConfig: any = {
+      const agentConfig: AgentDefinition = {
         id: "test",
+        default: false,
         debug: true,
       };
       const result = mergeConfigs(globalConfig, agentConfig);
@@ -141,17 +145,19 @@ describe("配置合并器", () => {
     });
 
     it("应该覆盖 logLevel 配置", () => {
-      const agentConfig: any = {
+      const agentConfig: AgentDefinition = {
         id: "test",
-        logLevel: "debug" as const,
+        default: false,
+        logLevel: "debug",
       };
       const result = mergeConfigs(globalConfig, agentConfig);
       expect(result.logLevel).toBe("debug");
     });
 
     it("应该覆盖 workspaceDir 配置", () => {
-      const agentConfig: any = {
+      const agentConfig: AgentDefinition = {
         id: "test",
+        default: false,
         workspaceDir: "~/custom-workspace",
       };
       const result = mergeConfigs(globalConfig, agentConfig);
@@ -159,8 +165,9 @@ describe("配置合并器", () => {
     });
 
     it("应该处理嵌套对象合并", () => {
-      const agentConfig: any = {
+      const agentConfig: AgentDefinition = {
         id: "test",
+        default: false,
         providers: {
           openai: {
             type: "openai",
@@ -182,15 +189,15 @@ describe("配置合并器", () => {
 
   describe("mergeMultipleConfigs()", () => {
     it("应该合并多个配置对象", () => {
-      const config1: any = {
+      const config1: Record<string, unknown> = {
         field1: "value1",
         field2: "value2",
       };
-      const config2: any = {
+      const config2: Record<string, unknown> = {
         field2: "new-value2",
         field3: "value3",
       };
-      const config3: any = {
+      const config3: Record<string, unknown> = {
         field4: "value4",
       };
       const result = mergeMultipleConfigs(config1, config2, config3);
@@ -203,13 +210,13 @@ describe("配置合并器", () => {
     });
 
     it("应该深度合并嵌套对象", () => {
-      const config1: any = {
+      const config1: Record<string, unknown> = {
         nested: {
           field1: "value1",
           field2: "value2",
         },
       };
-      const config2: any = {
+      const config2: Record<string, unknown> = {
         nested: {
           field2: "new-value2",
           field3: "value3",

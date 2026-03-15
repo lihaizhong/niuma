@@ -4,6 +4,21 @@
 
 ## [Unreleased]
 
+### v0.1.2 (2026-03-15)
+
+**Phase 3.3-3.5：新增工具实现**
+- ✅ 压缩与解压工具（archive、extract），支持 zip、tar、tar.gz 等格式
+- ✅ 网络工具（ping、dns_lookup、http_request），支持网络连通性测试、DNS 查询和 HTTP 请求
+- ✅ JSON/YAML 处理工具（json_parse、json_stringify、yaml_parse、yaml_stringify），支持数据格式转换和解析
+
+**依赖更新**
+- ✅ 新增依赖：archiver、adm-zip、tar、ping、js-yaml
+- ✅ 新增类型定义：@types/archiver、@types/adm-zip
+
+**测试覆盖**
+- ✅ 更新工具注册测试，工具数量从 16 增加到 25
+- ✅ 所有测试通过（205/205）
+
 ### v0.1.1 (2026-03-15)
 
 **文档优化**

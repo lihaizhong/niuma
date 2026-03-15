@@ -2,10 +2,15 @@
  * 文件系统工具测试
  */
 
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { writeFile, mkdir, rm } from "fs/promises";
+// ==================== 内置库 ====================
 import { join } from "path";
 import { tmpdir } from "os";
+
+// ==================== 第三方库 ====================
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import fs from "fs-extra";
+
+// ==================== 本地模块 ====================
 import {
   readFileTool,
   writeFileTool,
@@ -32,13 +37,13 @@ describe("ReadFileTool", () => {
       `niuma-test-readfile-${process.pid}-${Date.now()}`,
     );
     testFile = join(testDir, "test.txt");
-    await mkdir(testDir, { recursive: true });
-    await writeFile(testFile, testContent, "utf-8");
+    await fs.mkdir(testDir, { recursive: true });
+    await fs.writeFile(testFile, testContent, "utf-8");
   });
 
   afterEach(async () => {
     try {
-      await rm(testDir, { recursive: true, force: true });
+      await fs.rm(testDir, { recursive: true, force: true });
     } catch (error) {
       console.warn(`[ReadFileTool] 清理临时目录失败: ${testDir}`, error);
     }
@@ -69,7 +74,7 @@ describe("ReadFileTool", () => {
 
   it("应该处理空文件", async () => {
     const emptyFile = join(testDir, "empty.txt");
-    await writeFile(emptyFile, "", "utf-8");
+    await fs.writeFile(emptyFile, "", "utf-8");
     const result = await readFileTool.execute({ path: emptyFile });
     expect(result).toBe("");
   });
@@ -85,12 +90,12 @@ describe("WriteFileTool", () => {
       `niuma-test-writefile-${process.pid}-${Date.now()}`,
     );
     testFile = join(testDir, "test.txt");
-    await mkdir(testDir, { recursive: true });
+    await fs.mkdir(testDir, { recursive: true });
   });
 
   afterEach(async () => {
     try {
-      await rm(testDir, { recursive: true, force: true });
+      await fs.rm(testDir, { recursive: true, force: true });
     } catch (error) {
       console.warn(`[WriteFileTool] 清理临时目录失败: ${testDir}`, error);
     }
@@ -103,7 +108,7 @@ describe("WriteFileTool", () => {
   });
 
   it("应该成功覆盖现有文件", async () => {
-    await writeFile(testFile, "Old content", "utf-8");
+    await fs.writeFile(testFile, "Old content", "utf-8");
     const newContent = "New content";
     await writeFileTool.execute({ path: testFile, content: newContent });
     const result = await readFileTool.execute({ path: testFile });
@@ -131,13 +136,13 @@ describe("EditFileTool", () => {
       `niuma-test-editfile-${process.pid}-${Date.now()}`,
     );
     testFile = join(testDir, "test.txt");
-    await mkdir(testDir, { recursive: true });
-    await writeFile(testFile, testContent, "utf-8");
+    await fs.mkdir(testDir, { recursive: true });
+    await fs.writeFile(testFile, testContent, "utf-8");
   });
 
   afterEach(async () => {
     try {
-      await rm(testDir, { recursive: true, force: true });
+      await fs.rm(testDir, { recursive: true, force: true });
     } catch (error) {
       console.warn(`[EditFileTool] 清理临时目录失败: ${testDir}`, error);
     }
@@ -180,16 +185,16 @@ describe("ListDirTool", () => {
 
   beforeEach(async () => {
     testDir = join(tmpdir(), `niuma-test-listdir-${process.pid}-${Date.now()}`);
-    await mkdir(testDir, { recursive: true });
-    await writeFile(join(testDir, "file1.txt"), "content1", "utf-8");
-    await writeFile(join(testDir, "file2.txt"), "content2", "utf-8");
-    await mkdir(join(testDir, "subdir"), { recursive: true });
-    await writeFile(join(testDir, "subdir", "file3.txt"), "content3", "utf-8");
+    await fs.mkdir(testDir, { recursive: true });
+    await fs.writeFile(join(testDir, "file1.txt"), "content1", "utf-8");
+    await fs.writeFile(join(testDir, "file2.txt"), "content2", "utf-8");
+    await fs.mkdir(join(testDir, "subdir"), { recursive: true });
+    await fs.writeFile(join(testDir, "subdir", "file3.txt"), "content3", "utf-8");
   });
 
   afterEach(async () => {
     try {
-      await rm(testDir, { recursive: true, force: true });
+      await fs.rm(testDir, { recursive: true, force: true });
     } catch (error) {
       console.warn(`[ListDirTool] 清理临时目录失败: ${testDir}`, error);
     }
@@ -239,12 +244,12 @@ describe("FileSearchTool", () => {
       `niuma-test-filesearch-${process.pid}-${Date.now()}`,
     );
     testFile = join(testDir, "test.txt");
-    await mkdir(testDir, { recursive: true });
+    await fs.mkdir(testDir, { recursive: true });
   });
 
   afterEach(async () => {
     try {
-      await rm(testDir, { recursive: true, force: true });
+      await fs.rm(testDir, { recursive: true, force: true });
     } catch (error) {
       console.warn(`[FileSearchTool] 清理临时目录失败: ${testDir}`, error);
     }
@@ -252,7 +257,7 @@ describe("FileSearchTool", () => {
 
   it("应该成功搜索匹配内容", async () => {
     const content = "Hello World\nHello Universe\nGoodbye World";
-    await writeFile(testFile, content, "utf-8");
+    await fs.writeFile(testFile, content, "utf-8");
     const result = await fileSearchTool.execute({
       path: testFile,
       pattern: "Hello",
@@ -263,7 +268,7 @@ describe("FileSearchTool", () => {
 
   it("应该支持大小写不敏感搜索", async () => {
     const content = "Hello World\nhello universe";
-    await writeFile(testFile, content, "utf-8");
+    await fs.writeFile(testFile, content, "utf-8");
     const result = await fileSearchTool.execute({
       path: testFile,
       pattern: "hello",
@@ -273,7 +278,7 @@ describe("FileSearchTool", () => {
 
   it("应该支持大小写敏感搜索", async () => {
     const content = "Hello World\nhello universe";
-    await writeFile(testFile, content, "utf-8");
+    await fs.writeFile(testFile, content, "utf-8");
     const result = await fileSearchTool.execute({
       path: testFile,
       pattern: "hello",
@@ -284,7 +289,7 @@ describe("FileSearchTool", () => {
 
   it("应该返回空结果当无匹配项", async () => {
     const content = "Hello World";
-    await writeFile(testFile, content, "utf-8");
+    await fs.writeFile(testFile, content, "utf-8");
     const result = await fileSearchTool.execute({
       path: testFile,
       pattern: "nonexistent",
@@ -303,7 +308,7 @@ describe("FileSearchTool", () => {
 
   it("应该限制匹配数量", async () => {
     const content = "line1\ntest\nline2\ntest\nline3\ntest";
-    await writeFile(testFile, content, "utf-8");
+    await fs.writeFile(testFile, content, "utf-8");
     const result = await fileSearchTool.execute({
       path: testFile,
       pattern: "test",
@@ -325,19 +330,19 @@ describe("FileMoveTool", () => {
     );
     sourceFile = join(testDir, "source.txt");
     destFile = join(testDir, "dest.txt");
-    await mkdir(testDir, { recursive: true });
+    await fs.mkdir(testDir, { recursive: true });
   });
 
   afterEach(async () => {
     try {
-      await rm(testDir, { recursive: true, force: true });
+      await fs.rm(testDir, { recursive: true, force: true });
     } catch (error) {
       console.warn(`[FileMoveTool] 清理临时目录失败: ${testDir}`, error);
     }
   });
 
   it("应该成功移动文件", async () => {
-    await writeFile(sourceFile, "test content", "utf-8");
+    await fs.writeFile(sourceFile, "test content", "utf-8");
     const result = await fileMoveTool.execute({
       source: sourceFile,
       dest: destFile,
@@ -354,7 +359,7 @@ describe("FileMoveTool", () => {
   });
 
   it("应该支持移动并重命名", async () => {
-    await writeFile(sourceFile, "test content", "utf-8");
+    await fs.writeFile(sourceFile, "test content", "utf-8");
     const newFile = join(testDir, "renamed.txt");
     await fileMoveTool.execute({ source: sourceFile, dest: newFile });
     const content = await readFileTool.execute({ path: newFile });
@@ -362,7 +367,7 @@ describe("FileMoveTool", () => {
   });
 
   it("应该自动创建目标目录", async () => {
-    await writeFile(sourceFile, "test content", "utf-8");
+    await fs.writeFile(sourceFile, "test content", "utf-8");
     const nestedFile = join(testDir, "nested", "dir", "dest.txt");
     await fileMoveTool.execute({ source: sourceFile, dest: nestedFile });
     const content = await readFileTool.execute({ path: nestedFile });
@@ -388,19 +393,19 @@ describe("FileCopyTool", () => {
     );
     sourceFile = join(testDir, "source.txt");
     destFile = join(testDir, "dest.txt");
-    await mkdir(testDir, { recursive: true });
+    await fs.mkdir(testDir, { recursive: true });
   });
 
   afterEach(async () => {
     try {
-      await rm(testDir, { recursive: true, force: true });
+      await fs.rm(testDir, { recursive: true, force: true });
     } catch (error) {
       console.warn(`[FileCopyTool] 清理临时目录失败: ${testDir}`, error);
     }
   });
 
   it("应该成功复制文件", async () => {
-    await writeFile(sourceFile, "test content", "utf-8");
+    await fs.writeFile(sourceFile, "test content", "utf-8");
     const result = await fileCopyTool.execute({
       source: sourceFile,
       dest: destFile,
@@ -416,7 +421,7 @@ describe("FileCopyTool", () => {
   });
 
   it("应该支持复制并重命名", async () => {
-    await writeFile(sourceFile, "test content", "utf-8");
+    await fs.writeFile(sourceFile, "test content", "utf-8");
     const newFile = join(testDir, "copied.txt");
     await fileCopyTool.execute({ source: sourceFile, dest: newFile });
     const content = await readFileTool.execute({ path: newFile });
@@ -424,7 +429,7 @@ describe("FileCopyTool", () => {
   });
 
   it("应该自动创建目标目录", async () => {
-    await writeFile(sourceFile, "test content", "utf-8");
+    await fs.writeFile(sourceFile, "test content", "utf-8");
     const nestedFile = join(testDir, "nested", "dir", "dest.txt");
     await fileCopyTool.execute({ source: sourceFile, dest: nestedFile });
     const content = await readFileTool.execute({ path: nestedFile });
@@ -448,19 +453,19 @@ describe("FileDeleteTool", () => {
       `niuma-test-filedelete-${process.pid}-${Date.now()}`,
     );
     testFile = join(testDir, "test.txt");
-    await mkdir(testDir, { recursive: true });
+    await fs.mkdir(testDir, { recursive: true });
   });
 
   afterEach(async () => {
     try {
-      await rm(testDir, { recursive: true, force: true });
+      await fs.rm(testDir, { recursive: true, force: true });
     } catch (error) {
       console.warn(`[FileDeleteTool] 清理临时目录失败: ${testDir}`, error);
     }
   });
 
   it("应该成功删除文件（已确认）", async () => {
-    await writeFile(testFile, "test content", "utf-8");
+    await fs.writeFile(testFile, "test content", "utf-8");
     const result = await fileDeleteTool.execute({
       path: testFile,
       confirm: true,
@@ -474,7 +479,7 @@ describe("FileDeleteTool", () => {
   });
 
   it("应该拒绝删除（未确认）", async () => {
-    await writeFile(testFile, "test content", "utf-8");
+    await fs.writeFile(testFile, "test content", "utf-8");
     await expect(
       fileDeleteTool.execute({ path: testFile, confirm: false }),
     ).rejects.toThrow(ToolExecutionError);
@@ -491,7 +496,7 @@ describe("FileDeleteTool", () => {
 
   it("应该抛出错误当路径是目录", async () => {
     const testDir2 = join(testDir, "subdir");
-    await mkdir(testDir2, { recursive: true });
+    await fs.mkdir(testDir2, { recursive: true });
     await expect(
       fileDeleteTool.execute({ path: testDir2, confirm: true }),
     ).rejects.toThrow(ToolExecutionError);
@@ -508,12 +513,12 @@ describe("FileInfoTool", () => {
       `niuma-test-fileinfo-${process.pid}-${Date.now()}`,
     );
     testFile = join(testDir, "test.txt");
-    await mkdir(testDir, { recursive: true });
+    await fs.mkdir(testDir, { recursive: true });
   });
 
   afterEach(async () => {
     try {
-      await rm(testDir, { recursive: true, force: true });
+      await fs.rm(testDir, { recursive: true, force: true });
     } catch (error) {
       console.warn(`[FileInfoTool] 清理临时目录失败: ${testDir}`, error);
     }
@@ -521,7 +526,7 @@ describe("FileInfoTool", () => {
 
   it("应该成功获取文件信息", async () => {
     const content = "test content";
-    await writeFile(testFile, content, "utf-8");
+    await fs.writeFile(testFile, content, "utf-8");
     const result = await fileInfoTool.execute({ path: testFile });
     const info = JSON.parse(result);
 
@@ -559,12 +564,12 @@ describe("DirCreateTool", () => {
       `niuma-test-dircreate-${process.pid}-${Date.now()}`,
     );
     testSubDir = join(testDir, "subdir");
-    await mkdir(testDir, { recursive: true });
+    await fs.mkdir(testDir, { recursive: true });
   });
 
   afterEach(async () => {
     try {
-      await rm(testDir, { recursive: true, force: true });
+      await fs.rm(testDir, { recursive: true, force: true });
     } catch (error) {
       console.warn(`[DirCreateTool] 清理临时目录失败: ${testDir}`, error);
     }
@@ -598,7 +603,7 @@ describe("DirCreateTool", () => {
   });
 
   it("应该处理目录已存在的情况", async () => {
-    await mkdir(testSubDir, { recursive: true });
+    await fs.mkdir(testSubDir, { recursive: true });
     const result = await dirCreateTool.execute({ path: testSubDir });
     expect(result).toContain("成功创建目录");
   });
@@ -614,19 +619,19 @@ describe("DirDeleteTool", () => {
       `niuma-test-dirdelete-${process.pid}-${Date.now()}`,
     );
     testSubDir = join(testDir, "subdir");
-    await mkdir(testDir, { recursive: true });
+    await fs.mkdir(testDir, { recursive: true });
   });
 
   afterEach(async () => {
     try {
-      await rm(testDir, { recursive: true, force: true });
+      await fs.rm(testDir, { recursive: true, force: true });
     } catch (error) {
       console.warn(`[DirDeleteTool] 清理临时目录失败: ${testDir}`, error);
     }
   });
 
   it("应该成功删除空目录（已确认）", async () => {
-    await mkdir(testSubDir, { recursive: true });
+    await fs.mkdir(testSubDir, { recursive: true });
     const result = await dirDeleteTool.execute({
       path: testSubDir,
       confirm: true,
@@ -642,8 +647,8 @@ describe("DirDeleteTool", () => {
 
   it("应该递归删除目录（已确认）", async () => {
     const nestedFile = join(testSubDir, "file.txt");
-    await mkdir(testSubDir, { recursive: true });
-    await writeFile(nestedFile, "content", "utf-8");
+    await fs.mkdir(testSubDir, { recursive: true });
+    await fs.writeFile(nestedFile, "content", "utf-8");
 
     const result = await dirDeleteTool.execute({
       path: testSubDir,
@@ -659,7 +664,7 @@ describe("DirDeleteTool", () => {
   });
 
   it("应该拒绝删除（未确认）", async () => {
-    await mkdir(testSubDir, { recursive: true });
+    await fs.mkdir(testSubDir, { recursive: true });
     await expect(
       dirDeleteTool.execute({ path: testSubDir, confirm: false }),
     ).rejects.toThrow(ToolExecutionError);
@@ -667,8 +672,8 @@ describe("DirDeleteTool", () => {
 
   it("应该抛出错误当目录不为空且不递归", async () => {
     const nestedFile = join(testSubDir, "file.txt");
-    await mkdir(testSubDir, { recursive: true });
-    await writeFile(nestedFile, "content", "utf-8");
+    await fs.mkdir(testSubDir, { recursive: true });
+    await fs.writeFile(nestedFile, "content", "utf-8");
 
     await expect(
       dirDeleteTool.execute({
@@ -687,7 +692,7 @@ describe("DirDeleteTool", () => {
 
   it("应该抛出错误当路径是文件", async () => {
     const testFile = join(testDir, "file.txt");
-    await writeFile(testFile, "content", "utf-8");
+    await fs.writeFile(testFile, "content", "utf-8");
     await expect(
       dirDeleteTool.execute({ path: testFile, confirm: true }),
     ).rejects.toThrow(ToolExecutionError);

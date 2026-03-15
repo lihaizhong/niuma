@@ -10,10 +10,10 @@
  * @see 参考 nanobot: https://github.com/HKUDS/nanobot/blob/main/nanobot/agent/context.py
  */
 
-import { readFile } from "fs/promises";
 import { join, normalize } from "path";
 import * as path from "path";
 import { platform, machine } from "os";
+import fs from "fs-extra";
 import { createLogger } from "../log";
 import type { ChatMessage, MessageContentPart } from "../types";
 import type { MediaContent } from "../types/message";
@@ -489,7 +489,7 @@ export class ContextBuilder {
         absolutePath = resolved;
       }
 
-      const buffer = await readFile(absolutePath);
+      const buffer = await fs.readFile(absolutePath);
       const base64 = buffer.toString("base64");
 
       // 根据 extension 推断 MIME 类型
@@ -560,7 +560,7 @@ Reply directly with text for conversations. Only use the 'message' tool to send 
       for (const filename of BOOTSTRAP_FILES) {
         const filePath = join(this.workspace, filename);
         try {
-          const content = await readFile(filePath, "utf-8");
+          const content = await fs.readFile(filePath, "utf-8");
           const trimmed = content.trim();
           if (trimmed) {
             this.bootstrapCache.set(filename, trimmed);
@@ -592,7 +592,7 @@ Reply directly with text for conversations. Only use the 'message' tool to send 
   private async _getMemoryContext(): Promise<string> {
     try {
       const memoryFile = join(this.workspace, "memory", "MEMORY.md");
-      const content = await readFile(memoryFile, "utf-8");
+      const content = await fs.readFile(memoryFile, "utf-8");
       const trimmed = content.trim();
       if (trimmed) {
         return `## 长期记忆\n${trimmed}`;

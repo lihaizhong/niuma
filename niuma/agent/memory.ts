@@ -8,9 +8,8 @@
  * @see 参考 nanobot: https://github.com/HKUDS/nanobot/blob/main/nanobot/agent/memory.py
  */
 
-import { readFile, writeFile, appendFile, rename } from "fs/promises";
 import { join } from "path";
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import { sanitizeObject } from "../utils/sanitize";
 import { createLogger } from "../log";
 import type { ToolDefinition } from "../types";
@@ -105,7 +104,7 @@ export class MemoryStore {
   async appendHistory(entry: string): Promise<void> {
     await fs.ensureDir(this.memoryDir);
     // 追加条目并添加换行
-    await appendFile(this.historyFile, entry.trimEnd() + "\n\n", "utf-8");
+    await fs.appendFile(this.historyFile, entry.trimEnd() + "\n\n", "utf-8");
   }
 
   /**
@@ -275,7 +274,7 @@ export class MemoryStore {
    */
   private async _readLongTerm(): Promise<string> {
     try {
-      return await readFile(this.memoryFile, "utf-8");
+      return await fs.readFile(this.memoryFile, "utf-8");
     } catch {
       return "";
     }
@@ -290,8 +289,8 @@ export class MemoryStore {
     await fs.ensureDir(this.memoryDir);
     // 使用原子写入：先写入临时文件，然后重命名
     const tempPath = `${this.memoryFile}.tmp`;
-    await writeFile(tempPath, content, "utf-8");
-    await rename(tempPath, this.memoryFile);
+    await fs.writeFile(tempPath, content, "utf-8");
+    await fs.rename(tempPath, this.memoryFile);
   }
 
   // ============================================

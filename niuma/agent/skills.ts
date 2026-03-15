@@ -5,7 +5,7 @@
  * 支持工作区技能和内置技能，工作区技能优先。
  */
 
-import { existsSync, readdirSync, readFileSync } from "fs";
+import fs from "fs-extra";
 import { join } from "path";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
@@ -136,7 +136,7 @@ export class SkillsLoader {
     }
 
     try {
-      const content = readFileSync(skill.path, "utf-8");
+      const content = fs.readFileSync(skill.path, "utf-8");
       return this._stripFrontmatter(content);
     } catch {
       return null;
@@ -247,12 +247,12 @@ export class SkillsLoader {
     dir: string,
     source: "workspace" | "builtin",
   ): void {
-    if (!existsSync(dir)) {
+    if (!fs.existsSync(dir)) {
       return;
     }
 
     try {
-      const entries = readdirSync(dir, { withFileTypes: true });
+      const entries = fs.readdirSync(dir, { withFileTypes: true });
 
       for (const entry of entries) {
         if (!entry.isDirectory()) {
@@ -260,7 +260,7 @@ export class SkillsLoader {
         }
 
         const skillPath = join(dir, entry.name, "SKILL.md");
-        if (!existsSync(skillPath)) {
+        if (!fs.existsSync(skillPath)) {
           continue;
         }
 
@@ -294,7 +294,7 @@ export class SkillsLoader {
    */
   private _parseSkillMetadata(skillPath: string): SkillMetadata {
     try {
-      const content = readFileSync(skillPath, "utf-8");
+      const content = fs.readFileSync(skillPath, "utf-8");
       const frontmatter = this._extractFrontmatter(content);
 
       if (!frontmatter) {
@@ -487,12 +487,12 @@ export class SkillsLoader {
 
       for (const p of paths) {
         const fullPath = join(p, bin);
-        if (existsSync(fullPath)) {
+        if (fs.existsSync(fullPath)) {
           return true;
         }
         // Windows 下检查 .exe 扩展名
         if (process.platform === "win32") {
-          if (existsSync(`${fullPath}.exe`) || existsSync(`${fullPath}.cmd`)) {
+          if (fs.existsSync(`${fullPath}.exe`) || fs.existsSync(`${fullPath}.cmd`)) {
             return true;
           }
         }

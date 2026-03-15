@@ -2,10 +2,15 @@
  * JSON5 配置加载器单元测试
  */
 
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { existsSync, unlinkSync, writeFileSync, mkdirSync, rmSync } from "fs";
+// ==================== 内置库 ====================
 import { join } from "path";
 import { tmpdir } from "os";
+
+// ==================== 第三方库 ====================
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import fs from "fs-extra";
+
+// ==================== 本地模块 ====================
 import { JSON5ConfigLoaderImpl } from "../config/json5-loader";
 
 describe("JSON5ConfigLoader", () => {
@@ -16,22 +21,22 @@ describe("JSON5ConfigLoader", () => {
   beforeEach(() => {
     loader = new JSON5ConfigLoaderImpl();
     testDir = join(tmpdir(), "niuma-test-" + Date.now());
-    mkdirSync(testDir, { recursive: true });
+    fs.mkdirSync(testDir, { recursive: true });
     configPath = join(testDir, "config.json5");
   });
 
   afterEach(() => {
-    if (existsSync(configPath)) {
-      unlinkSync(configPath);
+    if (fs.existsSync(configPath)) {
+      fs.unlinkSync(configPath);
     }
-    if (existsSync(testDir)) {
-      rmSync(testDir, { recursive: true, force: true });
+    if (fs.existsSync(testDir)) {
+      fs.rmSync(testDir, { recursive: true, force: true });
     }
   });
 
   describe("exists()", () => {
     it("应该返回 true 当文件存在时", () => {
-      writeFileSync(configPath, "{}", "utf-8");
+      fs.writeFileSync(configPath, "{}", "utf-8");
       expect(loader.exists(configPath)).toBe(true);
     });
 
@@ -49,7 +54,7 @@ describe("JSON5ConfigLoader", () => {
   "version": "1.0.0", // 尾随注释
 }
 `;
-      writeFileSync(configPath, content, "utf-8");
+      fs.writeFileSync(configPath, content, "utf-8");
       const result = loader.load(configPath);
       expect(result).toEqual({ name: "niuma", version: "1.0.0" });
     });
@@ -65,7 +70,7 @@ describe("JSON5ConfigLoader", () => {
   "version": "1.0.0"
 }
 `;
-      writeFileSync(configPath, content, "utf-8");
+      fs.writeFileSync(configPath, content, "utf-8");
       const result = loader.load(configPath);
       expect(result).toEqual({ name: "niuma", version: "1.0.0" });
     });
@@ -81,7 +86,7 @@ describe("JSON5ConfigLoader", () => {
   ],
 }
 `;
-      writeFileSync(configPath, content, "utf-8");
+      fs.writeFileSync(configPath, content, "utf-8");
       const result = loader.load(configPath);
       expect(result).toEqual({
         name: "niuma",
@@ -92,7 +97,7 @@ describe("JSON5ConfigLoader", () => {
 
     it("应该成功加载标准的 JSON 配置文件", () => {
       const content = JSON.stringify({ name: "niuma", version: "1.0.0" });
-      writeFileSync(configPath, content, "utf-8");
+      fs.writeFileSync(configPath, content, "utf-8");
       const result = loader.load(configPath);
       expect(result).toEqual({ name: "niuma", version: "1.0.0" });
     });
@@ -109,7 +114,7 @@ describe("JSON5ConfigLoader", () => {
   "version": 1.0.0  // 缺少引号
 }
 `;
-      writeFileSync(configPath, content, "utf-8");
+      fs.writeFileSync(configPath, content, "utf-8");
       expect(() => loader.load(configPath)).toThrow("配置文件解析失败");
     });
 
@@ -127,7 +132,7 @@ describe("JSON5ConfigLoader", () => {
   },
 }
 `;
-      writeFileSync(configPath, content, "utf-8");
+      fs.writeFileSync(configPath, content, "utf-8");
       const result = loader.load(configPath);
       expect(result).toEqual({
         agent: {

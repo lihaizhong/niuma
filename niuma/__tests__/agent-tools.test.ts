@@ -2,9 +2,17 @@
  * Agent 工具测试
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+// ==================== 第三方库 ====================
+import { describe, it, expect, beforeEach } from "vitest";
+
+// ==================== 本地模块 ====================
 import { spawnTool, cronTool } from "../agent/tools/agent";
 import { ToolExecutionError } from "../types/error";
+
+// 全局类型定义
+declare global {
+  var __cronTasks: Map<string, unknown> | undefined;
+}
 
 describe("SpawnTool", () => {
   it("应该成功创建子智能体", async () => {
@@ -59,7 +67,7 @@ describe("SpawnTool", () => {
 describe("CronTool", () => {
   beforeEach(() => {
     // 清空任务列表
-    const tasks = (global as any).__cronTasks;
+    const tasks = global.__cronTasks;
     if (tasks) {
       tasks.clear();
     }

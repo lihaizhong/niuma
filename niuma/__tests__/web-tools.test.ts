@@ -9,6 +9,18 @@ import { ToolExecutionError } from "../types/error";
 // Mock fetch
 global.fetch = vi.fn();
 
+// Mock Response 类型
+type MockResponse = {
+  ok: boolean;
+  status?: number;
+  url?: string;
+  json?: () => Promise<unknown>;
+  text?: () => Promise<string>;
+  headers?: {
+    get: (name: string) => string | null;
+  };
+};
+
 describe("WebSearchTool", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -30,7 +42,7 @@ describe("WebSearchTool", () => {
   it("应该成功执行搜索", async () => {
     process.env.BRAVE_API_KEY = "test-key";
 
-    const mockResponse = {
+    const mockResponse: MockResponse = {
       ok: true,
       json: async () => ({
         web: {
@@ -51,7 +63,7 @@ describe("WebSearchTool", () => {
       }),
     };
 
-    vi.mocked(fetch).mockResolvedValue(mockResponse as any);
+    vi.mocked(fetch).mockResolvedValue(mockResponse as unknown as Awaited<ReturnType<typeof fetch>>);
 
     const result = await webSearchTool.execute({ query: "test", num: 2 });
     expect(result).toContain("Test Result 1");
@@ -62,7 +74,7 @@ describe("WebSearchTool", () => {
   it("应该返回空结果当没有匹配", async () => {
     process.env.BRAVE_API_KEY = "test-key";
 
-    const mockResponse = {
+    const mockResponse: MockResponse = {
       ok: true,
       json: async () => ({
         web: {
@@ -71,7 +83,7 @@ describe("WebSearchTool", () => {
       }),
     };
 
-    vi.mocked(fetch).mockResolvedValue(mockResponse as any);
+    vi.mocked(fetch).mockResolvedValue(mockResponse as unknown as Awaited<ReturnType<typeof fetch>>);
 
     const result = await webSearchTool.execute({ query: "nonexistent" });
     expect(result).toContain("未找到搜索结果");
@@ -80,12 +92,12 @@ describe("WebSearchTool", () => {
   it("应该处理 API 错误", async () => {
     process.env.BRAVE_API_KEY = "test-key";
 
-    const mockResponse = {
+    const mockResponse: MockResponse = {
       ok: false,
       status: 401,
     };
 
-    vi.mocked(fetch).mockResolvedValue(mockResponse as any);
+    vi.mocked(fetch).mockResolvedValue(mockResponse as unknown as Awaited<ReturnType<typeof fetch>>);
 
     await expect(
       webSearchTool.execute({ query: "test", ignoreCache: true }),
@@ -105,7 +117,7 @@ describe("WebFetchTool", () => {
   });
 
   it("应该成功获取网页内容", async () => {
-    const mockResponse = {
+    const mockResponse: MockResponse = {
       ok: true,
       status: 200,
       url: "https://example.com",
@@ -118,7 +130,7 @@ describe("WebFetchTool", () => {
       text: async () => "<html><body><h1>Test</h1></body></html>",
     };
 
-    vi.mocked(fetch).mockResolvedValue(mockResponse as any);
+    vi.mocked(fetch).mockResolvedValue(mockResponse as unknown as Awaited<ReturnType<typeof fetch>>);
 
     const result = await webFetchTool.execute({ url: "https://example.com" });
     expect(result).toContain("200");
@@ -132,7 +144,7 @@ describe("WebFetchTool", () => {
   });
 
   it("应该提取 HTML 文本内容", async () => {
-    const mockResponse = {
+    const mockResponse: MockResponse = {
       ok: true,
       status: 200,
       url: "https://example.com",
@@ -146,7 +158,7 @@ describe("WebFetchTool", () => {
         "<html><body><h1>Title</h1><p>Content</p></body></html>",
     };
 
-    vi.mocked(fetch).mockResolvedValue(mockResponse as any);
+    vi.mocked(fetch).mockResolvedValue(mockResponse as unknown as Awaited<ReturnType<typeof fetch>>);
 
     const result = await webFetchTool.execute({
       url: "https://example.com",
@@ -157,7 +169,7 @@ describe("WebFetchTool", () => {
   });
 
   it("应该提取链接", async () => {
-    const mockResponse = {
+    const mockResponse: MockResponse = {
       ok: true,
       status: 200,
       url: "https://example.com",
@@ -171,7 +183,7 @@ describe("WebFetchTool", () => {
         '<html><body><a href="https://example.com/1">Link 1</a></body></html>',
     };
 
-    vi.mocked(fetch).mockResolvedValue(mockResponse as any);
+    vi.mocked(fetch).mockResolvedValue(mockResponse as unknown as Awaited<ReturnType<typeof fetch>>);
 
     const result = await webFetchTool.execute({
       url: "https://example.com",
@@ -182,7 +194,7 @@ describe("WebFetchTool", () => {
   });
 
   it("应该提取图片", async () => {
-    const mockResponse = {
+    const mockResponse: MockResponse = {
       ok: true,
       status: 200,
       url: "https://example.com",
@@ -196,7 +208,7 @@ describe("WebFetchTool", () => {
         '<html><body><img src="image.jpg" alt="Test Image"></body></html>',
     };
 
-    vi.mocked(fetch).mockResolvedValue(mockResponse as any);
+    vi.mocked(fetch).mockResolvedValue(mockResponse as unknown as Awaited<ReturnType<typeof fetch>>);
 
     const result = await webFetchTool.execute({
       url: "https://example.com",
@@ -207,7 +219,7 @@ describe("WebFetchTool", () => {
   });
 
   it("应该提取元数据", async () => {
-    const mockResponse = {
+    const mockResponse: MockResponse = {
       ok: true,
       status: 200,
       url: "https://example.com",
@@ -229,7 +241,7 @@ describe("WebFetchTool", () => {
       `,
     };
 
-    vi.mocked(fetch).mockResolvedValue(mockResponse as any);
+    vi.mocked(fetch).mockResolvedValue(mockResponse as unknown as Awaited<ReturnType<typeof fetch>>);
 
     const result = await webFetchTool.execute({
       url: "https://example.com",

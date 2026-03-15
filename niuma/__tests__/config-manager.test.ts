@@ -11,10 +11,15 @@
  * - 缓存清除功能
  */
 
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { existsSync, unlinkSync, writeFileSync, mkdirSync, rmSync } from "fs";
+// ==================== 内置库 ====================
 import { join } from "path";
 import { tmpdir } from "os";
+
+// ==================== 第三方库 ====================
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import fs from "fs-extra";
+
+// ==================== 本地模块 ====================
 import { ConfigManager } from "../config/manager";
 
 describe("ConfigManager", () => {
@@ -37,7 +42,7 @@ describe("ConfigManager", () => {
    */
   beforeEach(() => {
     testDir = join(tmpdir(), "niuma-manager-test-" + Date.now());
-    mkdirSync(testDir, { recursive: true });
+    fs.mkdirSync(testDir, { recursive: true });
     configPath = join(testDir, "niuma.config.json");
     manager = new ConfigManager(configPath);
   });
@@ -50,11 +55,11 @@ describe("ConfigManager", () => {
    * 目的：确保测试环境清理，避免影响其他测试
    */
   afterEach(() => {
-    if (existsSync(configPath)) {
-      unlinkSync(configPath);
+    if (fs.existsSync(configPath)) {
+      fs.unlinkSync(configPath);
     }
-    if (existsSync(testDir)) {
-      rmSync(testDir, { recursive: true, force: true });
+    if (fs.existsSync(testDir)) {
+      fs.rmSync(testDir, { recursive: true, force: true });
     }
   });
 
@@ -100,7 +105,7 @@ describe("ConfigManager", () => {
   }
 }
 `;
-      writeFileSync(configPath, configContent, "utf-8");
+      fs.writeFileSync(configPath, configContent, "utf-8");
       const config = manager.load();
       expect(config.workspaceDir).toBe("~/.niuma/workspace");
       expect(config.maxIterations).toBe(40);
@@ -132,7 +137,7 @@ describe("ConfigManager", () => {
   }
 }
 `;
-      writeFileSync(configPath, configContent, "utf-8");
+      fs.writeFileSync(configPath, configContent, "utf-8");
       const config = manager.load();
       expect(config.providers.openai?.apiKey).toBe("test-value");
 
@@ -168,7 +173,7 @@ describe("ConfigManager", () => {
      */
     it("应该缓存配置", () => {
       const configContent = '{"maxIterations": 50}';
-      writeFileSync(configPath, configContent, "utf-8");
+      fs.writeFileSync(configPath, configContent, "utf-8");
 
       const config1 = manager.load();
       const config2 = manager.load();
@@ -192,10 +197,10 @@ describe("ConfigManager", () => {
      */
     it("应该强制重新加载当指定 force 参数", () => {
       const configContent = '{"maxIterations": 50}';
-      writeFileSync(configPath, configContent, "utf-8");
+      fs.writeFileSync(configPath, configContent, "utf-8");
 
       const config1 = manager.load();
-      writeFileSync(configPath, '{"maxIterations": 60}', "utf-8");
+      fs.writeFileSync(configPath, '{"maxIterations": 60}', "utf-8");
       const config2 = manager.load(true);
 
       expect(config1.maxIterations).toBe(50);
@@ -238,7 +243,7 @@ describe("ConfigManager", () => {
   }
 }
 `;
-      writeFileSync(configPath, configContent, "utf-8");
+      fs.writeFileSync(configPath, configContent, "utf-8");
     });
 
     /**
@@ -313,7 +318,7 @@ describe("ConfigManager", () => {
   }
 }
 `;
-      writeFileSync(configPath, configContent, "utf-8");
+      fs.writeFileSync(configPath, configContent, "utf-8");
     });
 
     /**
@@ -362,7 +367,7 @@ describe("ConfigManager", () => {
   }
 }
 `.replace("${customWorkspace}", customWorkspace);
-      writeFileSync(configPath, configContent, "utf-8");
+      fs.writeFileSync(configPath, configContent, "utf-8");
       manager.clearCache(); // 清除缓存以加载新配置
       const workspaceDir = manager.getAgentWorkspaceDir("test");
       expect(workspaceDir).toBe(customWorkspace);
@@ -390,7 +395,7 @@ describe("ConfigManager", () => {
   }
 }
 `;
-      writeFileSync(configPath, configContent, "utf-8");
+      fs.writeFileSync(configPath, configContent, "utf-8");
     });
 
     /**
@@ -433,7 +438,7 @@ describe("ConfigManager", () => {
   }
 }
 `;
-      writeFileSync(configPath, configContent, "utf-8");
+      fs.writeFileSync(configPath, configContent, "utf-8");
     });
 
     /**
@@ -494,7 +499,7 @@ describe("ConfigManager", () => {
   }
 }
 `;
-      writeFileSync(configPath, configContent, "utf-8");
+      fs.writeFileSync(configPath, configContent, "utf-8");
       const agents = manager.listAgents();
       expect(agents).toHaveLength(2);
       expect(agents[0].id).toBe("agent1");
@@ -519,7 +524,7 @@ describe("ConfigManager", () => {
   }
 }
 `;
-      writeFileSync(configPath, configContent, "utf-8");
+      fs.writeFileSync(configPath, configContent, "utf-8");
       const agents = manager.listAgents();
       expect(agents).toHaveLength(0);
     });
@@ -551,7 +556,7 @@ describe("ConfigManager", () => {
   }
 }
 `;
-      writeFileSync(configPath, configContent, "utf-8");
+      fs.writeFileSync(configPath, configContent, "utf-8");
       const agents = manager.listAgents();
       expect(agents[0].config.agent).toBe(true);
       expect(agents[0].config.providers).toBe(false);
@@ -595,7 +600,7 @@ describe("ConfigManager", () => {
   }
 }
 `;
-      writeFileSync(configPath, configContent, "utf-8");
+      fs.writeFileSync(configPath, configContent, "utf-8");
       const defaultAgentId = manager.getDefaultAgentId();
       expect(defaultAgentId).toBe("agent2");
     });
@@ -627,7 +632,7 @@ describe("ConfigManager", () => {
   }
 }
 `;
-      writeFileSync(configPath, configContent, "utf-8");
+      fs.writeFileSync(configPath, configContent, "utf-8");
       const defaultAgentId = manager.getDefaultAgentId();
       expect(defaultAgentId).toBe("agent1");
     });
@@ -650,7 +655,7 @@ describe("ConfigManager", () => {
   }
 }
 `;
-      writeFileSync(configPath, configContent, "utf-8");
+      fs.writeFileSync(configPath, configContent, "utf-8");
       const defaultAgentId = manager.getDefaultAgentId();
       expect(defaultAgentId).toBe("");
     });
@@ -678,7 +683,7 @@ describe("ConfigManager", () => {
   }
 }
 `;
-      writeFileSync(configPath, configContent, "utf-8");
+      fs.writeFileSync(configPath, configContent, "utf-8");
     });
 
     /**
@@ -729,13 +734,13 @@ describe("ConfigManager", () => {
      */
     it("应该清除配置缓存", () => {
       const configContent = '{"maxIterations": 50}';
-      writeFileSync(configPath, configContent, "utf-8");
+      fs.writeFileSync(configPath, configContent, "utf-8");
 
       manager.load();
       manager.clearCache();
 
       // 修改配置文件
-      writeFileSync(configPath, '{"maxIterations": 60}', "utf-8");
+      fs.writeFileSync(configPath, '{"maxIterations": 60}', "utf-8");
 
       // 重新加载应该获取新配置
       const config = manager.load(true);
