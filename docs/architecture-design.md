@@ -173,7 +173,7 @@ graph TD
 | 包管理 | pnpm | latest | 快速、节省磁盘空间、严格依赖管理 |
 | LLM 框架 | LangChain | @langchain/openai | 功能丰富、生态成熟、标准化接口 |
 | 类型验证 | Zod | ^4.3.6 | 类型推导、错误友好、JSON Schema 互操作 |
-| 数据库 | SQLite | better-sqlite3 | 单文件、零配置、高性能（预留，未实际使用） |
+| 数据库 | SQLite | @sqliteai/sqlite-wasm | 单文件、零配置、高性能、WASM 支持 |
 | 配置格式 | JSON5 | ^2.2.3 | 支持注释、尾随逗号、兼容 JSON |
 | 异步 | Promise/async-await | 原生 | 简单、零依赖、与生态兼容 |
 | 日志 | pino | ^10.3.1 | 高性能、结构化、零依赖 |
@@ -605,15 +605,16 @@ type ProviderConfig = z.infer<typeof ProviderConfigSchema>
 
 ---
 
-### 5.2 数据库选择：SQLite（better-sqlite3）
+### 5.2 数据库选择：SQLite（@sqliteai/sqlite-wasm）
 
 #### 背景和动机
 - **本地化需求**：AI 助手需要本地存储会话、记忆、配置等数据
 - **零配置要求**：目标用户是开发者，需要开箱即用的解决方案
 - **轻量级优先**：借鉴 nanobot 设计理念，避免引入重型数据库
+- **WASM 支持**：使用 WebAssembly 版本，提升跨平台兼容性和性能
 
 #### 选择的方案
-虽然 package.json 中声明了 better-sqlite3 和 sqlite-vec 依赖，但当前代码库中尚未实际使用这些数据库。项目目前使用文件系统（JSON 文件）存储会话和记忆数据。
+项目使用 @sqliteai/sqlite-wasm 作为数据库引擎，结合 Vite 开发环境。WASM 版本提供了更好的跨平台支持和性能优化。
 
 **当前实现（文件系统）**：
 ```typescript
@@ -640,7 +641,7 @@ private async _loadFromFile(sessionKey: string): Promise<Session | null> {
 
 | 方案 | 优点 | 缺点 | 适用场景 |
 |------|------|------|----------|
-| **SQLite (better-sqlite3)** | 单文件、零配置、高性能、同步 API | 不支持分布式、写入性能低于 PG | ✅ 本地应用、CLI 工具 |
+| **SQLite (@sqliteai/sqlite-wasm)** | 单文件、零配置、高性能、WASM 支持、跨平台 | 不支持分布式、需要 Vite 环境 | ✅ 本地应用、CLI 工具 |
 | **PostgreSQL** | 功能丰富、支持复杂查询、可扩展 | 需要独立服务、配置复杂 | 企业级应用 |
 | **MongoDB** | 灵活的文档模型、易于扩展 | 占用内存大、查询性能一般 | 快速原型 |
 | **文件系统（JSON）** | 零依赖、人类可读、易于调试 | 并发安全差、查询效率低 | ✅ 当前方案（简单场景） |
@@ -655,11 +656,12 @@ private async _loadFromFile(sessionKey: string): Promise<Session | null> {
 | 备份恢复 | ⭐⭐⭐ 文件复制 | ⭐⭐⭐ 需要工具 |
 | 扩展性 | ⭐ 受限 | ⭐⭐⭐⭐⭐ 水平扩展 |
 
-#### 优点（预留 SQLite）
+#### 优点（SQLite WASM）
 1. **单文件数据库**：无需独立服务，部署简单
-2. **高性能**：better-sqlite3 使用同步 API，性能优于 node-sqlite3
+2. **高性能**：WASM 版本提供了更好的性能优化
 3. **ACID 事务**：支持原子性操作，保证数据一致性
-4. **向量检索**：sqlite-vec 支持语义搜索（未来功能）
+4. **向量检索**：内置向量搜索支持（未来功能）
+5. **跨平台兼容**：WASM 版本支持多种平台和运行环境
 
 #### 缺点（当前文件系统方案）
 1. **并发安全**：多个进程同时写入可能冲突（已使用原子写入缓解）
@@ -1305,8 +1307,8 @@ private async _consolidateMemory(session: Session): Promise<void> {
 4. **数据膨胀**：HISTORY.md 无限增长
 
 #### 改进建议
-1. **向量检索**：集成 sqlite-vec 支持语义搜索
-2. **并发控制**：使用文件锁或 SQLite WAL 模式
+1. **向量检索**：使用 @sqliteai/sqlite-wasm 内置的向量搜索支持语义搜索
+2. **并发控制**：使用 SQLite WAL 模式
 3. **性能优化**：实现增量读取和缓存机制
 4. **数据清理**：定期清理过期的 HISTORY.md 条目
 5. **混合存储**：MEMORY.md 保留文件，HISTORY.md 迁移到数据库

@@ -436,8 +436,7 @@ flowchart TD
 | LangChain | AI/LLM 应用框架 | ^1.2.30 |
 | Zod | 运行时类型验证 | ^4.3.6 |
 | JSON5 | 配置文件格式 | ^2.2.3 |
-| better-sqlite3 | 本地 SQLite 数据库 | ^12.6.2 |
-| sqlite-vec | 向量存储扩展 | 0.1.7-alpha.10 |
+| @sqliteai/sqlite-wasm | SQLite WASM 数据库 | ^3.50.4 |
 | pino | 日志记录 | ^10.3.1 |
 | vitest | 单元测试框架 | ^4.0.18 |
 
