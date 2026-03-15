@@ -19,6 +19,7 @@ import { spawnTool, cronTool } from '../agent/tools/agent'
 import { ToolExecutionError } from '../types/error'
 import { z } from 'zod'
 import { rm } from 'fs/promises'
+import { tmpdir } from 'os'
 
 describe('10.1 验证所有工具继承自 BaseTool', () => {
   it('ReadFileTool 应该继承自 BaseTool', () => {
@@ -122,12 +123,13 @@ describe('10.3 验证 Shell 工具危险命令黑名单防护', () => {
 describe('10.4 验证文件工具支持绝对路径和相对路径', () => {
   it('read_file 应该支持绝对路径', async () => {
     // 先创建文件
+    const testFile = `${tmpdir()}/test-file.txt`
     await writeFileTool.execute({
-      path: '/tmp/test-file.txt',
+      path: testFile,
       content: 'test content',
     })
     // 然后读取
-    const result = await readFileTool.execute({ path: '/tmp/test-file.txt' })
+    const result = await readFileTool.execute({ path: testFile })
     expect(result).toBe('test content')
   })
 
@@ -143,8 +145,9 @@ describe('10.4 验证文件工具支持绝对路径和相对路径', () => {
   })
 
   it('write_file 应该支持绝对路径', async () => {
+    const testFile = `${tmpdir()}/niuma-acceptance-test.txt`
     const result = await writeFileTool.execute({
-      path: '/tmp/niuma-acceptance-test.txt',
+      path: testFile,
       content: 'test',
     })
     expect(result).toContain('成功写入文件')
@@ -287,10 +290,14 @@ describe('10.7 验证所有工具单元测试通过', () => {
 })
 
 describe('10.8 运行集成测试验证工具组合使用', () => {
+  let integrationTestFile: string
+
   beforeEach(async () => {
+    // 设置测试文件路径
+    integrationTestFile = `${tmpdir()}/integration-test.txt`
     // 清理临时文件
     try {
-      await rm('/tmp/integration-test.txt', { force: true })
+      await rm(integrationTestFile, { force: true })
     } catch {
       // 忽略错误
     }
@@ -299,26 +306,26 @@ describe('10.8 运行集成测试验证工具组合使用', () => {
   it('应该能够组合使用文件工具', async () => {
     // 写入文件
     await writeFileTool.execute({
-      path: '/tmp/integration-test.txt',
+      path: integrationTestFile,
       content: 'Original content',
     })
 
     // 读取文件
     const content = await readFileTool.execute({
-      path: '/tmp/integration-test.txt',
+      path: integrationTestFile,
     })
     expect(content).toBe('Original content')
 
     // 编辑文件
     await editFileTool.execute({
-      path: '/tmp/integration-test.txt',
+      path: integrationTestFile,
       old_string: 'Original content',
       new_string: 'Modified content',
     })
 
     // 验证编辑
     const modifiedContent = await readFileTool.execute({
-      path: '/tmp/integration-test.txt',
+      path: integrationTestFile,
     })
     expect(modifiedContent).toBe('Modified content')
   })

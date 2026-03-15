@@ -5,6 +5,7 @@
 import { describe, it, expect } from 'vitest'
 import { execTool } from '../agent/tools/shell'
 import { ToolExecutionError } from '../types/error'
+import { tmpdir } from 'os'
 
 describe('ExecTool', () => {
   it('应该成功执行简单命令', async () => {
@@ -62,11 +63,12 @@ describe('ExecTool', () => {
   })
 
   it('应该支持工作目录控制', async () => {
+    const testDir = tmpdir()
     const result = await execTool.execute({
       command: 'pwd',
-      cwd: '/tmp',
+      cwd: testDir,
     })
-    expect(result).toContain('/tmp')
+    expect(result).toContain(testDir)
   })
 
   it('应该支持环境变量控制', async () => {
