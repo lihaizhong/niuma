@@ -9,6 +9,7 @@ import fs from 'fs-extra'
 
 import { z } from 'zod'
 import fg from 'fast-glob'
+import RE2 from 're2'
 
 import { BaseTool } from './base'
 import { ToolExecutionError } from '../../types/error'
@@ -258,12 +259,12 @@ export class FileSearchTool extends BaseTool {
       const content = await fsReadFile(resolvedPath, 'utf-8')
       const lines = content.split('\n')
 
-      // 创建正则表达式（添加安全检查）
+      // 创建正则表达式（使用 RE2 以防止 ReDoS 攻击）
       const flags = caseSensitive ? 'g' : 'gi'
-      let regex: RegExp
+      let regex: RE2
 
       try {
-        regex = new RegExp(pattern, flags)
+        regex = new RE2(pattern, flags)
       } catch (error) {
         throw new ToolExecutionError(this.name, `无效的正则表达式: ${(error as Error).message}`)
       }

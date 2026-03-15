@@ -5,6 +5,7 @@
 
 import pino from 'pino'
 import * as cheerio from 'cheerio'
+import RE2 from 're2'
 
 import { z } from 'zod'
 
@@ -326,7 +327,8 @@ export class WebFetchTool extends BaseTool {
         if (extractText) {
           // 移除脚本和样式
           $('script, style').remove()
-          const text = $('body').text().replace(/\s+/g, ' ').trim()
+          const whitespaceRegex = new RE2('\\s+', 'g')
+          const text = $('body').text().replace(whitespaceRegex, ' ').trim()
           results.push('--- 文本内容 ---\n' + text)
         }
 

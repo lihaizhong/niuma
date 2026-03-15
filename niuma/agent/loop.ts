@@ -12,6 +12,7 @@
  */
 
 import { createLogger } from "../log";
+import RE2 from "re2";
 import type {
   ChatMessage,
   InboundMessage,
@@ -677,7 +678,8 @@ export class AgentLoop {
     content: string,
     session: Session,
   ): Promise<string> {
-    const command = content.toLowerCase().split(/\s+/)[0];
+    const whitespaceRegex = new RE2('\\s+', 'g');
+    const command = content.toLowerCase().split(whitespaceRegex)[0];
 
     switch (command) {
       case "/new": {

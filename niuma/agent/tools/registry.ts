@@ -16,6 +16,14 @@ import { execTool } from './shell'
 import { webSearchTool, webFetchTool } from './web'
 import { messageTool } from './message'
 import { spawnTool, cronTool } from './agent'
+import {
+  gitStatusTool,
+  gitCommitTool,
+  gitPushTool,
+  gitPullTool,
+  gitBranchTool,
+  gitLogTool,
+} from './git'
 
 const ERROR_HINT = '\n\n[分析上述错误并尝试其他方式。]'
 
@@ -42,6 +50,14 @@ export function registerBuiltinTools(registry: ToolRegistry): void {
   // Agent 工具
   registry.register(spawnTool)
   registry.register(cronTool)
+
+  // Git 工具
+  registry.register(gitStatusTool)
+  registry.register(gitCommitTool)
+  registry.register(gitPushTool)
+  registry.register(gitPullTool)
+  registry.register(gitBranchTool)
+  registry.register(gitLogTool)
 }
 
 /**
