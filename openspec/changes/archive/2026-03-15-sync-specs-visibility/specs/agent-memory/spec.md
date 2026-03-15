@@ -1,31 +1,31 @@
-## Historical Context
+## 历史背景
 
-### Code Evolution (Git History)
+### 代码演进（Git 历史）
 
-**Initial Implementation (d35cf4e - 2026-03-10)**
-- Implemented Phase 2 Agent Core
-- Added `readLongTerm()` and `writeLongTerm()` as public methods
-- Basic dual-layer memory system (MEMORY.md + HISTORY.md)
+**初始实现（d35cf4e - 2026-03-10）**
+- 实现了 Phase 2 Agent Core
+- 添加 `readLongTerm()` 和 `writeLongTerm()` 作为公共方法
+- 基础双层记忆系统（MEMORY.md + HISTORY.md）
 
-**Code Quality Refactor (50c85d3 - 2026-03-14)**
-- Reorganized code structure with clear comment separators
-- Unified import style (removed `node:` prefix)
-- Kept `readLongTerm()` and `writeLongTerm()` as public methods
-- 343 lines changed in memory.ts
+**代码质量重构（50c85d3 - 2026-03-14）**
+- 重新组织代码结构，添加清晰的注释分隔符
+- 统一导入风格（移除 `node:` 前缀）
+- 保留 `readLongTerm()` 和 `writeLongTerm()` 作为公共方法
+- memory.ts 改动了 343 行
 
-**Security Enhancement (57de5d5 - 2026-03-14)**
-- Replaced custom object sanitization with `fast-clean` library
-- Created common sanitize utility (`niuma/utils/sanitize.ts`)
-- Removed `_sanitizeObject` method (76 lines)
-- Improved maintainability and security
+**安全增强（57de5d5 - 2026-03-14）**
+- 用开源库 `fast-clean` 替代自定义对象清理逻辑
+- 创建通用 sanitize 工具函数（`niuma/utils/sanitize.ts`）
+- 移除 `_sanitizeObject` 方法（76 行）
+- 提升可维护性和安全性
 
-**Current State (Uncommitted)**
-- Changed `readLongTerm()` and `writeLongTerm()` to private methods
-- Reason: These are internal implementation details
-- Reorganized method order to follow TypeScript best practices
-- Updated all internal call sites to use private methods
+**当前状态（未提交）**
+- 将 `readLongTerm()` 和 `writeLongTerm()` 改为私有方法
+- 原因：这些是内部实现细节
+- 重新组织方法顺序，遵循 TypeScript 最佳实践
+- 更新所有内部调用点使用私有方法
 
-## CHANGED Requirements
+## 修改的需求
 
 ### Requirement: 双层记忆结构
 

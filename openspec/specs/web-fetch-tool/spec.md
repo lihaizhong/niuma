@@ -1,8 +1,9 @@
-# web-fetch-tool Specification
+# web-fetch-tool 规格
 
-## Purpose
-TBD - created by archiving change builtin-tools-implementation. Update Purpose after archive.
-## Requirements
+## 目的
+TBD - 由归档变更 builtin-tools-implementation 创建。归档后更新目的。
+
+## 需求
 ### Requirement: web_fetch 工具抓取网页内容
 
 系统 SHALL 提供 web_fetch 工具，能够获取和处理网页内容。

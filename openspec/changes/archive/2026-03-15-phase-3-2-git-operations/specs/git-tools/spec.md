@@ -1,181 +1,187 @@
 ## ADDED Requirements
 
-### Requirement: Git status tool provides repository status
-The system SHALL provide a git_status tool that displays the current Git repository status, including modified files, staged files, untracked files, and branch information.
+### 需求：Git status 工具提供仓库状态
 
-#### Scenario: Show status in clean repository
-- **WHEN** user executes git_status in a clean Git repository
-- **THEN** system returns "Working tree clean" message
-- **THEN** system displays current branch name
+系统 SHALL 提供 git_status 工具，用于显示当前 Git 仓库状态，包括修改的文件、暂存的文件、未跟踪的文件和分支信息。
 
-#### Scenario: Show status with modified files
-- **WHEN** user executes git_status in a Git repository with modified files
-- **THEN** system lists all modified files with "M" prefix
-- **THEN** system displays current branch name
+#### 场景：显示干净仓库的状态
+- **WHEN** 用户在干净的 Git 仓库中执行 git_status
+- **THEN** 系统返回"工作树干净"消息
+- **THEN** 系统显示当前分支名称
 
-#### Scenario: Show status with staged files
-- **WHEN** user executes git_status in a Git repository with staged files
-- **THEN** system lists all staged files with appropriate indicators
-- **THEN** system distinguishes between staged and unstaged changes
+#### 场景：显示修改文件的状态
+- **WHEN** 用户在包含修改文件的 Git 仓库中执行 git_status
+- **THEN** 系统列出所有修改的文件，带有"M"前缀
+- **THEN** 系统显示当前分支名称
 
-#### Scenario: Show status with untracked files
-- **WHEN** user executes git_status in a Git repository with untracked files
-- **THEN** system lists all untracked files with "???" prefix
+#### 场景：显示暂存文件的状态
+- **WHEN** 用户在包含暂存文件的 Git 仓库中执行 git_status
+- **THEN** 系统列出所有暂存的文件，带有适当的指示符
+- **THEN** 系统区分暂存和未暂存的更改
 
-#### Scenario: Error when not in Git repository
-- **WHEN** user executes git_status in a non-Git directory
-- **THEN** system returns error message indicating not a Git repository
-- **THEN** system provides guidance to initialize a Git repository
+#### 场景：显示未跟踪文件的状态
+- **WHEN** 用户在包含未跟踪文件的 Git 仓库中执行 git_status
+- **THEN** 系统列出所有未跟踪的文件，带有"???"前缀
 
-### Requirement: Git commit tool creates commits
-The system SHALL provide a git_commit tool that creates a new commit with the specified message and optional files.
+#### 场景：非 Git 仓库时出错
+- **WHEN** 用户在非 Git 目录中执行 git_status
+- **THEN** 系统返回错误消息，指示不是 Git 仓库
+- **THEN** 系统提供初始化 Git 仓库的指导
 
-#### Scenario: Commit all staged changes
-- **WHEN** user executes git_commit with a commit message
-- **THEN** system creates a commit with all staged changes
-- **THEN** system uses the provided commit message
-- **THEN** system returns the commit hash
+### 需求：Git commit 工具创建提交
 
-#### Scenario: Commit specific files
-- **WHEN** user executes git_commit with a commit message and specific file paths
-- **THEN** system stages only the specified files
-- **THEN** system creates a commit with those files
-- **THEN** system returns the commit hash
+系统 SHALL 提供 git_commit 工具，用于使用指定消息和可选文件创建新提交。
 
-#### Scenario: Error when no changes to commit
-- **WHEN** user executes git_commit with no staged changes
-- **THEN** system returns error message indicating no changes to commit
-- **THEN** system suggests running git_status to check repository state
+#### 场景：提交所有暂存的更改
+- **WHEN** 用户使用提交消息执行 git_commit
+- **THEN** 系统使用所有暂存的更改创建提交
+- **THEN** 系统使用提供的提交消息
+- **THEN** 系统返回提交哈希
 
-#### Scenario: Error when commit message is empty
-- **WHEN** user executes git_commit without a commit message
-- **THEN** system returns error message indicating commit message is required
-- **THEN** system provides example of valid commit message
+#### 场景：提交特定文件
+- **WHEN** 用户使用提交消息和特定文件路径执行 git_commit
+- **THEN** 系统仅暂存指定的文件
+- **THEN** 系统使用这些文件创建提交
+- **THEN** 系统返回提交哈希
 
-### Requirement: Git push tool pushes commits to remote
-The system SHALL provide a git_push tool that pushes local commits to a remote repository.
+#### 场景：没有更改可提交时出错
+- **WHEN** 用户在没有暂存更改的情况下执行 git_commit
+- **THEN** 系统返回错误消息，指示没有更改可提交
+- **THEN** 系统建议运行 git_status 检查仓库状态
 
-#### Scenario: Push to default remote and branch
-- **WHEN** user executes git_push without parameters
-- **THEN** system pushes commits to origin and current branch
-- **THEN** system displays push progress
-- **THEN** system reports successful push with commit count
+#### 场景：提交消息为空时出错
+- **WHEN** 用户在没有提交消息的情况下执行 git_commit
+- **THEN** 系统返回错误消息，指示提交消息是必需的
+- **THEN** 系统提供有效提交消息的示例
 
-#### Scenario: Push to specific remote and branch
-- **WHEN** user executes git_push with remote and branch parameters
-- **THEN** system pushes commits to specified remote and branch
-- **THEN** system displays push progress
-- **THEN** system reports successful push
+### 需求：Git push 工具推送提交到远程
 
-#### Scenario: Error when remote does not exist
-- **WHEN** user executes git_push with non-existent remote
-- **THEN** system returns error message indicating remote not found
-- **THEN** system lists available remotes
+系统 SHALL 提供 git_push 工具，用于将本地提交推送到远程仓库。
 
-#### Scenario: Error when authentication fails
-- **WHEN** user executes git_push and authentication fails
-- **THEN** system returns error message indicating authentication failure
-- **THEN** system suggests checking credentials or using SSH
+#### 场景：推送到默认远程和分支
+- **WHEN** 用户不带参数执行 git_push
+- **THEN** 系统将提交推送到 origin 和当前分支
+- **THEN** 系统显示推送进度
+- **THEN** 系统报告成功推送及提交数量
 
-#### Scenario: Error when local is behind remote
-- **WHEN** user executes git_push and local branch is behind remote
-- **THEN** system returns error message indicating local is behind
-- **THEN** system suggests pulling changes first
+#### 场景：推送到特定远程和分支
+- **WHEN** 用户使用远程和分支参数执行 git_push
+- **THEN** 系统将提交推送到指定的远程和分支
+- **THEN** 系统显示推送进度
+- **THEN** 系统报告成功推送
 
-### Requirement: Git pull tool pulls changes from remote
-The system SHALL provide a git_pull tool that fetches and merges changes from a remote repository.
+#### 场景：远程不存在时出错
+- **WHEN** 用户使用不存在的远程执行 git_push
+- **THEN** 系统返回错误消息，指示未找到远程
+- **THEN** 系统列出可用的远程
 
-#### Scenario: Pull from default remote and branch
-- **WHEN** user executes git_pull without parameters
-- **THEN** system fetches changes from origin and current branch
-- **THEN** system merges changes into current branch
-- **THEN** system reports successful pull with file count
+#### 场景：认证失败时出错
+- **WHEN** 用户执行 git_push 且认证失败
+- **THEN** 系统返回错误消息，指示认证失败
+- **THEN** 系统建议检查凭据或使用 SSH
 
-#### Scenario: Pull from specific remote and branch
-- **WHEN** user executes git_pull with remote and branch parameters
-- **THEN** system fetches changes from specified remote and branch
-- **THEN** system merges changes into current branch
-- **THEN** system reports successful pull
+#### 场景：本地落后于远程时出错
+- **WHEN** 用户执行 git_push 且本地分支落后于远程
+- **THEN** 系统返回错误消息，指示本地落后
+- **THEN** 系统建议先拉取更改
 
-#### Scenario: Pull when remote has no new changes
-- **WHEN** user executes git_pull and remote has no new changes
-- **THEN** system reports "Already up to date"
-- **THEN** system does not modify working directory
+### 需求：Git pull 工具从远程拉取更改
 
-#### Scenario: Error when merge conflict occurs
-- **WHEN** user executes git_pull and merge conflict occurs
-- **THEN** system returns error message indicating merge conflict
-- **THEN** system lists conflicted files
-- **THEN** system suggests resolving conflicts manually
+系统 SHALL 提供 git_pull 工具，用于从远程仓库获取并合并更改。
 
-#### Scenario: Error when remote does not exist
-- **WHEN** user executes git_pull with non-existent remote
-- **THEN** system returns error message indicating remote not found
-- **THEN** system lists available remotes
+#### 场景：从默认远程和分支拉取
+- **WHEN** 用户不带参数执行 git_pull
+- **THEN** 系统从 origin 和当前分支获取更改
+- **THEN** 系统将更改合并到当前分支
+- **THEN** 系统报告成功拉取及文件数量
 
-### Requirement: Git branch tool manages branches
-The system SHALL provide a git_branch tool that lists, creates, and deletes Git branches.
+#### 场景：从特定远程和分支拉取
+- **WHEN** 用户使用远程和分支参数执行 git_pull
+- **THEN** 系统从指定的远程和分支获取更改
+- **THEN** 系统将更改合并到当前分支
+- **THEN** 系统报告成功拉取
 
-#### Scenario: List all branches
-- **WHEN** user executes git_branch without parameters
-- **THEN** system lists all local branches
-- **THEN** system marks current branch with asterisk (*)
-- **THEN** system displays branch names in alphabetical order
+#### 场景：远程没有新更改时拉取
+- **WHEN** 用户执行 git_pull 且远程没有新更改
+- **THEN** 系统报告"已经是最新的"
+- **THEN** 系统不修改工作目录
 
-#### Scenario: Create new branch
-- **WHEN** user executes git_branch with a new branch name
-- **THEN** system creates a new branch from current HEAD
-- **THEN** system confirms branch creation
-- **THEN** system does not switch to new branch
+#### 场景：发生合并冲突时出错
+- **WHEN** 用户执行 git_pull 且发生合并冲突
+- **THEN** 系统返回错误消息，指示合并冲突
+- **THEN** 系统列出冲突的文件
+- **THEN** 系统建议手动解决冲突
 
-#### Scenario: Delete existing branch
-- **WHEN** user executes git_branch with delete flag and branch name
-- **THEN** system deletes the specified branch
-- **THEN** system confirms branch deletion
-- **THEN** system prevents deletion of current branch
+#### 场景：远程不存在时出错
+- **WHEN** 用户使用不存在的远程执行 git_pull
+- **THEN** 系统返回错误消息，指示未找到远程
+- **THEN** 系统列出可用的远程
 
-#### Scenario: Error when branch already exists
-- **WHEN** user executes git_branch with existing branch name
-- **THEN** system returns error message indicating branch already exists
-- **THEN** system suggests using a different name or checking out existing branch
+### 需求：Git branch 工具管理分支
 
-#### Scenario: Error when trying to delete current branch
-- **WHEN** user executes git_branch to delete current branch
-- **THEN** system returns error message indicating cannot delete current branch
-- **THEN** system suggests switching to another branch first
+系统 SHALL 提供 git_branch 工具，用于列出、创建和删除 Git 分支。
 
-#### Scenario: Error when branch does not exist for deletion
-- **WHEN** user executes git_branch to delete non-existent branch
-- **THEN** system returns error message indicating branch not found
-- **THEN** system lists available branches
+#### 场景：列出所有分支
+- **WHEN** 用户不带参数执行 git_branch
+- **THEN** 系统列出所有本地分支
+- **THEN** 系统用星号(*)标记当前分支
+- **THEN** 系统按字母顺序显示分支名称
 
-### Requirement: Git log tool displays commit history
-The system SHALL provide a git_log tool that displays commit history with configurable depth.
+#### 场景：创建新分支
+- **WHEN** 用户使用新分支名称执行 git_branch
+- **THEN** 系统从当前 HEAD 创建新分支
+- **THEN** 系统确认分支创建
+- **THEN** 系统不切换到新分支
 
-#### Scenario: Show default commit history
-- **WHEN** user executes git_log without parameters
-- **THEN** system displays last 10 commits
-- **THEN** system shows commit hash, author, date, and message
-- **THEN** system displays commits in reverse chronological order
+#### 场景：删除现有分支
+- **WHEN** 用户使用删除标志和分支名称执行 git_branch
+- **THEN** 系统删除指定的分支
+- **THEN** 系统确认分支删除
+- **THEN** 系统防止删除当前分支
 
-#### Scenario: Show specific number of commits
-- **WHEN** user executes git_log with a count parameter
-- **THEN** system displays specified number of commits
-- **THEN** system shows commit hash, author, date, and message
-- **THEN** system displays commits in reverse chronological order
+#### 场景：分支已存在时出错
+- **WHEN** 用户使用现有分支名称执行 git_branch
+- **THEN** 系统返回错误消息，指示分支已存在
+- **THEN** 系统建议使用不同的名称或检出现有分支
 
-#### Scenario: Show commits for specific branch
-- **WHEN** user executes git_log with a branch parameter
-- **THEN** system displays commit history for specified branch
-- **THEN** system shows commit hash, author, date, and message
+#### 场景：尝试删除当前分支时出错
+- **WHEN** 用户执行 git_branch 删除当前分支
+- **THEN** 系统返回错误消息，指示无法删除当前分支
+- **THEN** 系统建议先切换到另一个分支
 
-#### Scenario: Error when branch does not exist
-- **WHEN** user executes git_log for non-existent branch
-- **THEN** system returns error message indicating branch not found
-- **THEN** system lists available branches
+#### 场景：分支不存在时删除出错
+- **WHEN** 用户执行 git_branch 删除不存在的分支
+- **THEN** 系统返回错误消息，指示未找到分支
+- **THEN** 系统列出可用的分支
 
-#### Scenario: Show limited output for large history
-- **WHEN** repository has more than 1000 commits
-- **THEN** system truncates output to last 50 commits
-- **THEN** system indicates that output is truncated
-- **THEN** system suggests using Git command line for full history
+### 需求：Git log 工具显示提交历史
+
+系统 SHALL 提供 git_log 工具，用于显示具有可配置深度的提交历史。
+
+#### 场景：显示默认提交历史
+- **WHEN** 用户不带参数执行 git_log
+- **THEN** 系统显示最后 10 个提交
+- **THEN** 系统显示提交哈希、作者、日期和消息
+- **THEN** 系统按逆时间顺序显示提交
+
+#### 场景：显示特定数量的提交
+- **WHEN** 用户使用计数参数执行 git_log
+- **THEN** 系统显示指定数量的提交
+- **THEN** 系统显示提交哈希、作者、日期和消息
+- **THEN** 系统按逆时间顺序显示提交
+
+#### 场景：显示特定分支的提交
+- **WHEN** 用户使用分支参数执行 git_log
+- **THEN** 系统显示指定分支的提交历史
+- **THEN** 系统显示提交哈希、作者、日期和消息
+
+#### 场景：分支不存在时出错
+- **WHEN** 用户为不存在的分支执行 git_log
+- **THEN** 系统返回错误消息，指示未找到分支
+- **THEN** 系统列出可用的分支
+
+#### 场景：大型历史显示有限输出
+- **WHEN** 仓库有超过 1000 个提交
+- **THEN** 系统将输出截断到最后 50 个提交
+- **THEN** 系统指示输出被截断
+- **THEN** 系统建议使用 Git 命令行查看完整历史
