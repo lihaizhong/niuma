@@ -33,6 +33,7 @@ import {
   yamlStringifyTool,
 } from "./data";
 import { encryptTool, decryptTool, hashTool } from "./crypto";
+import { envGetTool, envSetTool, processListTool, processKillTool } from "./system";
 
 // ==================== 常量定义 ====================
 const ERROR_HINT = "\n\n[分析上述错误并尝试其他方式。]";
@@ -86,6 +87,12 @@ export function registerBuiltinTools(registry: ToolRegistry): void {
   registry.register(encryptTool);
   registry.register(decryptTool);
   registry.register(hashTool);
+
+  // 系统工具
+  registry.register(envGetTool);
+  registry.register(envSetTool);
+  registry.register(processListTool);
+  registry.register(processKillTool);
 }
 
 /**

@@ -1,12 +1,12 @@
 ---
 id: exp_<timestamp>_<seq>
-type: experience_log
+type: experience
 created: 2026-03-11T13:02:45Z
 updated: 2026-03-11T13:02:45Z
 confidence: 0.8
 usage_count: 0
 effective: true
-tags: [experience_log, debugging, prompt-engineering, <category>]
+tags: [experience, debugging, prompt-engineering, <category>]
 project: niuma
 batch_id: <batch_id>
 complexity: [低/中/高]

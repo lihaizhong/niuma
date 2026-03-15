@@ -309,9 +309,9 @@ def generate_index_map(experiences: Dict[str, Experience], categories: Dict[str,
     avg_impact = sum([exp.impact_score for exp in experiences.values()]) / total if experiences else 0
 
     # 计算其他类型
-    experience_logs_count = sum(1 for exp in experiences.values() if exp.type == 'experience_log')
+    experiences_count = sum(1 for exp in experiences.values() if exp.type == 'experience')
     others_count = sum(1 for exp in experiences.values()
-                      if exp.type not in ['preference', 'workflow', 'solution', 'knowledge', 'convention', 'style', 'experience_log'])
+                      if exp.type not in ['preference', 'workflow', 'solution', 'knowledge', 'convention', 'style', 'experience'])
 
     # 生成表格辅助函数
     def generate_table(exps: List[Experience]) -> str:
@@ -460,7 +460,7 @@ graph TB
 - **技巧数**：{len(skills)}（展示前 20）
 - **原则数**：{len(principles)}（展示前 20）
 - **模型数**：{len(models)}（展示前 20）
-- **经验日志**：{experience_logs_count}
+- **经验日志**：{experiences_count}
 - **其他类型**：{others_count}
 - **最高影响力**：{max_impact:.1f}
 - **平均影响力**：{avg_impact:.1f}

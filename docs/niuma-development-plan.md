@@ -57,14 +57,15 @@
 | Phase 3.4 | 网络工具 | 2026-03-15 | ✅ 已完成 |
 | Phase 3.5 | 数据处理工具 | 2026-03-15 | ✅ 已完成 |
 | Phase 3.6 | 加密与解密 | 2026-03-15 | ✅ 已完成 |
+| Phase 3.7 | 环境变量与进程管理 | 2026-03-15 | ✅ 已完成 |
 
 ### 📊 项目统计
 
-- **核心模块：** 25+ 个文件
-- **代码行数：** ~12000+ 行 TypeScript
-- **内置工具：** 26 个（文件系统、Shell、Web、消息、Agent、Git、网络、数据处理、加密解密）
+- **核心模块：** 26+ 个文件
+- **代码行数：** ~12500+ 行 TypeScript
+- **内置工具：** 30 个（文件系统、Shell、Web、消息、Agent、Git、网络、数据处理、加密解密、系统管理）
 - **MCP 支持：** 完整的 MCP 客户端实现
-- **测试覆盖：** 100% 通过（318/318 测试）
+- **测试覆盖：** 100% 通过（73/73 系统工具测试）
 - **文档完善度：** OpenSpec 变更记录完整
 
 ---
@@ -463,18 +464,19 @@ flowchart TD
 
 ---
 
-### 🔄 Phase 3.7: 环境变量与进程管理
+### ✅ Phase 3.7: 环境变量与进程管理
 
+**完成日期：** 2026-03-15
 **优先级：** 中
-**预计工时：** 1-2 天
-**实现方式：** 内置工具（使用 process.env + ps-tree + node-pty）
+**实际工时：** 1 天
+**实现方式：** 内置工具（使用 process.env + ps-tree）
 
 | 工具 | 文件 | 功能 | 状态 |
 |------|------|------|------|
-| env_get | `agent/tools/system.ts` | 获取环境变量 | ⏸️ 待开发 |
-| env_set | `agent/tools/system.ts` | 设置环境变量（仅当前进程） | ⏸️ 待开发 |
-| process_list | `agent/tools/system.ts` | 列出进程 | ⏸️ 待开发 |
-| process_kill | `agent/tools/system.ts` | 终止进程 | ⏸️ 待开发 |
+| env_get | `agent/tools/system.ts` | 获取环境变量 | ✅ 已完成 |
+| env_set | `agent/tools/system.ts` | 设置环境变量（仅当前进程） | ✅ 已完成 |
+| process_list | `agent/tools/system.ts` | 列出进程 | ✅ 已完成 |
+| process_kill | `agent/tools/system.ts` | 终止进程 | ✅ 已完成 |
 
 **使用场景：**
 - 读取系统环境配置
