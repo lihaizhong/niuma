@@ -5,7 +5,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { tmpdir } from 'os'
 import { join } from 'path'
-import { mkdirSync, rmSync, writeFileSync, readFileSync } from 'fs'
+import { mkdirSync, rmSync, writeFileSync, readFileSync, existsSync } from 'fs'
 import { execSync } from 'child_process'
 
 import {
@@ -20,10 +20,12 @@ import { ToolExecutionError } from '../types/error'
 
 describe('Git Tools', () => {
   let testRepoPath: string
+  let testRepoCounter = 0
 
   beforeEach(() => {
-    // 创建临时测试仓库
-    testRepoPath = join(tmpdir(), `niuma-git-test-${Date.now()}`)
+    // 创建临时测试仓库（使用测试计数器避免命名冲突）
+    testRepoCounter++
+    testRepoPath = join(tmpdir(), `niuma-git-test-${process.pid}-${testRepoCounter}`)
     mkdirSync(testRepoPath, { recursive: true })
 
     // 初始化 Git 仓库
@@ -40,15 +42,18 @@ describe('Git Tools', () => {
   afterEach(() => {
     // 清理测试仓库
     try {
-      rmSync(testRepoPath, { recursive: true, force: true })
+      if (testRepoPath && existsSync(testRepoPath)) {
+        rmSync(testRepoPath, { recursive: true, force: true })
+      }
     } catch (error) {
-      // 忽略清理错误
+      console.warn(`[Git Tools] 清理临时目录失败: ${testRepoPath}`, error)
     }
   })
 
   describe('gitStatusTool', () => {
     it('应该在非 Git 目录中返回错误', async () => {
-      const nonGitPath = join(tmpdir(), `niuma-non-git-${Date.now()}`)
+      // 创建临时目录
+      const nonGitPath = join(tmpdir(), `niuma-non-git-${process.pid}-${Date.now()}`)
       mkdirSync(nonGitPath, { recursive: true })
 
       // 修改工作目录
@@ -60,7 +65,12 @@ describe('Git Tools', () => {
         await expect(gitStatusTool.execute({})).rejects.toThrow('不是 Git 仓库')
       } finally {
         process.chdir(originalCwd)
-        rmSync(nonGitPath, { recursive: true, force: true })
+        // 清理临时目录
+        try {
+          rmSync(nonGitPath, { recursive: true, force: true })
+        } catch (error) {
+          console.warn(`[gitStatusTool] 清理临时目录失败: ${nonGitPath}`, error)
+        }
       }
     })
 
@@ -231,7 +241,8 @@ describe('Git Tools', () => {
 
   describe('gitLogTool', () => {
     it('应该在非 Git 目录中返回错误', async () => {
-      const nonGitPath = join(tmpdir(), `niuma-non-git-${Date.now()}`)
+      // 创建临时目录
+      const nonGitPath = join(tmpdir(), `niuma-non-git-${process.pid}-${Date.now()}`)
       mkdirSync(nonGitPath, { recursive: true })
 
       const originalCwd = process.cwd()
@@ -242,7 +253,12 @@ describe('Git Tools', () => {
         await expect(gitLogTool.execute({ count: 10 })).rejects.toThrow('不是 Git 仓库')
       } finally {
         process.chdir(originalCwd)
-        rmSync(nonGitPath, { recursive: true, force: true })
+        // 清理临时目录
+        try {
+          rmSync(nonGitPath, { recursive: true, force: true })
+        } catch (error) {
+          console.warn(`[gitLogTool] 清理临时目录失败: ${nonGitPath}`, error)
+        }
       }
     })
 
