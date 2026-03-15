@@ -35,7 +35,7 @@
 - [x] 4.1 创建变更提案 (proposal.md)
 - [x] 4.2 创建设计文档 (design.md)
 - [x] 4.3 创建任务清单 (tasks.md)
-- [ ] 4.4 提交变更提案进行审核
+- [x] 4.4 提交变更提案进行审核
 
 **注意**: OpenSpec 归档内容（如 openspec/changes/archive/）不应修改，这些变更提案作为历史记录保留原样。
 
