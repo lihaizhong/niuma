@@ -3,12 +3,15 @@
  * @description 提供会话的生命周期管理，包括创建、持久化、历史记录查询和清理
  */
 
-import { existsSync, readdirSync, unlinkSync } from "fs";
-import { readFile, writeFile, rename, unlink } from "fs/promises";
-import fs from "fs-extra";
+// ==================== 内置库 ====================
 import { join } from "path";
 import { homedir } from "os";
 import { createHash } from "crypto";
+
+// ==================== 第三方库 ====================
+import fs from "fs-extra";
+
+// ==================== 本地模块 ====================
 import type { ChatMessage } from "../types";
 
 /**
@@ -157,12 +160,12 @@ export class SessionManager {
     const data = JSON.stringify(session, null, 2);
 
     try {
-      await writeFile(tempPath, data, "utf-8");
-      await rename(tempPath, filePath); // 使用异步重命名
+      await fs.writeFile(tempPath, data, "utf-8");
+      await fs.rename(tempPath, filePath); // 使用异步重命名
     } catch (error) {
       // 清理临时文件
       try {
-        await unlink(tempPath);
+        await fs.unlink(tempPath);
       } catch {
         // 忽略清理失败
       }
@@ -248,8 +251,8 @@ export class SessionManager {
 
     const filePath = this._getSessionFilePath(sessionKey);
     try {
-      if (existsSync(filePath)) {
-        unlinkSync(filePath);
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
       }
     } catch {
       // 文件删除失败时忽略错误
@@ -263,10 +266,10 @@ export class SessionManager {
    */
   listSessions(): string[] {
     try {
-      if (!existsSync(this.sessionsDir)) {
+      if (!fs.existsSync(this.sessionsDir)) {
         return [];
       }
-      const files = readdirSync(this.sessionsDir);
+      const files = fs.readdirSync(this.sessionsDir);
       return files
         .filter((file) => file.endsWith(".json"))
         .map((file) => file.slice(0, -5));
@@ -348,11 +351,11 @@ export class SessionManager {
     const filePath = this._getSessionFilePath(sessionKey);
 
     try {
-      if (!existsSync(filePath)) {
+      if (!fs.existsSync(filePath)) {
         return null;
       }
 
-      const data = await readFile(filePath, "utf-8");
+      const data = await fs.readFile(filePath, "utf-8");
       const parsed = JSON.parse(data) as Session;
 
       // 转换日期字段，确保类型正确

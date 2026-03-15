@@ -2,13 +2,20 @@
  * 消息工具测试
  */
 
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+// ==================== 第三方库 ====================
+import { describe, it, expect, beforeEach } from "vitest";
+
+// ==================== 本地模块 ====================
 import {
   messageTool,
   getMessageHistory,
   cleanMessageHistory,
 } from "../agent/tools/message";
-import { ToolExecutionError } from "../types/error";
+
+// 全局类型定义
+declare global {
+  var __messageHistory: unknown[] | undefined;
+}
 
 describe("MessageTool", () => {
   it("应该成功发送消息", async () => {
@@ -90,7 +97,7 @@ describe("MessageTool", () => {
 describe("Message History", () => {
   beforeEach(() => {
     // 清空历史记录
-    const history = (global as any).__messageHistory;
+    const history = global.__messageHistory;
     if (history) {
       history.length = 0;
     }

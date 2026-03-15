@@ -3,7 +3,15 @@
  * 验证所有工具符合规格要求
  */
 
+// ==================== 内置库 ====================
+import { tmpdir } from "os";
+
+// ==================== 第三方库 ====================
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { z } from "zod";
+import fs from "fs-extra";
+
+// ==================== 本地模块 ====================
 import { BaseTool } from "../agent/tools/base";
 import { ToolRegistry, registerBuiltinTools } from "../agent/tools/registry";
 import {
@@ -17,9 +25,6 @@ import { webSearchTool, webFetchTool } from "../agent/tools/web";
 import { messageTool } from "../agent/tools/message";
 import { spawnTool, cronTool } from "../agent/tools/agent";
 import { ToolExecutionError } from "../types/error";
-import { z } from "zod";
-import { rm } from "fs/promises";
-import { tmpdir } from "os";
 
 describe("10.1 验证所有工具继承自 BaseTool", () => {
   it("ReadFileTool 应该继承自 BaseTool", () => {
@@ -90,7 +95,7 @@ describe("10.2 验证所有工具正确注册到 ToolRegistry", () => {
     const registry = new ToolRegistry();
     registerBuiltinTools(registry);
 
-    expect(registry.size).toBe(16);
+    expect(registry.size).toBe(25);
   });
 });
 
@@ -124,10 +129,10 @@ describe("10.4 验证文件工具支持绝对路径和相对路径", () => {
   afterEach(async () => {
     // 清理测试文件
     try {
-      await rm("./acceptance-test-file.txt", { force: true });
-      await rm("./niuma-acceptance-test.txt", { force: true });
-      await rm(`${tmpdir()}/test-file.txt`, { force: true });
-      await rm(`${tmpdir()}/niuma-acceptance-test.txt`, { force: true });
+      await fs.rm("./acceptance-test-file.txt", { force: true });
+      await fs.rm("./niuma-acceptance-test.txt", { force: true });
+      await fs.rm(`${tmpdir()}/test-file.txt`, { force: true });
+      await fs.rm(`${tmpdir()}/niuma-acceptance-test.txt`, { force: true });
     } catch (error) {
       // 忽略清理错误
     }
@@ -311,7 +316,7 @@ describe("10.8 运行集成测试验证工具组合使用", () => {
     integrationTestFile = `${tmpdir()}/integration-test.txt`;
     // 清理临时文件
     try {
-      await rm(integrationTestFile, { force: true });
+      await fs.rm(integrationTestFile, { force: true });
     } catch {
       // 忽略错误
     }

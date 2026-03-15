@@ -10,10 +10,14 @@
  * @see 参考 nanobot: https://github.com/HKUDS/nanobot/blob/main/nanobot/agent/context.py
  */
 
-import { readFile } from "fs/promises";
-import { join, normalize } from "path";
+// ==================== 内置库 ====================
 import * as path from "path";
 import { platform, machine } from "os";
+
+// ==================== 第三方库 ====================
+import fs from "fs-extra";
+
+// ==================== 本地模块 ====================
 import { createLogger } from "../log";
 import type { ChatMessage, MessageContentPart } from "../types";
 import type { MediaContent } from "../types/message";
@@ -477,9 +481,9 @@ export class ContextBuilder {
 
       if (filePath.startsWith("./") || filePath.startsWith("../")) {
         // 规范化路径并验证是否在工作区内
-        absolutePath = join(this.workspace, filePath);
-        const resolved = normalize(absolutePath);
-        const normalizedWorkspace = normalize(this.workspace);
+        absolutePath = path.join(this.workspace, filePath);
+        const resolved = path.normalize(absolutePath);
+        const normalizedWorkspace = path.normalize(this.workspace);
 
         // 确保解析后的路径在工作区内（防止路径遍历攻击）
         if (!resolved.startsWith(normalizedWorkspace + path.sep)) {
@@ -489,7 +493,7 @@ export class ContextBuilder {
         absolutePath = resolved;
       }
 
-      const buffer = await readFile(absolutePath);
+      const buffer = await fs.readFile(absolutePath);
       const base64 = buffer.toString("base64");
 
       // 根据 extension 推断 MIME 类型
@@ -558,9 +562,9 @@ Reply directly with text for conversations. Only use the 'message' tool to send 
       this.bootstrapCache = new Map();
 
       for (const filename of BOOTSTRAP_FILES) {
-        const filePath = join(this.workspace, filename);
+        const filePath = path.join(this.workspace, filename);
         try {
-          const content = await readFile(filePath, "utf-8");
+          const content = await fs.readFile(filePath, "utf-8");
           const trimmed = content.trim();
           if (trimmed) {
             this.bootstrapCache.set(filename, trimmed);
@@ -591,8 +595,8 @@ Reply directly with text for conversations. Only use the 'message' tool to send 
    */
   private async _getMemoryContext(): Promise<string> {
     try {
-      const memoryFile = join(this.workspace, "memory", "MEMORY.md");
-      const content = await readFile(memoryFile, "utf-8");
+      const memoryFile = path.join(this.workspace, "memory", "MEMORY.md");
+      const content = await fs.readFile(memoryFile, "utf-8");
       const trimmed = content.trim();
       if (trimmed) {
         return `## 长期记忆\n${trimmed}`;

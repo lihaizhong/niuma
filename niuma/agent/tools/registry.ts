@@ -25,6 +25,14 @@ import {
   gitBranchTool,
   gitLogTool,
 } from "./git";
+import { archiveTool, extractTool } from "./archive";
+import { pingTool, dnsLookupTool, httpRequestTool } from "./network";
+import {
+  jsonParseTool,
+  jsonStringifyTool,
+  yamlParseTool,
+  yamlStringifyTool,
+} from "./data";
 
 // ==================== 常量定义 ====================
 const ERROR_HINT = "\n\n[分析上述错误并尝试其他方式。]";
@@ -62,6 +70,21 @@ export function registerBuiltinTools(registry: ToolRegistry): void {
   registry.register(gitPullTool);
   registry.register(gitBranchTool);
   registry.register(gitLogTool);
+
+  // 压缩与解压工具
+  registry.register(archiveTool);
+  registry.register(extractTool);
+
+  // 网络工具
+  registry.register(pingTool);
+  registry.register(dnsLookupTool);
+  registry.register(httpRequestTool);
+
+  // 数据处理工具
+  registry.register(jsonParseTool);
+  registry.register(jsonStringifyTool);
+  registry.register(yamlParseTool);
+  registry.register(yamlStringifyTool);
 }
 
 /**

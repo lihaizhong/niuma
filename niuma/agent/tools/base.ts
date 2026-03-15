@@ -2,7 +2,10 @@
  * 工具框架基类和接口
  */
 
+// ==================== 第三方库 ====================
 import { z } from "zod";
+
+// ==================== 本地模块 ====================
 import type {
   ToolParameterSchema,
   OpenAIToolSchema,

@@ -2,12 +2,16 @@
  * Git 工具测试
  */
 
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+// ==================== 内置库 ====================
 import { tmpdir } from "os";
 import { join } from "path";
-import { mkdirSync, rmSync, writeFileSync, readFileSync, existsSync } from "fs";
 import { execSync } from "child_process";
 
+// ==================== 第三方库 ====================
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import fs from "fs-extra";
+
+// ==================== 本地模块 ====================
 import {
   gitStatusTool,
   gitCommitTool,
@@ -29,7 +33,7 @@ describe("Git Tools", () => {
       tmpdir(),
       `niuma-git-test-${process.pid}-${testRepoCounter}`,
     );
-    mkdirSync(testRepoPath, { recursive: true });
+    fs.mkdirSync(testRepoPath, { recursive: true });
 
     // 初始化 Git 仓库
     execSync("git init", { cwd: testRepoPath });
@@ -37,7 +41,7 @@ describe("Git Tools", () => {
     execSync('git config user.email "test@example.com"', { cwd: testRepoPath });
 
     // 创建初始提交
-    writeFileSync(join(testRepoPath, "README.md"), "# Test Repository");
+    fs.writeFileSync(join(testRepoPath, "README.md"), "# Test Repository");
     execSync("git add README.md", { cwd: testRepoPath });
     execSync('git commit -m "Initial commit"', { cwd: testRepoPath });
   });
@@ -45,8 +49,8 @@ describe("Git Tools", () => {
   afterEach(() => {
     // 清理测试仓库
     try {
-      if (testRepoPath && existsSync(testRepoPath)) {
-        rmSync(testRepoPath, { recursive: true, force: true });
+      if (testRepoPath && fs.existsSync(testRepoPath)) {
+        fs.rmSync(testRepoPath, { recursive: true, force: true });
       }
     } catch (error) {
       console.warn(`[Git Tools] 清理临时目录失败: ${testRepoPath}`, error);
@@ -60,7 +64,7 @@ describe("Git Tools", () => {
         tmpdir(),
         `niuma-non-git-${process.pid}-${Date.now()}`,
       );
-      mkdirSync(nonGitPath, { recursive: true });
+      fs.mkdirSync(nonGitPath, { recursive: true });
 
       // 修改工作目录
       const originalCwd = process.cwd();
@@ -77,7 +81,7 @@ describe("Git Tools", () => {
         process.chdir(originalCwd);
         // 清理临时目录
         try {
-          rmSync(nonGitPath, { recursive: true, force: true });
+          fs.rmSync(nonGitPath, { recursive: true, force: true });
         } catch (error) {
           console.warn(
             `[gitStatusTool] 清理临时目录失败: ${nonGitPath}`,
@@ -105,7 +109,7 @@ describe("Git Tools", () => {
 
       try {
         // 创建一个测试文件
-        writeFileSync(join(testRepoPath, "test.txt"), "test content");
+        fs.writeFileSync(join(testRepoPath, "test.txt"), "test content");
 
         const result = await gitStatusTool.execute({});
         expect(result).toContain("test.txt");
@@ -154,7 +158,7 @@ describe("Git Tools", () => {
 
       try {
         // 创建并暂存文件
-        writeFileSync(join(testRepoPath, "test.txt"), "test content");
+        fs.writeFileSync(join(testRepoPath, "test.txt"), "test content");
         execSync("git add test.txt", { cwd: testRepoPath });
 
         // 提交
@@ -279,7 +283,7 @@ describe("Git Tools", () => {
         tmpdir(),
         `niuma-non-git-${process.pid}-${Date.now()}`,
       );
-      mkdirSync(nonGitPath, { recursive: true });
+      fs.mkdirSync(nonGitPath, { recursive: true });
 
       const originalCwd = process.cwd();
       process.chdir(nonGitPath);
@@ -295,7 +299,7 @@ describe("Git Tools", () => {
         process.chdir(originalCwd);
         // 清理临时目录
         try {
-          rmSync(nonGitPath, { recursive: true, force: true });
+          fs.rmSync(nonGitPath, { recursive: true, force: true });
         } catch (error) {
           console.warn(`[gitLogTool] 清理临时目录失败: ${nonGitPath}`, error);
         }
@@ -308,7 +312,7 @@ describe("Git Tools", () => {
 
       try {
         // 创建并提交文件
-        writeFileSync(join(testRepoPath, "test.txt"), "test content");
+        fs.writeFileSync(join(testRepoPath, "test.txt"), "test content");
         execSync("git add test.txt", { cwd: testRepoPath });
         execSync('git commit -m "test commit"', { cwd: testRepoPath });
 
@@ -328,7 +332,7 @@ describe("Git Tools", () => {
       try {
         // 创建多个提交
         for (let i = 0; i < 5; i++) {
-          writeFileSync(join(testRepoPath, `test${i}.txt`), `content${i}`);
+          fs.writeFileSync(join(testRepoPath, `test${i}.txt`), `content${i}`);
           execSync("git add .", { cwd: testRepoPath });
           execSync(`git commit -m "commit ${i}"`, { cwd: testRepoPath });
         }

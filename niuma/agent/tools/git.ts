@@ -3,10 +3,12 @@
  * 提供 Git 版本控制操作功能，包括状态查看、代码提交、推送拉取、分支管理和日志查询
  */
 
-// ==================== 第三方库 ====================
+// ==================== 内置库 ====================
 import { spawn } from "child_process";
-import { existsSync } from "fs";
 import { join } from "path";
+
+// ==================== 第三方库 ====================
+import fs from "fs-extra";
 import { z } from "zod";
 import RE2 from "re2";
 
@@ -70,7 +72,7 @@ async function execGit(
  */
 async function isGitRepository(cwd: string = process.cwd()): Promise<boolean> {
   const gitDir = join(cwd, ".git");
-  return existsSync(gitDir);
+  return fs.existsSync(gitDir);
 }
 
 /**

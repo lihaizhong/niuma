@@ -3,9 +3,12 @@
  * 支持加载 JSON5 和 JSON 格式的配置文件
  */
 
-import { existsSync, readFileSync } from "fs";
+// ==================== 内置库 ====================
 import { join } from "path";
 import { homedir } from "os";
+
+// ==================== 第三方库 ====================
+import fs from "fs-extra";
 import JSON5 from "json5";
 
 // ============================================
@@ -58,7 +61,7 @@ export class JSON5ConfigLoaderImpl implements JSON5ConfigLoader {
     }
 
     try {
-      const content = readFileSync(path, "utf-8");
+      const content = fs.readFileSync(path, "utf-8");
       return JSON5.parse(content);
     } catch (error) {
       if (error instanceof SyntaxError) {
@@ -78,7 +81,7 @@ export class JSON5ConfigLoaderImpl implements JSON5ConfigLoader {
    * 检查配置文件是否存在
    */
   exists(configPath: string): boolean {
-    return existsSync(configPath);
+    return fs.existsSync(configPath);
   }
 
   /**

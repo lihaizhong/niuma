@@ -3,19 +3,10 @@
  * 提供文件读写、编辑、目录列出等功能
  */
 
-// ==================== 第三方库 ====================
-import {
-  readFile as fsReadFile,
-  writeFile as fsWriteFile,
-  stat,
-  readdir,
-  mkdir,
-  copyFile,
-  unlink,
-  rm,
-  rename,
-} from "fs/promises";
+// ==================== 内置库 ====================
 import { resolve, isAbsolute, dirname, basename } from "path";
+
+// ==================== 第三方库 ====================
 import fs from "fs-extra";
 import { z } from "zod";
 import fg from "fast-glob";
@@ -71,7 +62,7 @@ export class ReadFileTool extends BaseTool {
     const resolvedPath = resolvePath(path);
 
     try {
-      const content = await fsReadFile(resolvedPath, "utf-8");
+      const content = await fs.readFile(resolvedPath, "utf-8");
       const lines = content.split("\n");
 
       // 处理行号范围
@@ -161,7 +152,7 @@ export class EditFileTool extends BaseTool {
 
     try {
       // 读取文件
-      const content = await fsReadFile(resolvedPath, "utf-8");
+      const content = await fs.readFile(resolvedPath, "utf-8");
 
       // 检查是否包含旧内容
       if (!content.includes(old_string)) {
@@ -175,7 +166,7 @@ export class EditFileTool extends BaseTool {
       const newContent = content.replace(old_string, new_string);
 
       // 写入文件
-      await fsWriteFile(resolvedPath, newContent, "utf-8");
+      await fs.writeFile(resolvedPath, newContent, "utf-8");
       return `成功编辑文件: ${resolvedPath}`;
     } catch (error) {
       if (error instanceof ToolExecutionError) {
@@ -217,7 +208,7 @@ export class ListDirTool extends BaseTool {
 
     try {
       // 检查路径是否存在且是目录
-      const stats = await stat(resolvedPath);
+      const stats = await fs.stat(resolvedPath);
       if (!stats.isDirectory()) {
         throw new ToolExecutionError(
           this.name,
@@ -315,7 +306,7 @@ export class FileSearchTool extends BaseTool {
 
     try {
       // 检查文件大小
-      const stats = await stat(resolvedPath);
+      const stats = await fs.stat(resolvedPath);
       if (stats.size > MAX_FILE_SIZE_FOR_SEARCH) {
         throw new ToolExecutionError(
           this.name,
@@ -331,7 +322,7 @@ export class FileSearchTool extends BaseTool {
       }
 
       // 读取文件内容
-      const content = await fsReadFile(resolvedPath, "utf-8");
+      const content = await fs.readFile(resolvedPath, "utf-8");
       const lines = content.split("\n");
 
       // 创建正则表达式（使用 RE2 以防止 ReDoS 攻击）
@@ -433,7 +424,7 @@ export class FileMoveTool extends BaseTool {
 
     try {
       // 检查源文件是否存在
-      const sourceStats = await stat(resolvedSource);
+      const sourceStats = await fs.stat(resolvedSource);
       if (!sourceStats.isFile()) {
         throw new ToolExecutionError(
           this.name,
@@ -451,17 +442,17 @@ export class FileMoveTool extends BaseTool {
 
       // 确保目标目录存在
       const destDir = dirname(resolvedDest);
-      await mkdir(destDir, { recursive: true });
+      await fs.mkdir(destDir, { recursive: true });
 
       // 使用 fs.rename 进行原子性移动（同一文件系统）
       try {
-        await rename(resolvedSource, resolvedDest);
+        await fs.rename(resolvedSource, resolvedDest);
       } catch (renameError) {
         // 如果跨设备移动失败，回退到复制+删除
         if ((renameError as NodeJS.ErrnoException).code === "EXDEV") {
-          const content = await fsReadFile(resolvedSource, "utf-8");
-          await fsWriteFile(resolvedDest, content, "utf-8");
-          await unlink(resolvedSource);
+          const content = await fs.readFile(resolvedSource, "utf-8");
+          await fs.writeFile(resolvedDest, content, "utf-8");
+          await fs.unlink(resolvedSource);
         } else {
           throw renameError;
         }
@@ -504,7 +495,7 @@ export class FileCopyTool extends BaseTool {
 
     try {
       // 检查源文件是否存在
-      const sourceStats = await stat(resolvedSource);
+      const sourceStats = await fs.stat(resolvedSource);
       if (!sourceStats.isFile()) {
         throw new ToolExecutionError(
           this.name,
@@ -522,10 +513,10 @@ export class FileCopyTool extends BaseTool {
 
       // 确保目标目录存在
       const destDir = dirname(resolvedDest);
-      await mkdir(destDir, { recursive: true });
+      await fs.mkdir(destDir, { recursive: true });
 
       // 复制文件
-      await copyFile(resolvedSource, resolvedDest);
+      await fs.copyFile(resolvedSource, resolvedDest);
 
       return `成功复制文件: ${resolvedSource} -> ${resolvedDest}`;
     } catch (error) {
@@ -571,7 +562,7 @@ export class FileDeleteTool extends BaseTool {
 
     try {
       // 检查文件是否存在
-      const stats = await stat(resolvedPath);
+      const stats = await fs.stat(resolvedPath);
       if (!stats.isFile()) {
         throw new ToolExecutionError(
           this.name,
@@ -580,7 +571,7 @@ export class FileDeleteTool extends BaseTool {
       }
 
       // 删除文件
-      await unlink(resolvedPath);
+      await fs.unlink(resolvedPath);
 
       return `成功删除文件: ${resolvedPath}`;
     } catch (error) {
@@ -620,7 +611,7 @@ export class FileInfoTool extends BaseTool {
 
     try {
       // 获取文件信息
-      const stats = await stat(resolvedPath);
+      const stats = await fs.stat(resolvedPath);
 
       // 格式化时间
       const formatTime = (date: Date) => date.toISOString();
@@ -673,7 +664,7 @@ export class DirCreateTool extends BaseTool {
 
     try {
       // 创建目录
-      await mkdir(resolvedPath, { recursive });
+      await fs.mkdir(resolvedPath, { recursive });
 
       return `成功创建目录: ${resolvedPath}`;
     } catch (error) {
@@ -747,7 +738,7 @@ export class DirDeleteTool extends BaseTool {
 
     try {
       // 检查目录是否存在
-      const stats = await stat(resolvedPath);
+      const stats = await fs.stat(resolvedPath);
       if (!stats.isDirectory()) {
         throw new ToolExecutionError(
           this.name,
@@ -757,7 +748,7 @@ export class DirDeleteTool extends BaseTool {
 
       // 检查是否为空目录（非递归模式）
       if (!recursive) {
-        const entries = await readdir(resolvedPath);
+        const entries = await fs.readdir(resolvedPath);
         if (entries.length > 0) {
           throw new ToolExecutionError(
             this.name,
@@ -768,7 +759,7 @@ export class DirDeleteTool extends BaseTool {
 
       // 删除目录（始终使用 recursive: true，因为 rm() 需要这个选项才能删除目录）
       // 对于空目录，recursive: true 不会产生副作用
-      await rm(resolvedPath, { recursive: true, force: true });
+      await fs.rm(resolvedPath, { recursive: true, force: true });
 
       return `成功删除目录: ${resolvedPath}`;
     } catch (error) {

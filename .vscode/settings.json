@@ -1,8 +1,11 @@
 {
   "cSpell.words": [
     "apos",
+    "backlink",
+    "backlinks",
     "dingtalk",
     "feishu",
+    "frontmatter",
     "iflow",
     "langchain",
     "lihaizhong",
@@ -13,6 +16,7 @@
     "openexp",
     "openspec",
     "opsx",
-    "poweroff"
+    "poweroff",
+    "sqliteai"
   ]
 }

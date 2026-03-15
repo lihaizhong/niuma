@@ -2,7 +2,10 @@
  * 类型系统测试
  */
 
+// ==================== 第三方库 ====================
 import { describe, it, expect } from "vitest";
+
+// ==================== 本地模块 ====================
 import type { ChatMessage, ToolDefinition, Session } from "../types";
 
 describe("类型系统", () => {

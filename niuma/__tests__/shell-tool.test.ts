@@ -2,10 +2,15 @@
  * Shell 工具测试
  */
 
+// ==================== 内置库 ====================
+import { tmpdir } from "os";
+
+// ==================== 第三方库 ====================
 import { describe, it, expect } from "vitest";
+
+// ==================== 本地模块 ====================
 import { execTool } from "../agent/tools/shell";
 import { ToolExecutionError } from "../types/error";
-import { tmpdir } from "os";
 
 describe("ExecTool", () => {
   it("应该成功执行简单命令", async () => {
