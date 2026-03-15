@@ -117,26 +117,26 @@ Niuma（牛马）是一个企业级多角色 AI 助手系统，基于 TypeScript
 ## 技术栈
 
 ### 核心技术
-- **TypeScript** 5.9.3 - 严格类型检查
+- **TypeScript** - 严格类型检查
 - **Node.js** >=22.0.0 - 运行时环境
 - **pnpm** - 包管理器
 
 ### 主要依赖
 
-| 依赖 | 用途 | 版本 |
-|------|------|------|
-| langchain | AI/LLM 应用框架 | ^1.2.30 |
-| @langchain/openai | OpenAI 集成 | ^1.2.12 |
-| zod | 运行时类型验证 | ^4.3.6 |
-| json5 | JSON5 配置文件格式 | ^2.2.3 |
-| @sqliteai/sqlite-wasm | SQLite WASM 数据库 | ^3.50.4 |
-| cac | 命令行参数解析 | ^7.0.0 |
-| pino | 日志记录 | ^10.3.1 |
+| 依赖 | 用途 |
+|------|------|
+| langchain | AI/LLM 应用框架 |
+| @langchain/openai | OpenAI 集成 |
+| zod | 运行时类型验证 |
+| json5 | JSON5 配置文件格式 |
+| @sqliteai/sqlite-wasm | SQLite WASM 数据库 |
+| cac | 命令行参数解析 |
+| pino | 日志记录 |
 
 ### 开发依赖
-- **tsx** ^4.21.0 - TypeScript 执行器
-- **vitest** ^4.0.18 - 单元测试框架
-- **eslint** ^10.0.3 - 代码规范检查
+- **tsx** - TypeScript 执行器
+- **vitest** - 单元测试框架
+- **eslint** - 代码规范检查
 
 ## 项目结构
 
@@ -276,59 +276,10 @@ pnpm lint
 pnpm type-check
 ```
 
-## 项目当前状态
-
-### ✅ 已完成功能
-
-| Phase | 名称 | 完成日期 | 状态 |
-|-------|------|----------|------|
-| Phase 1 | 核心基础设施 | 2026-03-10 | ✅ 已完成 |
-| Phase 2 | Agent 核心 | 2026-03-10 | ✅ 已完成 |
-| 企业扩展 | 多角色配置系统 | 2026-03-11 | ✅ 已完成 |
-
-### 🔄 待开发功能
-
-- **Phase 3：** 内置工具（read_file, write_file, edit_file, exec, web_search 等）
-- **Phase 4：** LLM 提供商扩展（Anthropic, OpenRouter, DeepSeek 等）
-- **Phase 5：** 多渠道接入（Telegram, Discord, 飞书, 钉钉等）
-- **Phase 6：** 定时任务与心跳
-- **Phase 7：** MCP 协议支持
-
-详细开发计划请参考：[docs/niuma-development-plan.md](docs/niuma-development-plan.md)
-
-## 最近变更
-
-### v0.1.0 (2026-03-11)
-
-**企业级多角色配置系统**
-- ✅ JSON5 配置文件格式支持
-- ✅ 多角色架构，支持独立 AI 角色
-- ✅ 环境变量引用 `${VAR}` 和 `${VAR:default}`
-- ✅ defaults-with-overrides 配置模式
-- ✅ 角色完全隔离（工作区、会话、日志）
-- ✅ 严格 Zod 配置验证
-
-**代码质量改进**
-- ✅ 删除未使用的变量和导入
-- ✅ 添加完整的测试用例注释
-
-### v0.1.0-beta (2026-03-10)
-
-**Phase 2：Agent 核心**
-- ✅ 上下文构建器（支持媒体、技能、记忆）
-- ✅ 双层记忆系统
-- ✅ 技能系统
-- ✅ Agent 循环（LLM ↔ 工具执行）
-
-**Phase 1：核心基础设施**
-- ✅ 核心类型系统
-- ✅ 配置管理
-- ✅ 工具框架
-- ✅ 事件总线
-
 ## 相关资源
 
-- [项目开发计划](docs/niuma-development-plan.md)
+- [变更日志](CHANGELOG.md) - 版本历史和重要变更
+- [项目开发计划](docs/niuma-development-plan.md) - 详细开发计划
 - [LangChain.js 文档](https://js.langchain.com/)
 - [Zod](https://zod.dev/)
 - [nanobot 参考](https://github.com/HKUDS/nanobot)
