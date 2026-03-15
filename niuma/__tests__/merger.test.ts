@@ -2,7 +2,10 @@
  * 配置合并器单元测试
  */
 
+// ==================== 第三方库 ====================
 import { describe, it, expect } from "vitest";
+
+// ==================== 本地模块 ====================
 import { mergeConfigs, mergeMultipleConfigs } from "../config/merger";
 import type { NiumaConfig, AgentDefinition } from "../config/schema";
 

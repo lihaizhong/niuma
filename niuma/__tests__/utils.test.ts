@@ -2,7 +2,10 @@
  * 工具函数测试
  */
 
+// ==================== 第三方库 ====================
 import { describe, it, expect } from "vitest";
+
+// ==================== 本地模块 ====================
 import { retryWithBackoff } from "../utils/retry";
 import { sanitizeObject } from "../utils/sanitize";
 

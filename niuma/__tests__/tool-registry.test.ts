@@ -2,10 +2,13 @@
  * 工具注册表测试
  */
 
+// ==================== 第三方库 ====================
 import { describe, it, expect, beforeEach } from "vitest";
+import { z } from "zod";
+
+// ==================== 本地模块 ====================
 import { ToolRegistry, registerBuiltinTools } from "../agent/tools/registry";
 import { BaseTool } from "../agent/tools/base";
-import { z } from "zod";
 
 // ==================== 测试工具 ====================
 class TestTool extends BaseTool {

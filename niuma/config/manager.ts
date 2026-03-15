@@ -3,9 +3,14 @@
  * 整合 JSON5 加载、环境变量解析、配置合并和验证
  */
 
+// ==================== 内置库 ====================
 import { join } from "path";
 import { homedir } from "os";
+
+// ==================== 第三方库 ====================
 import fs from "fs-extra";
+
+// ==================== 本地模块 ====================
 import { json5ConfigLoader } from "./json5-loader";
 import { resolveEnvVars } from "./env-resolver";
 import { mergeConfigs } from "./merger";

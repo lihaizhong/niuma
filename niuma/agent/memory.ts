@@ -8,8 +8,13 @@
  * @see 参考 nanobot: https://github.com/HKUDS/nanobot/blob/main/nanobot/agent/memory.py
  */
 
+// ==================== 内置库 ====================
 import { join } from "path";
+
+// ==================== 第三方库 ====================
 import fs from "fs-extra";
+
+// ==================== 本地模块 ====================
 import { sanitizeObject } from "../utils/sanitize";
 import { createLogger } from "../log";
 import type { ToolDefinition } from "../types";

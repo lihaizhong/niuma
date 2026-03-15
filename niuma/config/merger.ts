@@ -3,7 +3,13 @@
  * 支持 defaults-with-overrides 模式的配置合并
  */
 
-import type { NiumaConfig, AgentDefinition } from "./schema";
+import deepmerge from "deepmerge";
+import type {
+  NiumaConfig,
+  AgentDefinition,
+  AgentConfig,
+  ProviderConfig,
+} from "./schema";
 
 // ============================================
 // 常量定义
@@ -12,48 +18,6 @@ import type { NiumaConfig, AgentDefinition } from "./schema";
 // ============================================
 // 函数定义
 // ============================================
-
-/**
- * 深度合并两个对象
- * @param target 目标对象
- * @param source 源对象
- * @returns 合并后的对象
- */
-function deepMerge<T extends Record<string, unknown>>(
-  target: T,
-  source: Record<string, unknown>,
-): T {
-  const result: any = { ...target };
-
-  for (const key in source) {
-    const sourceValue = source[key];
-    const targetValue = result[key];
-
-    if (sourceValue === undefined) {
-      continue;
-    }
-
-    // 如果源值是对象且目标值也是对象，则递归合并
-    if (
-      typeof sourceValue === "object" &&
-      sourceValue !== null &&
-      !Array.isArray(sourceValue) &&
-      typeof targetValue === "object" &&
-      targetValue !== null &&
-      !Array.isArray(targetValue)
-    ) {
-      result[key] = deepMerge(
-        targetValue as Record<string, unknown>,
-        sourceValue as Record<string, unknown>,
-      );
-    } else {
-      // 否则直接覆盖
-      result[key] = sourceValue;
-    }
-  }
-
-  return result as T;
-}
 
 /**
  * 合并全局配置和角色配置
@@ -72,17 +36,18 @@ export function mergeConfigs(
 
   // 合并 agent 配置（深度合并）
   if (agentConfig.agent) {
-    const merged = deepMerge(result.agent as any, agentConfig.agent as any);
-    result.agent = merged as any;
+    result.agent = deepmerge(
+      globalConfig.agent as Record<string, unknown>,
+      agentConfig.agent as Record<string, unknown>,
+    ) as AgentConfig;
   }
 
   // 合并 providers 配置（深度合并）
   if (agentConfig.providers) {
-    const merged = deepMerge(
-      result.providers as any,
-      agentConfig.providers as any,
-    );
-    result.providers = merged as any;
+    result.providers = deepmerge(
+      globalConfig.providers as Record<string, unknown>,
+      agentConfig.providers as Record<string, unknown>,
+    ) as Record<string, ProviderConfig>;
   }
 
   // 合并 channels 配置（完全替换）
@@ -121,7 +86,7 @@ export function mergeConfigs(
 export function mergeMultipleConfigs<T extends Record<string, unknown>>(
   ...configs: Partial<T>[]
 ): T {
-  return configs.reduce((result: any, config) => {
-    return deepMerge(result, config);
+  return configs.reduce<T>((result, config) => {
+    return deepmerge(result, config);
   }, {} as T);
 }

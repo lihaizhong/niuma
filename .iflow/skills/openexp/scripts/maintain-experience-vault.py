@@ -115,7 +115,8 @@ def scan_experiences(vault_path: Path) -> Dict[str, Experience]:
 
     # 遍历所有目录
     for exp_dir in vault_path.glob('*/'):
-        if exp_dir.name.startswith('.'):
+        # 跳过隐藏目录和 Poetry 目录
+        if exp_dir.name.startswith('.') or exp_dir.name == 'Poetry':
             continue
 
         for exp_file in exp_dir.glob('exp_*.md'):

@@ -5,12 +5,16 @@
  * 支持工作区技能和内置技能，工作区技能优先。
  */
 
-import fs from "fs-extra";
-import { join } from "path";
+// ==================== 内置库 ====================
 import { fileURLToPath } from "url";
-import { dirname } from "path";
-import { createLogger } from "../log";
+import { join, dirname } from "path";
+
+// ==================== 第三方库 ====================
+import fs from "fs-extra";
 import * as yaml from "js-yaml";
+
+// ==================== 本地模块 ====================
+import { createLogger } from "../log";
 
 // 获取当前文件所在目录
 const __filename = fileURLToPath(import.meta.url);

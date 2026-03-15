@@ -113,3 +113,19 @@
 - [x] 10.6 手动测试所有新工具的基本功能
 - [x] 10.7 验证所有工具的错误处理和安全限制
 - [x] 10.8 更新 OpenSpec 文档，反映所有改动
+
+## 11. 额外代码质量改进
+
+- [x] 11.1 消除 merger.ts 中的 any 类型（导入 AgentConfig、ProviderConfig 类型）
+- [x] 11.2 修复 merger.ts 中的泛型类型问题（使用 Record<string, unknown>）
+- [x] 11.3 安装 deepmerge@4.3.1 库替代自定义 deepMerge 实现
+- [x] 11.4 移除 merger.ts 中的 33 行自定义深度合并代码
+- [x] 11.5 规范化配置模块的 import 语句（json5-loader、loader、manager、merger）
+- [x] 11.6 规范化会话模块的 import 语句（session/manager）
+- [x] 11.7 规范化事件总线的 import 语句（bus/events）
+- [x] 11.8 规范化 Agent 模块的 import 语句（context、loop、skills、memory、subagent）
+- [x] 11.9 规范化 Provider 模块的 import 语句（providers/openai）
+- [x] 11.10 规范化工具模块的 import 语句（agent/tools/base）
+- [x] 11.11 规范化测试文件的 import 语句（data-tools、env-resolver、merger、message-tool、network-tools、types、tool-registry、utils、web-tools）
+- [x] 11.12 验证所有修改后的文件类型检查通过
+- [x] 11.13 验证所有修改后的文件测试通过（318/318）

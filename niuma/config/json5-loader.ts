@@ -3,9 +3,12 @@
  * 支持加载 JSON5 和 JSON 格式的配置文件
  */
 
-import fs from "fs-extra";
+// ==================== 内置库 ====================
 import { join } from "path";
 import { homedir } from "os";
+
+// ==================== 第三方库 ====================
+import fs from "fs-extra";
 import JSON5 from "json5";
 
 // ============================================

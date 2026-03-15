@@ -2,7 +2,10 @@
  * 环境变量解析器单元测试
  */
 
+// ==================== 第三方库 ====================
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
+
+// ==================== 本地模块 ====================
 import { resolveEnvVars } from "../config/env-resolver";
 
 describe("环境变量解析器", () => {

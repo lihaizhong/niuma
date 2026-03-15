@@ -11,8 +11,11 @@
  * @see 参考 nanobot: https://github.com/HKUDS/nanobot/blob/main/nanobot/agent/loop.py
  */
 
-import { createLogger } from "../log";
+// ==================== 第三方库 ====================
 import RE2 from "re2";
+
+// ==================== 本地模块 ====================
+import { createLogger } from "../log";
 import type {
   ChatMessage,
   InboundMessage,

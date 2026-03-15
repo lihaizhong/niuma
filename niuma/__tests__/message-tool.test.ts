@@ -2,7 +2,10 @@
  * 消息工具测试
  */
 
+// ==================== 第三方库 ====================
 import { describe, it, expect, beforeEach } from "vitest";
+
+// ==================== 本地模块 ====================
 import {
   messageTool,
   getMessageHistory,

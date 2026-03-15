@@ -3,10 +3,15 @@
  * @description 提供会话的生命周期管理，包括创建、持久化、历史记录查询和清理
  */
 
-import fs from "fs-extra";
+// ==================== 内置库 ====================
 import { join } from "path";
 import { homedir } from "os";
 import { createHash } from "crypto";
+
+// ==================== 第三方库 ====================
+import fs from "fs-extra";
+
+// ==================== 本地模块 ====================
 import type { ChatMessage } from "../types";
 
 /**

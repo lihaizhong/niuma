@@ -2,7 +2,10 @@
  * Web 工具测试
  */
 
+// ==================== 第三方库 ====================
 import { describe, it, expect, vi, beforeEach } from "vitest";
+
+// ==================== 本地模块 ====================
 import { webSearchTool, webFetchTool } from "../agent/tools/web";
 import { ToolExecutionError } from "../types/error";
 

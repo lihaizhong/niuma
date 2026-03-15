@@ -5,6 +5,7 @@
  * 支持同步/流式聊天、工具调用、自定义端点等功能。
  */
 
+// ==================== 第三方库 ====================
 import { ChatOpenAI } from "@langchain/openai";
 import type { BaseMessage, MessageContent } from "@langchain/core/messages";
 import {
@@ -14,6 +15,8 @@ import {
   ToolMessage,
 } from "@langchain/core/messages";
 import * as z from "zod";
+
+// ==================== 本地模块 ====================
 import type { LLMProvider } from "./base";
 import type {
   ChatMessage,
