@@ -247,6 +247,13 @@ flowchart TD
 - 遵循 Conventional Commits 规范
 - 提交信息格式：`type: description`
 
+### 版本管理
+- **版本号一致性** - 修改版本号时需同步更新以下文件：
+  - `package.json` - 主版本号
+  - `AGENTS.md` - 当前版本引用
+  - `CHANGELOG.md` - 版本历史记录
+- **遵循语义化版本** - 使用 Semantic Versioning (semver) 规范
+
 ### 分支策略
 - `main` - 主分支
 - `feat/*` - 功能分支
