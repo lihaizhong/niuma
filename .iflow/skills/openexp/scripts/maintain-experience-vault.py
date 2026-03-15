@@ -67,13 +67,40 @@ class Experience:
 
     @staticmethod
     def _parse_datetime(date_str: str) -> Optional[datetime]:
-        """解析日期时间字符串"""
+        """解析日期时间字符串，支持多种格式"""
         if not date_str:
             return None
+        
+        # 处理日期格式
+        date_str = str(date_str).strip()
+        
+        # 格式列表
+        formats = [
+            '%Y-%m-%d %H:%M:%S%z',  # 2026-03-11 14:00:00+00:00
+            '%Y-%m-%d %H:%M:%S',    # 2026-03-11 14:00:00
+            '%Y-%m-%dT%H:%M:%S%z',  # 2026-03-11T14:00:00+00:00
+            '%Y-%m-%dT%H:%M:%S',    # 2026-03-11T14:00:00
+            '%Y-%m-%dT%H:%M:%S.%f%z',  # 2026-03-11T14:00:00.000000+00:00
+            '%Y-%m-%dT%H:%M:%S.%f',    # 2026-03-11T14:00:00.000000
+            '%Y-%m-%dT%H:%M:%S.%fZ',   # 2026-03-11T14:00:00.000000Z
+            '%Y-%m-%dT%H:%M:%SZ',      # 2026-03-11T14:00:00Z
+            '%Y-%m-%d',                # 2026-03-11
+        ]
+        
+        # 先尝试 ISO 格式
         try:
             return datetime.fromisoformat(date_str.replace('Z', '+00:00'))
         except (ValueError, AttributeError):
-            return None
+            pass
+        
+        # 尝试其他格式
+        for fmt in formats:
+            try:
+                return datetime.strptime(date_str, fmt)
+            except ValueError:
+                continue
+        
+        return None
 
     def load(self):
         """从文件加载经验数据"""
