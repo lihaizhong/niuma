@@ -8,7 +8,11 @@ usage_count: 0
 effective: true
 tags: [preference, <category1>, <category2>]
 project: niuma
-batch_id: <batch_id>  # 同一批次的关联 ID
+batch_id: <batch_id>
+impact_score: 0
+backlinks: 0
+referenced_weight: 0
+last_impact_update: 2026-03-11T13:02:45Z
 ---
 
 # 用户偏好：[简明描述，如"使用 pnpm 而不是 npm"]

@@ -11,6 +11,10 @@ project: niuma
 batch_id: <batch_id>
 convention_type: [命名/格式/结构/注释]
 enforcement_level: [建议/强制]
+impact_score: 0
+backlinks: 0
+referenced_weight: 0
+last_impact_update: 2026-03-11T13:02:45Z
 ---
 
 # 约定规范：[简明描述，如"TypeScript 命名规范"]

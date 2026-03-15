@@ -11,6 +11,10 @@ project: niuma
 batch_id: <batch_id>
 problem_severity: [低/中/高]
 solution_type: [临时/永久/最佳实践]
+impact_score: 0
+backlinks: 0
+referenced_weight: 0
+last_impact_update: 2026-03-11T13:02:45Z
 ---
 
 # 解决方案：[简明描述，如"CORS 问题通过代理配置解决"]
