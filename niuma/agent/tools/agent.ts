@@ -54,12 +54,7 @@ interface SubagentConfig {
   parentAgentId: string;
   configPath?: string;
   workspaceDir: string;
-  model?: {
-    provider: string;
-    model: string;
-    temperature?: number;
-    maxTokens?: number;
-  };
+  model?: ModelConfig;
   tools?: {
     allowed: string[];
     denied: string[];
@@ -73,6 +68,16 @@ interface SubagentConfig {
   status: SubagentStatus;
   result?: string;
   error?: string;
+}
+
+/**
+ * 模型配置
+ */
+interface ModelConfig {
+  provider: string;
+  model: string;
+  temperature?: number;
+  maxTokens?: number;
 }
 
 /**
@@ -173,7 +178,7 @@ export class SpawnTool extends BaseTool {
         agentId,
         parentAgentId,
         workspaceDir,
-        model: config.model as any,
+        model: config.model as ModelConfig | undefined,
         tools: {
           allowed: allowedTools || [],
           denied: deniedTools || [],
