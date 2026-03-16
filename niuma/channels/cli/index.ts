@@ -4,7 +4,9 @@
  */
 
 import readline from "readline";
+
 import { BaseChannel, ChannelStatus } from "../base";
+
 import type { InboundMessage, OutboundMessage } from "../../types/message";
 
 /**

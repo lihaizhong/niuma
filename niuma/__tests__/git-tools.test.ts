@@ -3,13 +3,13 @@
  */
 
 // ==================== 内置库 ====================
+import { execSync } from "child_process";
 import { tmpdir } from "os";
 import { join } from "path";
-import { execSync } from "child_process";
 
 // ==================== 第三方库 ====================
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import fs from "fs-extra";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 
 // ==================== 本地模块 ====================
 import {

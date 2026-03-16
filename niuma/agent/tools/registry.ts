@@ -2,22 +2,21 @@
  * 工具注册中心 - 管理和执行工具
  */
 
-// ==================== 本地模块 ====================
-import type { ToolDefinition } from "../../types";
-import type { ITool } from "./base";
+import { spawnTool, cronTool } from "./agent";
 import { setGlobalRegistry } from "./context";
-
-// 内置工具导入
+import { encryptTool, decryptTool, hashTool } from "./crypto";
+import {
+  jsonParseTool,
+  jsonStringifyTool,
+  yamlParseTool,
+  yamlStringifyTool,
+} from "./data";
 import {
   readFileTool,
   writeFileTool,
   editFileTool,
   listDirTool,
 } from "./filesystem";
-import { execTool } from "./shell";
-import { webSearchTool, webFetchTool } from "./web";
-import { messageTool } from "./message";
-import { spawnTool, cronTool } from "./agent";
 import {
   gitStatusTool,
   gitCommitTool,
@@ -26,15 +25,14 @@ import {
   gitBranchTool,
   gitLogTool,
 } from "./git";
+import { messageTool } from "./message";
 import { pingTool, dnsLookupTool, httpRequestTool } from "./network";
-import {
-  jsonParseTool,
-  jsonStringifyTool,
-  yamlParseTool,
-  yamlStringifyTool,
-} from "./data";
-import { encryptTool, decryptTool, hashTool } from "./crypto";
+import { execTool } from "./shell";
 import { envGetTool, envSetTool, processListTool, processKillTool } from "./system";
+import { webSearchTool, webFetchTool } from "./web";
+
+import type { ITool } from "./base";
+import type { ToolDefinition } from "../../types";
 
 // ==================== 常量定义 ====================
 const ERROR_HINT = "\n\n[分析上述错误并尝试其他方式。]";

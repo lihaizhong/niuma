@@ -7,8 +7,9 @@
 import { resolve } from "path";
 
 // ==================== 本地模块 ====================
-import type { NiumaConfig } from "./schema";
 import { ConfigManager } from "./manager";
+
+import type { NiumaConfig } from "./schema";
 
 // 全局配置管理器实例
 let configManager: ConfigManager | null = null;

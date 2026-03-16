@@ -7,23 +7,23 @@
 import { tmpdir } from "os";
 
 // ==================== 第三方库 ====================
+import fs from "fs-extra";
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { z } from "zod";
-import fs from "fs-extra";
 
 // ==================== 本地模块 ====================
+import { spawnTool, cronTool } from "../agent/tools/agent";
 import { BaseTool } from "../agent/tools/base";
-import { ToolRegistry, registerBuiltinTools } from "../agent/tools/registry";
 import {
   readFileTool,
   writeFileTool,
   editFileTool,
   listDirTool,
 } from "../agent/tools/filesystem";
+import { messageTool } from "../agent/tools/message";
+import { ToolRegistry, registerBuiltinTools } from "../agent/tools/registry";
 import { execTool } from "../agent/tools/shell";
 import { webSearchTool, webFetchTool } from "../agent/tools/web";
-import { messageTool } from "../agent/tools/message";
-import { spawnTool, cronTool } from "../agent/tools/agent";
 import { ToolExecutionError } from "../types/error";
 
 describe("10.1 验证所有工具继承自 BaseTool", () => {

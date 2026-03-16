@@ -7,15 +7,15 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 
 // ==================== 本地模块 ====================
 import {
-  messageTool,
-  getMessageHistory,
-  cleanMessageHistory,
-} from "../agent/tools/message";
-import {
   setGlobalRegistry,
   getGlobalRegistry,
   clearGlobalContext,
 } from "../agent/tools/context";
+import {
+  messageTool,
+  getMessageHistory,
+  cleanMessageHistory,
+} from "../agent/tools/message";
 import { ToolRegistry } from "../agent/tools/registry";
 
 // 全局类型定义

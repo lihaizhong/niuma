@@ -3,8 +3,8 @@
  * @description 渠道相关的类型定义
  */
 
-import type { ChannelConfig } from "../config/schema";
 import type { BaseChannel } from "./base";
+import type { ChannelConfig } from "../config/schema";
 
 /**
  * 渠道选项

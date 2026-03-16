@@ -7,6 +7,7 @@ import { describe, it, expect } from "vitest";
 
 // ==================== 本地模块 ====================
 import { mergeConfigs, mergeMultipleConfigs } from "../config/merger";
+
 import type { NiumaConfig, AgentDefinition } from "../config/schema";
 
 describe("配置合并器", () => {

@@ -4,8 +4,8 @@
  */
 
 // ==================== 内置库 ====================
-import { join } from "path";
 import { homedir } from "os";
+import { join } from "path";
 
 // ==================== 第三方库 ====================
 import fs from "fs-extra";

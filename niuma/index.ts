@@ -6,18 +6,20 @@
  */
 
 import cac from "cac";
-import { createLogger } from "./log";
-import { ConfigManager } from "./config/manager";
-import { ToolRegistry, registerBuiltinTools } from "./agent/tools/registry";
-import { SessionManager } from "./session/manager";
+
 import { AgentLoop } from "./agent/loop";
+import { ToolRegistry, registerBuiltinTools } from "./agent/tools/registry";
 import { EventBus } from "./bus/events";
-import { ChannelRegistry } from "./channels/registry";
 import { CLIChannel } from "./channels/cli";
-import { TelegramChannel } from "./channels/telegram";
 import { DiscordChannel } from "./channels/discord";
-import type { ChannelsConfig } from "./config/schema";
+import { ChannelRegistry } from "./channels/registry";
+import { TelegramChannel } from "./channels/telegram";
+import { ConfigManager } from "./config/manager";
+import { createLogger } from "./log";
 import { providerRegistry } from "./providers/registry";
+import { SessionManager } from "./session/manager";
+
+import type { ChannelsConfig } from "./config/schema";
 import type { ProviderRegistry } from "./providers/registry";
 
 const logger = createLogger("cli");
@@ -109,7 +111,7 @@ cli.version(VERSION).help();
 cli
   .command("chat", "启动对话")
   .option("--agent <id>", "使用指定角色")
-  .option("--channels <types>", "启用的渠道（逗号分隔）")
+  .option("--channels [types]", "启用的渠道（逗号分隔）")
   .option("--no-channels", "禁用所有渠道")
   .action(async (options) => {
     try {
@@ -136,7 +138,7 @@ cli
       let channelsConfig = config.channels;
       let channelRegistry: ChannelRegistry | undefined;
 
-      if (options.channels) {
+      if (options.channels && typeof options.channels === "string") {
         // 覆盖启用的渠道
         const enabledChannels = options.channels.split(",");
         channelsConfig = {
@@ -160,8 +162,12 @@ cli
 
       // 创建 LLM 提供商
       const registry: ProviderRegistry = providerRegistry;
-      const defaultModel = Object.keys(config.providers)[0] || "openai";
-      const provider = registry.getProvider(defaultModel);
+      
+      // 初始化提供商配置
+      configManager.initializeProviders(options.agent);
+      
+      // 获取默认提供商
+      const provider = configManager.getDefaultProvider(options.agent);
 
       if (!provider) {
         logger.error("未找到可用的 LLM 提供商");
@@ -204,7 +210,9 @@ cli
       process.on("SIGTERM", shutdown);
 
     } catch (error) {
-      logger.error({ error }, "启动失败");
+      const err = error instanceof Error ? error : new Error(String(error));
+      logger.error({ error: err.message, stack: err.stack }, "启动失败");
+      console.error("详细错误:", err);
       process.exit(1);
     }
   });

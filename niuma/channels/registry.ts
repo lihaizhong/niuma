@@ -4,18 +4,24 @@
  */
 
 import { createLogger } from "../log";
-import type { BaseChannel } from "./base";
+
 import { ChannelStatus } from "./base";
-import type { ChannelsConfig, ChannelConfig } from "../config/schema";
 import { CLIChannel } from "./cli";
-import { TelegramChannel } from "./telegram";
 import { DiscordChannel } from "./discord";
-import { QQChannel } from "./qq";
-import { WhatsAppChannel } from "./whatsapp";
 import { EmailChannel } from "./email";
 import { FeishuChannel } from "./feishu";
-import { SlackChannel } from "./slack";
-import { DingtalkChannel } from "./dingtalk";
+import { QQChannel } from "./qq";
+// import { SlackChannel } from "./slack";
+// 暂时禁用：减少依赖加载
+// import { TelegramChannel } from "./telegram";
+// 暂时禁用：减少依赖加载
+// import { WhatsAppChannel } from "./whatsapp";
+// 暂时禁用：减少依赖加载
+
+import type { BaseChannel } from "./base";
+import type { ChannelsConfig, ChannelConfig } from "../config/schema";
+// import { DingtalkChannel } from "./dingtalk";
+// 暂时禁用：dingtalk-sdk 需要钉钉运行环境，Node.js 中无法正常工作
 
 const logger = createLogger("channel-registry");
 
@@ -286,22 +292,26 @@ export class ChannelRegistry {
     switch (config.type) {
       case "cli":
         return new CLIChannel(config);
-      case "telegram":
-        return new TelegramChannel(config);
+      // case "telegram":
+      //   return new TelegramChannel(config);
+      // 暂时禁用：减少依赖加载
       case "discord":
         return new DiscordChannel(config);
       case "qq":
         return new QQChannel(config);
-      case "whatsapp":
-        return new WhatsAppChannel(config);
+      // case "whatsapp":
+      //   return new WhatsAppChannel(config);
+      // 暂时禁用：减少依赖加载
       case "email":
         return new EmailChannel(config);
       case "feishu":
         return new FeishuChannel(config);
-      case "slack":
-        return new SlackChannel(config);
-      case "dingtalk":
-        return new DingtalkChannel(config);
+      // case "slack":
+      //   return new SlackChannel(config);
+      // 暂时禁用：减少依赖加载
+      // case "dingtalk":
+      //   return new DingtalkChannel(config);
+      // 暂时禁用：dingtalk-sdk 需要钉钉运行环境，Node.js 中无法正常工作
       default:
         // 理论上不会执行到这里，因为 TypeScript 的类型系统保证所有类型都已处理
         // 但保留 default 用于问题定位和类型安全

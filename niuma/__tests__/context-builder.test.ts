@@ -3,17 +3,18 @@
  */
 
 // ==================== 内置库 ====================
-import { join } from "path";
 import { tmpdir } from "os";
+import { join } from "path";
 
 // ==================== 第三方库 ====================
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import fs from "fs-extra";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 
 // ==================== 本地模块 ====================
 import { ContextBuilder } from "../agent/context";
 import { MemoryStore } from "../agent/memory";
 import { SkillsLoader } from "../agent/skills";
+
 import type { ChatMessage } from "../types";
 
 // ==================== 测试辅助函数 ====================

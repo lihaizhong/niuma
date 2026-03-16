@@ -7,6 +7,12 @@
 
 /* eslint-disable no-undef */
 // ==================== 本地模块 ====================
+import { OpenAIProvider } from "./openai";
+import { AnthropicProvider } from "./anthropic";
+import { OpenRouterProvider } from "./openrouter";
+import { DeepSeekProvider } from "./deepseek";
+import { CustomProvider } from "./custom";
+
 import type { LLMProvider } from "./base";
 import type { LLMConfig } from "../types";
 
@@ -317,11 +323,7 @@ export class ProviderRegistry {
       envKey: "OPENAI_API_KEY",
       displayName: "OpenAI",
       defaultApiBase: "https://api.openai.com/v1",
-      factory: (config) => {
-        // 动态导入以避免循环依赖
-        const { OpenAIProvider } = require("./openai");
-        return new OpenAIProvider(config);
-      },
+      factory: (config) => new OpenAIProvider(config),
     });
 
     // Anthropic 提供商
@@ -331,11 +333,7 @@ export class ProviderRegistry {
       envKey: "ANTHROPIC_API_KEY",
       displayName: "Anthropic",
       defaultApiBase: "https://api.anthropic.com",
-      factory: (config) => {
-        // 动态导入以避免循环依赖
-        const { AnthropicProvider } = require("./anthropic");
-        return new AnthropicProvider(config);
-      },
+      factory: (config) => new AnthropicProvider(config),
     });
 
     // OpenRouter 提供商（网关）
@@ -346,11 +344,7 @@ export class ProviderRegistry {
       displayName: "OpenRouter",
       isGateway: true,
       defaultApiBase: "https://openrouter.ai/api/v1",
-      factory: (config) => {
-        // 动态导入以避免循环依赖
-        const { OpenRouterProvider } = require("./openrouter");
-        return new OpenRouterProvider(config);
-      },
+      factory: (config) => new OpenRouterProvider(config),
     });
 
     // DeepSeek 提供商
@@ -360,11 +354,7 @@ export class ProviderRegistry {
       envKey: "DEEPSEEK_API_KEY",
       displayName: "DeepSeek",
       defaultApiBase: "https://api.deepseek.com",
-      factory: (config) => {
-        // 动态导入以避免循环依赖
-        const { DeepSeekProvider } = require("./deepseek");
-        return new DeepSeekProvider(config);
-      },
+      factory: (config) => new DeepSeekProvider(config),
     });
 
     // Custom 提供商
@@ -373,11 +363,7 @@ export class ProviderRegistry {
       keywords: [],
       envKey: "CUSTOM_API_KEY",
       displayName: "Custom",
-      factory: (config) => {
-        // 动态导入以避免循环依赖
-        const { CustomProvider } = require("./custom");
-        return new CustomProvider(config);
-      },
+      factory: (config) => new CustomProvider(config),
     });
   }
 

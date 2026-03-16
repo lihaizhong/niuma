@@ -4,6 +4,7 @@
  */
 
 import deepmerge from "deepmerge";
+
 import type {
   NiumaConfig,
   AgentDefinition,

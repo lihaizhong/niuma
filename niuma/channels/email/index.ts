@@ -5,11 +5,12 @@
  *       pnpm add nodemailer imapflow
  */
 
-import { BaseChannel, ChannelStatus } from "../base";
-import type { InboundMessage, OutboundMessage } from "../../types/message";
 import { createLogger } from "../../log";
-import type { Transporter } from "nodemailer";
+import { BaseChannel, ChannelStatus } from "../base";
+
+import type { InboundMessage, OutboundMessage } from "../../types/message";
 import type { ImapFlow, FetchMessageObject } from "imapflow";
+import type { Transporter } from "nodemailer";
 
 const logger = createLogger("email-channel");
 

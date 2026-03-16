@@ -8,9 +8,9 @@
     "niuma": "./dist/index.js"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "esbuild niuma/index.ts --bundle --platform=node --format=esm --outfile=dist/index.js --packages=external",
     "start": "node dist/index.js",
-    "dev": "tsx src/index.ts",
+    "dev": "tsx niuma/index.ts",
     "lint": "eslint niuma --ext .ts",
     "lint:fix": "eslint niuma --ext .ts --fix",
     "test": "vitest",
@@ -89,6 +89,7 @@
     "@vitejs/plugin-react": "^6.0.1",
     "eslint": "^10.0.3",
     "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-import-x": "^4.16.2",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "vite": "^8.0.0",

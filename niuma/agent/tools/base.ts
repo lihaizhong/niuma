@@ -6,13 +6,14 @@
 import { z } from "zod";
 
 // ==================== 本地模块 ====================
+import { getGlobalRegistry, getGlobalSessionManager } from "./context";
+
+import type { SessionManager } from "../../session/manager";
 import type {
   ToolParameterSchema,
   OpenAIToolSchema,
   ToolDefinition,
 } from "../../types";
-import { getGlobalRegistry, getGlobalSessionManager } from "./context";
-import type { SessionManager } from "../../session/manager";
 
 /**
  * 所有工具必须实现的接口

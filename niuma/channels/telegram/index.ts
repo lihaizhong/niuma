@@ -3,8 +3,10 @@
  * @description Telegram Bot API 的渠道实现
  */
 
-import { Telegraf, Context } from "telegraf";
+import { Telegraf, type Context } from "telegraf";
+
 import { BaseChannel, ChannelStatus, ChannelError, ChannelErrorType } from "../base";
+
 import type { InboundMessage, OutboundMessage, MediaContent } from "../../types/message";
 
 /**

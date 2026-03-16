@@ -2,8 +2,8 @@
  * 内部通信事件类型定义
  */
 
-import type { InboundMessage, OutboundMessage } from "./message";
 import type { LLMResponse } from "./llm";
+import type { InboundMessage, OutboundMessage } from "./message";
 
 /**
  * 系统发出的事件类型

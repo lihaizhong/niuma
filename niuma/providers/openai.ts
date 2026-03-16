@@ -6,18 +6,18 @@
  */
 
 // ==================== 第三方库 ====================
-import { ChatOpenAI } from "@langchain/openai";
-import type { BaseMessage, MessageContent } from "@langchain/core/messages";
 import {
   HumanMessage,
   AIMessage,
   SystemMessage,
   ToolMessage,
 } from "@langchain/core/messages";
+import { ChatOpenAI } from "@langchain/openai";
 import * as z from "zod";
 
 // ==================== 本地模块 ====================
-import type { LLMProvider } from "./base";
+import { ProviderError } from "../types";
+
 import type {
   ChatMessage,
   ChatOptions,
@@ -27,7 +27,8 @@ import type {
   ToolCall,
   ToolDefinition,
 } from "../types";
-import { ProviderError } from "../types";
+import type { LLMProvider } from "./base";
+import type { BaseMessage, MessageContent } from "@langchain/core/messages";
 
 /**
  * OpenAI 提供商配置

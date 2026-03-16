@@ -3,11 +3,17 @@
  * @description 基于 dingtalk-sdk 的钉钉开放平台渠道实现
  */
 
-import { BaseChannel, ChannelStatus } from "../base";
-import type { InboundMessage, OutboundMessage } from "../../types/message";
+import dingtalkSdk from "dingtalk-sdk";
+
 import { createLogger } from "../../log";
-import { Client } from "dingtalk-sdk";
+import { BaseChannel, ChannelStatus } from "../base";
+
+import type { InboundMessage, OutboundMessage } from "../../types/message";
 import type { Server, IncomingMessage, ServerResponse } from "http";
+
+// dingtalk-sdk 是 UMD 包，需要从默认导出中获取 Client
+const Client = (dingtalkSdk as Record<string, unknown>).Client as typeof dingtalkSdk.Client;
+type ClientType = InstanceType<typeof Client>;
 
 const logger = createLogger("dingtalk-channel");
 
@@ -71,7 +77,7 @@ export class DingtalkChannel extends BaseChannel {
   private config: Required<Omit<DingtalkChannelConfig, "enabled">> & {
     enabled: boolean;
   };
-  private client: Client | null;
+  private client: ClientType | null;
   private server?: Server;
   private accessToken?: string;
 
