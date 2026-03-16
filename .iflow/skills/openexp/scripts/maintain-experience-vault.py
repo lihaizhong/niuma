@@ -1,18 +1,12 @@
 #!/usr/bin/env python3
 """
-经验库维护脚本（优化版）
+经验库维护脚本
 
 功能：
 1. 扫描所有经验文件
-2. 计算影响力（考虑使用次数、置信度、关联关系）
+2. 计算影响力（usage_count × 5 + confidence × 50 + backlinks × 10 + referenced_weight）
 3. 更新索引地图
 4. 识别低影响力经验
-
-优化：
-- 减少代码重复
-- 优化性能
-- 改善错误处理
-- 提高代码可读性
 """
 
 import os
@@ -67,33 +61,28 @@ class Experience:
 
     @staticmethod
     def _parse_datetime(date_str: str) -> Optional[datetime]:
-        """解析日期时间字符串，支持多种格式"""
         if not date_str:
             return None
         
-        # 处理日期格式
         date_str = str(date_str).strip()
         
-        # 格式列表
         formats = [
-            '%Y-%m-%d %H:%M:%S%z',  # 2026-03-11 14:00:00+00:00
-            '%Y-%m-%d %H:%M:%S',    # 2026-03-11 14:00:00
-            '%Y-%m-%dT%H:%M:%S%z',  # 2026-03-11T14:00:00+00:00
-            '%Y-%m-%dT%H:%M:%S',    # 2026-03-11T14:00:00
-            '%Y-%m-%dT%H:%M:%S.%f%z',  # 2026-03-11T14:00:00.000000+00:00
-            '%Y-%m-%dT%H:%M:%S.%f',    # 2026-03-11T14:00:00.000000
-            '%Y-%m-%dT%H:%M:%S.%fZ',   # 2026-03-11T14:00:00.000000Z
-            '%Y-%m-%dT%H:%M:%SZ',      # 2026-03-11T14:00:00Z
-            '%Y-%m-%d',                # 2026-03-11
+            '%Y-%m-%d %H:%M:%S%z',
+            '%Y-%m-%d %H:%M:%S',
+            '%Y-%m-%dT%H:%M:%S%z',
+            '%Y-%m-%dT%H:%M:%S',
+            '%Y-%m-%dT%H:%M:%S.%f%z',
+            '%Y-%m-%dT%H:%M:%S.%f',
+            '%Y-%m-%dT%H:%M:%S.%fZ',
+            '%Y-%m-%dT%H:%M:%SZ',
+            '%Y-%m-%d',
         ]
         
-        # 先尝试 ISO 格式
         try:
             return datetime.fromisoformat(date_str.replace('Z', '+00:00'))
         except (ValueError, AttributeError):
             pass
         
-        # 尝试其他格式
         for fmt in formats:
             try:
                 return datetime.strptime(date_str, fmt)
@@ -119,7 +108,6 @@ class Experience:
             print(f"警告：解析 frontmatter 失败 {self.file_path}: {e}")
             return
 
-        # 加载字段
         self.type = frontmatter.get('type', 'unknown')
         self.confidence = float(frontmatter.get('confidence', 0.5))
         self.usage_count = int(frontmatter.get('usage_count', 0))
@@ -128,12 +116,9 @@ class Experience:
         self.referenced_weight = float(frontmatter.get('referenced_weight', 0))
         self.tags = frontmatter.get('tags', [])
 
-        # 解析日期
         self.created = self._parse_datetime(frontmatter.get('created', '')) or self.created
         self.updated = self._parse_datetime(frontmatter.get('updated', '')) or self.updated
         self.last_impact_update = self._parse_datetime(frontmatter.get('last_impact_update', ''))
-
-        # 解析双向链接
         content_without_frontmatter = re.sub(r'^---\n.*?\n---', '', content, flags=re.DOTALL)
         self.references = [
             link for link in re.findall(r'\[\[([^\]]+)\]\]', content_without_frontmatter)
@@ -174,22 +159,17 @@ def scan_experiences(vault_path: Path) -> Dict[str, Experience]:
 
 
 def build_graphs(experiences: Dict[str, Experience]) -> Tuple[Dict[str, List[str]], Dict[str, List[str]]]:
-    """构建引用图和反向链接图"""
     reference_graph = defaultdict(list)
     backlink_graph = defaultdict(list)
 
-    # 构建引用图
     for exp_id, exp in experiences.items():
         for ref_id in exp.references:
             if ref_id in experiences:
                 reference_graph[exp_id].append(ref_id)
 
-    # 构建反向链接图
     for exp_id, refs in reference_graph.items():
         for ref_id in refs:
             backlink_graph[ref_id].append(exp_id)
-
-    # 更新 backlinks 数量
     for exp_id, exp in experiences.items():
         exp.backlinks = len(backlink_graph.get(exp_id, []))
 
@@ -197,18 +177,13 @@ def build_graphs(experiences: Dict[str, Experience]) -> Tuple[Dict[str, List[str
 
 
 def calculate_impact_scores(experiences: Dict[str, Experience], reference_graph: Dict[str, List[str]]):
-    """迭代计算影响力"""
     print("\n开始计算影响力...")
 
-    # 初始计算（不包括引用权重）
     for exp in experiences.values():
         exp.impact_score = exp.calculate_base_impact()
 
-    # 迭代计算（包括引用权重）
     for iteration in range(CONFIG.max_iterations):
         max_change = 0.0
-
-        # 预计算每个经验的引用权重
         for exp in experiences.values():
             exp.referenced_weight = 0.0
 
@@ -234,7 +209,6 @@ def calculate_impact_scores(experiences: Dict[str, Experience], reference_graph:
             print(f"  收敛！经过 {iteration + 1} 次迭代")
             break
 
-    # 新经验保护
     for exp in experiences.values():
         if exp.is_new() and exp.impact_score < CONFIG.impact_threshold:
             exp.impact_score = CONFIG.impact_threshold
@@ -257,7 +231,6 @@ def update_experience_frontmatter(experiences: Dict[str, Experience]):
             old_frontmatter = frontmatter_match.group(1)
             frontmatter_data = yaml.safe_load(old_frontmatter.replace('---\n', '').replace('\n---', '')) or {}
 
-            # 更新字段
             frontmatter_data['impact_score'] = round(exp.impact_score, 2)
             frontmatter_data['backlinks'] = exp.backlinks
             frontmatter_data['referenced_weight'] = round(exp.referenced_weight, 2)
@@ -298,22 +271,17 @@ def generate_index_map(experiences: Dict[str, Experience], categories: Dict[str,
     now = datetime.now().isoformat() + 'Z'
     now_date = now[:10]
 
-    # 按影响力排序并取前 20
     skills = sorted(categories['skills'], key=lambda x: x.impact_score, reverse=True)[:20]
     principles = sorted(categories['principles'], key=lambda x: x.impact_score, reverse=True)[:20]
     models = sorted(categories['models'], key=lambda x: x.impact_score, reverse=True)[:20]
 
-    # 统计
     total = len(experiences)
     max_impact = max([exp.impact_score for exp in experiences.values()]) if experiences else 0
     avg_impact = sum([exp.impact_score for exp in experiences.values()]) / total if experiences else 0
 
-    # 计算其他类型
     experiences_count = sum(1 for exp in experiences.values() if exp.type == 'experience')
     others_count = sum(1 for exp in experiences.values()
                       if exp.type not in ['preference', 'workflow', 'solution', 'knowledge', 'convention', 'style', 'experience'])
-
-    # 生成表格辅助函数
     def generate_table(exps: List[Experience]) -> str:
         """生成表格内容"""
         if not exps:
@@ -509,10 +477,8 @@ def print_statistics(experiences: Dict[str, Experience], categories: Dict[str, L
 
 
 def main():
-    """主函数"""
     vault_path = Path(CONFIG.vault_path)
 
-    # 验证路径
     if not vault_path.exists():
         print(f"错误：Vault 路径不存在: {vault_path}")
         return
@@ -525,7 +491,6 @@ def main():
     print(f"新经验保护期: {CONFIG.new_experience_days} 天")
     print()
 
-    # 扫描经验
     print("扫描经验文件...")
     experiences = scan_experiences(vault_path)
     print(f"找到 {len(experiences)} 条经验")
@@ -534,21 +499,14 @@ def main():
         print("没有找到经验文件，退出")
         return
 
-    # 构建引用图
     print("\n构建引用关系...")
     reference_graph, backlink_graph = build_graphs(experiences)
     print(f"引用关系: {sum(len(refs) for refs in reference_graph.values())} 个")
 
-    # 计算影响力
     calculate_impact_scores(experiences, reference_graph)
-
-    # 更新 frontmatter
     update_experience_frontmatter(experiences)
-
-    # 分类经验
     categories = categorize_experiences(experiences)
 
-    # 生成索引地图
     print("\n生成索引地图...")
     index_map_content = generate_index_map(experiences, categories)
     index_map_path = vault_path / "经验索引地图.md"
@@ -556,7 +514,6 @@ def main():
         f.write(index_map_content)
     print(f"已更新: {index_map_path}")
 
-    # 识别低影响力经验
     print("\n识别低影响力经验...")
     low_impact = identify_low_impact_experiences(experiences)
     if low_impact:
@@ -568,7 +525,6 @@ def main():
     else:
         print("没有发现低影响力经验")
 
-    # 打印统计
     print_statistics(experiences, categories, low_impact)
     print("完成！")
 
