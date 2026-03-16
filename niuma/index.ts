@@ -112,7 +112,7 @@ cli
   .command("chat", "启动对话")
   .option("--agent <id>", "使用指定角色")
   .option("--channels [types]", "启用的渠道（逗号分隔）")
-  .option("--no-channels", "禁用所有渠道")
+  .option("--no-channels", "禁用所有渠道", { default: false })
   .action(async (options) => {
     try {
       logger.info("启动 Niuma...");
@@ -136,7 +136,6 @@ cli
 
       // 处理渠道配置
       let channelsConfig = config.channels;
-      let channelRegistry: ChannelRegistry | undefined;
 
       if (options.channels && typeof options.channels === "string") {
         // 覆盖启用的渠道
@@ -146,19 +145,15 @@ cli
           enabled: enabledChannels,
         };
       } else if (options.noChannels) {
-        // 禁用所有渠道
+        // --no-channels 模式：只保留 CLI 渠道（用于交互）
         channelsConfig = {
           ...channelsConfig,
-          enabled: [],
+          enabled: ["cli"],
         };
       }
 
-      if (channelsConfig.enabled.length > 0) {
-        // 创建渠道注册表
-        channelRegistry = createChannelRegistry(channelsConfig);
-        await channelRegistry.startAll();
-        logger.info("渠道已启动");
-      }
+      // 创建渠道注册表（不启动渠道）
+      const channelRegistry = createChannelRegistry(channelsConfig);
 
       // 创建 LLM 提供商
       const registry: ProviderRegistry = providerRegistry;
@@ -190,6 +185,10 @@ cli
       });
 
       logger.info("Agent 已启动，等待消息...");
+
+      // 启动 Agent 消息处理循环（会自动启动渠道）
+      // 这是阻塞调用，会一直运行直到程序退出
+      await agentLoop.run();
 
       // 监听退出信号
       const shutdown = () => {

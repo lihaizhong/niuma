@@ -60,14 +60,17 @@ export class AnthropicProvider implements LLMProvider {
   /** @inheritdoc */
   readonly name = "anthropic";
 
+  /** 默认 API Base */
+  public static readonly DEFAULT_API_BASE: string = "https://api.anthropic.com";
+
+  /** 默认模型 */
+  public static readonly DEFAULT_MODEL: string = "claude-3-5-sonnet-20241022";
+
   /** 提供商配置 */
   private config: AnthropicConfig;
 
   /** Anthropic SDK 客户端 */
   private client: Anthropic;
-
-  /** 默认模型 */
-  private static readonly DEFAULT_MODEL = "claude-3-5-sonnet-20241022";
 
   /**
    * 创建 Anthropic 提供商实例

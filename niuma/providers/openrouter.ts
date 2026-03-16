@@ -28,6 +28,9 @@ export class OpenRouterProvider extends OpenAIProvider {
   /** @inheritdoc */
   readonly name: string = "openrouter";
 
+  /** 默认 API Base */
+  public static readonly DEFAULT_API_BASE: string = "https://openrouter.ai/api/v1";
+
   /** 是否为网关 */
   readonly isGateway = true;
 
@@ -40,7 +43,7 @@ export class OpenRouterProvider extends OpenAIProvider {
     // 设置默认 API Base
     const openRouterConfig = {
       ...config,
-      apiBase: config.apiBase || "https://openrouter.ai/api/v1",
+      apiBase: config.apiBase || OpenRouterProvider.DEFAULT_API_BASE,
     };
 
     super(openRouterConfig);

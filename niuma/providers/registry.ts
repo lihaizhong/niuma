@@ -10,6 +10,7 @@
 import { AnthropicProvider } from "./anthropic";
 import { CustomProvider } from "./custom";
 import { DeepSeekProvider } from "./deepseek";
+import { OllamaProvider } from "./ollama";
 import { OpenAIProvider } from "./openai";
 import { OpenRouterProvider } from "./openrouter";
 
@@ -313,7 +314,7 @@ export class ProviderRegistry {
   /**
    * 注册内置提供商
    *
-   * @description 自动注册 OpenAI、Anthropic、OpenRouter、DeepSeek、Custom 提供商
+   * @description 自动注册 OpenAI、Anthropic、OpenRouter、DeepSeek、Custom、Ollama 提供商
    */
   private _registerBuiltinProviders(): void {
     // OpenAI 提供商
@@ -322,7 +323,7 @@ export class ProviderRegistry {
       keywords: ["gpt", "o1", "chatgpt"],
       envKey: "OPENAI_API_KEY",
       displayName: "OpenAI",
-      defaultApiBase: "https://api.openai.com/v1",
+      defaultApiBase: OpenAIProvider.DEFAULT_API_BASE,
       factory: (config) => new OpenAIProvider(config),
     });
 
@@ -332,7 +333,7 @@ export class ProviderRegistry {
       keywords: ["claude"],
       envKey: "ANTHROPIC_API_KEY",
       displayName: "Anthropic",
-      defaultApiBase: "https://api.anthropic.com",
+      defaultApiBase: AnthropicProvider.DEFAULT_API_BASE,
       factory: (config) => new AnthropicProvider(config),
     });
 
@@ -343,7 +344,7 @@ export class ProviderRegistry {
       envKey: "OPENROUTER_API_KEY",
       displayName: "OpenRouter",
       isGateway: true,
-      defaultApiBase: "https://openrouter.ai/api/v1",
+      defaultApiBase: OpenRouterProvider.DEFAULT_API_BASE,
       factory: (config) => new OpenRouterProvider(config),
     });
 
@@ -353,7 +354,7 @@ export class ProviderRegistry {
       keywords: ["deepseek"],
       envKey: "DEEPSEEK_API_KEY",
       displayName: "DeepSeek",
-      defaultApiBase: "https://api.deepseek.com",
+      defaultApiBase: DeepSeekProvider.DEFAULT_API_BASE,
       factory: (config) => new DeepSeekProvider(config),
     });
 
@@ -364,6 +365,16 @@ export class ProviderRegistry {
       envKey: "CUSTOM_API_KEY",
       displayName: "Custom",
       factory: (config) => new CustomProvider(config),
+    });
+
+    // Ollama 提供商（本地模型）
+    this.register({
+      name: "ollama",
+      keywords: ["llama", "qwen", "mistral", "gemma", "phi", "codellama"],
+      envKey: "OLLAMA_API_KEY",
+      displayName: "Ollama",
+      defaultApiBase: OllamaProvider.DEFAULT_API_BASE,
+      factory: (config) => new OllamaProvider(config),
     });
   }
 

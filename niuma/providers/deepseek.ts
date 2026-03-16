@@ -24,8 +24,11 @@ export class DeepSeekProvider extends OpenAIProvider {
   /** @inheritdoc */
   readonly name: string = "deepseek";
 
+  /** 默认 API Base */
+  public static readonly DEFAULT_API_BASE: string = "https://api.deepseek.com";
+
   /** 默认模型 */
-  private static readonly DEFAULT_DEEPSEEK_MODEL = "deepseek-chat";
+  public static readonly DEFAULT_MODEL: string = "deepseek-chat";
 
   /**
    * 创建 DeepSeek 提供商实例
@@ -36,8 +39,8 @@ export class DeepSeekProvider extends OpenAIProvider {
     // 设置默认 API Base 和模型
     const deepseekConfig = {
       ...config,
-      apiBase: config.apiBase || "https://api.deepseek.com",
-      model: config.model || DeepSeekProvider.DEFAULT_DEEPSEEK_MODEL,
+      apiBase: config.apiBase || DeepSeekProvider.DEFAULT_API_BASE,
+      model: config.model || DeepSeekProvider.DEFAULT_MODEL,
     };
 
     super(deepseekConfig);

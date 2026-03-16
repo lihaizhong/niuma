@@ -270,12 +270,21 @@ export class ConfigManager {
     // 转换 ProviderConfig 为 LLMConfig 并注册
     const providerConfigs = config.providers || {};
 
+    // 获取第一个提供商名称作为默认提供商
+    const providerNames = Object.keys(providerConfigs);
+    const defaultProviderName = providerNames[0];
+
     for (const [name, providerConfig] of Object.entries(providerConfigs)) {
       // 转换为 LLMConfig
       const llmConfig = this._convertToLLMConfig(providerConfig);
 
       // 设置到注册表
       this.registry.setProviderConfig(name, llmConfig);
+    }
+
+    // 设置默认提供商（配置文件中的第一个）
+    if (defaultProviderName) {
+      this.registry.setDefaultProvider(defaultProviderName);
     }
 
     // 标记已初始化

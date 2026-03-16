@@ -7,7 +7,10 @@
  * - 可配置的日志级别
  */
 
-import pino, { type Logger } from "pino";
+import pino, { type Logger as PinoLogger } from "pino";
+
+// 重新导出 Logger 类型
+export type Logger = PinoLogger;
 
 /**
  * 默认日志配置
@@ -29,8 +32,9 @@ const DEFAULT_CONFIG = {
 
 /**
  * 默认 logger 实例
+ * 输出到 stderr，避免和 CLI 交互混在一起
  */
-export const logger: Logger = pino(DEFAULT_CONFIG);
+export const logger: Logger = pino(DEFAULT_CONFIG, pino.destination(2));
 
 /**
  * 创建带上下文的 logger
@@ -38,8 +42,11 @@ export const logger: Logger = pino(DEFAULT_CONFIG);
  * @returns 带上下文的 logger 实例
  */
 export function createLogger(context: string): Logger {
-  return pino({
-    ...DEFAULT_CONFIG,
-    name: context,
-  });
+  return pino(
+    {
+      ...DEFAULT_CONFIG,
+      name: context,
+    },
+    pino.destination(2)
+  );
 }
