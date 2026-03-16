@@ -3,10 +3,12 @@
  * @description 基于 @larksuiteoapi/node-sdk 的飞书开放平台渠道实现
  */
 
-import { BaseChannel, ChannelStatus } from "../base";
-import type { InboundMessage, OutboundMessage } from "../../types/message";
-import { createLogger } from "../../log";
 import * as lark from "@larksuiteoapi/node-sdk";
+
+import { createLogger } from "../../log";
+import { BaseChannel, ChannelStatus } from "../base";
+
+import type { InboundMessage, OutboundMessage } from "../../types/message";
 import type { Server, IncomingMessage, ServerResponse } from "http";
 
 const logger = createLogger("feishu-channel");

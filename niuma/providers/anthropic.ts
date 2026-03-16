@@ -9,6 +9,8 @@
 import Anthropic from "@anthropic-ai/sdk";
 
 // ==================== 本地模块 ====================
+import { ProviderError } from "../types";
+
 import type { LLMProvider } from "./base";
 import type {
   ChatMessage,
@@ -19,7 +21,6 @@ import type {
   ToolCall,
   ToolDefinition,
 } from "../types";
-import { ProviderError } from "../types";
 
 /**
  * Anthropic 提供商配置
@@ -59,14 +60,17 @@ export class AnthropicProvider implements LLMProvider {
   /** @inheritdoc */
   readonly name = "anthropic";
 
+  /** 默认 API Base */
+  public static readonly DEFAULT_API_BASE: string = "https://api.anthropic.com";
+
+  /** 默认模型 */
+  public static readonly DEFAULT_MODEL: string = "claude-3-5-sonnet-20241022";
+
   /** 提供商配置 */
   private config: AnthropicConfig;
 
   /** Anthropic SDK 客户端 */
   private client: Anthropic;
-
-  /** 默认模型 */
-  private static readonly DEFAULT_MODEL = "claude-3-5-sonnet-20241022";
 
   /**
    * 创建 Anthropic 提供商实例
@@ -199,6 +203,7 @@ export class AnthropicProvider implements LLMProvider {
     // 添加 beta 功能（使用 any 类型，因为 SDK 类型定义可能不完整）
     const beta = this.config.extra?.beta || this.config.beta;
     if (beta && beta.length > 0) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- SDK 类型定义不包含 beta 字段
       (requestParams as any).beta = beta;
     }
 

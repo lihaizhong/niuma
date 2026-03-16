@@ -6,18 +6,20 @@
  */
 
 import cac from "cac";
-import { createLogger } from "./log";
-import { ConfigManager } from "./config/manager";
-import { ToolRegistry, registerBuiltinTools } from "./agent/tools/registry";
-import { SessionManager } from "./session/manager";
+
 import { AgentLoop } from "./agent/loop";
+import { ToolRegistry, registerBuiltinTools } from "./agent/tools/registry";
 import { EventBus } from "./bus/events";
-import { ChannelRegistry } from "./channels/registry";
 import { CLIChannel } from "./channels/cli";
-import { TelegramChannel } from "./channels/telegram";
 import { DiscordChannel } from "./channels/discord";
-import type { ChannelsConfig } from "./config/schema";
+import { ChannelRegistry } from "./channels/registry";
+import { TelegramChannel } from "./channels/telegram";
+import { ConfigManager } from "./config/manager";
+import { createLogger } from "./log";
 import { providerRegistry } from "./providers/registry";
+import { SessionManager } from "./session/manager";
+
+import type { ChannelsConfig } from "./config/schema";
 import type { ProviderRegistry } from "./providers/registry";
 
 const logger = createLogger("cli");
@@ -109,8 +111,8 @@ cli.version(VERSION).help();
 cli
   .command("chat", "启动对话")
   .option("--agent <id>", "使用指定角色")
-  .option("--channels <types>", "启用的渠道（逗号分隔）")
-  .option("--no-channels", "禁用所有渠道")
+  .option("--channels [types]", "启用的渠道（逗号分隔）")
+  .option("--no-channels", "禁用所有渠道", { default: false })
   .action(async (options) => {
     try {
       logger.info("启动 Niuma...");
@@ -134,9 +136,8 @@ cli
 
       // 处理渠道配置
       let channelsConfig = config.channels;
-      let channelRegistry: ChannelRegistry | undefined;
 
-      if (options.channels) {
+      if (options.channels && typeof options.channels === "string") {
         // 覆盖启用的渠道
         const enabledChannels = options.channels.split(",");
         channelsConfig = {
@@ -144,24 +145,24 @@ cli
           enabled: enabledChannels,
         };
       } else if (options.noChannels) {
-        // 禁用所有渠道
+        // --no-channels 模式：只保留 CLI 渠道（用于交互）
         channelsConfig = {
           ...channelsConfig,
-          enabled: [],
+          enabled: ["cli"],
         };
       }
 
-      if (channelsConfig.enabled.length > 0) {
-        // 创建渠道注册表
-        channelRegistry = createChannelRegistry(channelsConfig);
-        await channelRegistry.startAll();
-        logger.info("渠道已启动");
-      }
+      // 创建渠道注册表（不启动渠道）
+      const channelRegistry = createChannelRegistry(channelsConfig);
 
       // 创建 LLM 提供商
       const registry: ProviderRegistry = providerRegistry;
-      const defaultModel = Object.keys(config.providers)[0] || "openai";
-      const provider = registry.getProvider(defaultModel);
+      
+      // 初始化提供商配置
+      configManager.initializeProviders(options.agent);
+      
+      // 获取默认提供商
+      const provider = configManager.getDefaultProvider(options.agent);
 
       if (!provider) {
         logger.error("未找到可用的 LLM 提供商");
@@ -185,6 +186,10 @@ cli
 
       logger.info("Agent 已启动，等待消息...");
 
+      // 启动 Agent 消息处理循环（会自动启动渠道）
+      // 这是阻塞调用，会一直运行直到程序退出
+      await agentLoop.run();
+
       // 监听退出信号
       const shutdown = () => {
         logger.info("正在关闭...");
@@ -204,7 +209,9 @@ cli
       process.on("SIGTERM", shutdown);
 
     } catch (error) {
-      logger.error({ error }, "启动失败");
+      const err = error instanceof Error ? error : new Error(String(error));
+      logger.error({ error: err.message, stack: err.stack }, "启动失败");
+      console.error("详细错误:", err);
       process.exit(1);
     }
   });

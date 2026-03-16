@@ -9,15 +9,15 @@
 import { randomUUID } from "crypto";
 
 // ==================== 本地模块 ====================
-import type { LLMProvider } from "../providers/base";
-import type { ToolRegistry } from "./tools/registry";
 import type { EventBus } from "../bus/events";
+import type { LLMProvider } from "../providers/base";
 import type {
   ChatMessage,
   ToolCall,
   OutboundMessage,
   ToolDefinition,
 } from "../types";
+import type { ToolRegistry } from "./tools/registry";
 
 // ============================================
 // 类型定义

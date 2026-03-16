@@ -4,10 +4,12 @@
  * @note 支持 Web API 发送消息，需要配合 Webhook 或 Events API 接收消息
  */
 
-import { BaseChannel, ChannelStatus } from "../base";
-import type { InboundMessage, OutboundMessage } from "../../types/message";
-import { createLogger } from "../../log";
 import { WebClient } from "@slack/web-api";
+
+import { createLogger } from "../../log";
+import { BaseChannel, ChannelStatus } from "../base";
+
+import type { InboundMessage, OutboundMessage } from "../../types/message";
 import type { Server, IncomingMessage, ServerResponse } from "http";
 
 const logger = createLogger("slack-channel");

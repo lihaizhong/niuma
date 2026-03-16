@@ -6,16 +6,18 @@
 import {
   Client,
   GatewayIntentBits,
-  Message,
-  Attachment,
-  TextBasedChannel,
-  TextChannel,
-  DMChannel,
-  NewsChannel,
-  ThreadChannel,
-  VoiceChannel,
+  type Message,
+  type Attachment,
+  type TextBasedChannel,
+  type TextChannel,
+  type DMChannel,
+  type NewsChannel,
+  type ThreadChannel,
+  type VoiceChannel,
 } from "discord.js";
+
 import { BaseChannel, ChannelStatus, ChannelError, ChannelErrorType } from "../base";
+
 import type { InboundMessage, OutboundMessage, MediaContent } from "../../types/message";
 
 /** 可发送消息的渠道类型（排除 PartialGroupDMChannel） */

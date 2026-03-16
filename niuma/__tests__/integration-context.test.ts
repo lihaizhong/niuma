@@ -7,15 +7,15 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 
 // ==================== 本地模块 ====================
+import { spawnTool } from "../agent/tools/agent";
 import {
   setGlobalRegistry,
   setGlobalSessionManager,
   clearGlobalContext,
 } from "../agent/tools/context";
+import { messageTool } from "../agent/tools/message";
 import { ToolRegistry } from "../agent/tools/registry";
 import { SessionManager } from "../session/manager";
-import { messageTool } from "../agent/tools/message";
-import { spawnTool } from "../agent/tools/agent";
 
 describe("上下文集成测试", () => {
   let registry: ToolRegistry;

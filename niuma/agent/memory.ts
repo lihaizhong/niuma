@@ -15,11 +15,12 @@ import { join } from "path";
 import fs from "fs-extra";
 
 // ==================== 本地模块 ====================
-import { sanitizeObject } from "../utils/sanitize";
 import { createLogger } from "../log";
-import type { ToolDefinition } from "../types";
-import type { Session, SessionMessage } from "../session/manager";
+import { sanitizeObject } from "../utils/sanitize";
+
 import type { LLMProvider } from "../providers/base";
+import type { Session, SessionMessage } from "../session/manager";
+import type { ToolDefinition } from "../types";
 
 const logger = createLogger("memory");
 

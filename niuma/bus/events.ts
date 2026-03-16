@@ -7,6 +7,7 @@ import { EventEmitter } from "events";
 
 // ==================== 本地模块 ====================
 import { createLogger } from "../log";
+
 import type { EventType, EventMap, EventPayload } from "../types/events";
 
 const logger = createLogger("events");

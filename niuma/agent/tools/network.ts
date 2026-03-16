@@ -5,17 +5,18 @@
 
 // ==================== 内置库 ====================
 import { lookup, resolveMx, resolveTxt } from "dns";
-import { promisify } from "util";
 import { URL } from "url";
+import { promisify } from "util";
 
 // ==================== 第三方库 ====================
-import ping from "ping";
 import fetch from "node-fetch";
+import ping from "ping";
 import { z } from "zod";
 
 // ==================== 本地模块 ====================
-import { BaseTool } from "./base";
 import { ToolExecutionError } from "../../types/error";
+
+import { BaseTool } from "./base";
 
 // ==================== 常量定义 ====================
 const PING_TIMEOUT = 5000; // 5 秒超时

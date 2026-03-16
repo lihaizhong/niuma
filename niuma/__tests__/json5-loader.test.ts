@@ -3,12 +3,12 @@
  */
 
 // ==================== 内置库 ====================
-import { join } from "path";
 import { tmpdir } from "os";
+import { join } from "path";
 
 // ==================== 第三方库 ====================
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import fs from "fs-extra";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 
 // ==================== 本地模块 ====================
 import { JSON5ConfigLoaderImpl } from "../config/json5-loader";

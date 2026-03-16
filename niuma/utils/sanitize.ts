@@ -4,8 +4,8 @@
  * @description 提供安全的对象清理功能，防止原型链污染和恶意属性
  */
 
-import { scan } from "secure-json-parse";
 import * as cleaner from "fast-clean";
+import { scan } from "secure-json-parse";
 
 /**
  * 清理对象选项

@@ -7,14 +7,15 @@
 import { resolve, isAbsolute, dirname, basename } from "path";
 
 // ==================== 第三方库 ====================
-import fs from "fs-extra";
-import { z } from "zod";
 import fg from "fast-glob";
+import fs from "fs-extra";
 import RE2 from "re2";
+import { z } from "zod";
 
 // ==================== 本地模块 ====================
-import { BaseTool } from "./base";
 import { ToolExecutionError } from "../../types/error";
+
+import { BaseTool } from "./base";
 
 // ==================== 常量定义 ====================
 const MAX_FILE_SIZE_FOR_SEARCH = 10 * 1024 * 1024; // 10MB - 搜索文件大小限制

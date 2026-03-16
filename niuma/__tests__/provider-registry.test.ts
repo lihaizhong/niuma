@@ -5,9 +5,11 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
+
 import { ProviderRegistry, type ProviderSpec } from "../providers/registry";
+
 import type { LLMProvider } from "../providers/base";
-import type { LLMConfig } from "../types";
+import type { LLMConfig, LLMResponse, LLMStreamChunk } from "../types";
 
 // Mock 提供商实现
 class MockProvider implements LLMProvider {
@@ -27,11 +29,11 @@ class MockProvider implements LLMProvider {
     this.instanceId = Math.random().toString(36).substring(7);
   }
 
-  async chat(): Promise<any> {
-    return { content: "mock response" };
+  async chat(): Promise<LLMResponse> {
+    return { content: "mock response", hasToolCalls: false };
   }
 
-  async *chatStream(): AsyncIterable<any> {
+  async *chatStream(): AsyncIterable<LLMStreamChunk> {
     yield { content: "mock stream" };
   }
 

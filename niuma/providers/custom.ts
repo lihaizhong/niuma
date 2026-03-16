@@ -5,9 +5,11 @@
  */
 
 /* eslint-disable no-undef */
-import { OpenAIProvider } from "./openai";
-import type { LLMConfig } from "../types";
 import { ProviderError } from "../types";
+
+import { OpenAIProvider } from "./openai";
+
+import type { LLMConfig } from "../types";
 
 /**
  * 自定义提供商配置

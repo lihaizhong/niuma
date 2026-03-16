@@ -4,13 +4,14 @@
  */
 
 // ==================== 第三方库 ====================
-import JSON5 from "json5";
 import yaml from "js-yaml";
+import JSON5 from "json5";
 import { z } from "zod";
 
 // ==================== 本地模块 ====================
-import { BaseTool } from "./base";
 import { ToolExecutionError } from "../../types/error";
+
+import { BaseTool } from "./base";
 
 // ==================== 类型定义 ====================
 
@@ -60,12 +61,7 @@ export class JsonStringifyTool extends BaseTool {
   readonly description =
     "将对象序列化为 JSON 字符串。支持 JSON5 格式（保留特殊字符）。";
   readonly parameters = z.object({
-    data: z.custom<Serializable>((value) => {
-      if (value === undefined) {
-        return false;
-      }
-      return true;
-    }).describe("要序列化的 JavaScript 对象"),
+    data: z.any().describe("要序列化的 JavaScript 对象"),
     indent: z
       .number()
       .int()
@@ -155,12 +151,7 @@ export class YamlStringifyTool extends BaseTool {
   readonly name = "yaml_stringify";
   readonly description = "将对象序列化为 YAML 字符串。支持特殊值处理。";
   readonly parameters = z.object({
-    data: z.custom<Serializable>((value) => {
-      if (value === undefined) {
-        return false;
-      }
-      return true;
-    }).describe("要序列化的 JavaScript 对象"),
+    data: z.any().describe("要序列化的 JavaScript 对象"),
     indent: z
       .number()
       .int()

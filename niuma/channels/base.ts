@@ -3,7 +3,13 @@
  * @description 定义所有渠道必须实现的接口
  */
 
+import { createLogger, type Logger } from "../log";
+
 import type { InboundMessage, OutboundMessage } from "../types/message";
+
+// ============================================
+// 类型定义
+// ============================================
 
 /**
  * 渠道状态枚举
@@ -42,6 +48,15 @@ export enum ChannelErrorType {
 }
 
 /**
+ * 消息处理器类型
+ */
+export type MessageHandler = (message: InboundMessage) => Promise<void>;
+
+// ============================================
+// 错误类
+// ============================================
+
+/**
  * 渠道错误类
  */
 export class ChannelError extends Error {
@@ -55,18 +70,30 @@ export class ChannelError extends Error {
   }
 }
 
-/**
- * 消息处理器类型
- */
-export type MessageHandler = (message: InboundMessage) => Promise<void>;
+// ============================================
+// 渠道抽象基类
+// ============================================
 
 /**
  * 渠道抽象基类
  * @description 所有渠道实现必须继承此基类
  */
 export abstract class BaseChannel {
+  // ============================================
+  // 属性
+  // ============================================
+
   /** 渠道状态 */
   protected status: ChannelStatus = ChannelStatus.IDLE;
+
+  /** 最后错误信息 */
+  protected lastError?: string;
+
+  /** 最后错误时间 */
+  protected lastErrorAt?: Date;
+
+  /** Logger 实例缓存 */
+  private _logger?: Logger;
 
   /** 消息处理器 */
   private messageHandler?: MessageHandler;
@@ -74,11 +101,9 @@ export abstract class BaseChannel {
   /** 错误处理器 */
   private errorHandler?: (error: ChannelError) => void;
 
-  /** 最后错误信息 */
-  protected lastError?: string;
-
-  /** 最后错误时间 */
-  protected lastErrorAt?: Date;
+  // ============================================
+  // 抽象方法
+  // ============================================
 
   /**
    * 获取渠道类型
@@ -105,6 +130,16 @@ export abstract class BaseChannel {
   public abstract send(message: OutboundMessage): Promise<void>;
 
   /**
+   * 健康检查
+   * @returns 渠道是否健康
+   */
+  public abstract healthCheck(): Promise<boolean>;
+
+  // ============================================
+  // 公共方法
+  // ============================================
+
+  /**
    * 注册消息处理器
    * @param handler 消息处理函数
    * @description 在收到消息时调用此处理器
@@ -123,43 +158,11 @@ export abstract class BaseChannel {
   }
 
   /**
-   * 处理收到的消息
-   * @param message 入站消息
-   * @protected
-   */
-  protected async handleMessage(message: InboundMessage): Promise<void> {
-    if (this.messageHandler) {
-      try {
-        await this.messageHandler(message);
-      } catch (error) {
-        const channelError = this.classifyError(error);
-        this.logError("消息处理失败", channelError);
-        this.handleError(channelError);
-      }
-    }
-  }
-
-  /**
-   * 健康检查
-   * @returns 渠道是否健康
-   */
-  public abstract healthCheck(): Promise<boolean>;
-
-  /**
    * 获取渠道状态
    * @returns 当前渠道状态
    */
   public getStatus(): ChannelStatus {
     return this.status;
-  }
-
-  /**
-   * 设置渠道状态
-   * @param status 新的渠道状态
-   * @protected
-   */
-  protected setStatus(status: ChannelStatus): void {
-    this.status = status;
   }
 
   /**
@@ -173,10 +176,39 @@ export abstract class BaseChannel {
     return undefined;
   }
 
+  // ============================================
+  // 保护方法
+  // ============================================
+
+  /**
+   * 设置渠道状态
+   * @param status 新的渠道状态
+   */
+  protected setStatus(status: ChannelStatus): void {
+    this.status = status;
+  }
+
+  /**
+   * 处理收到的消息
+   * @param message 入站消息
+   */
+  protected async handleMessage(message: InboundMessage): Promise<void> {
+    if (this.messageHandler) {
+      try {
+        await this.messageHandler(message);
+      } catch (error) {
+        const channelError = this.classifyError(error);
+        this.logError("消息处理失败", channelError);
+        this.handleError(channelError);
+      }
+    } else {
+      this.logWarn("消息处理器未设置，消息将被丢弃");
+    }
+  }
+
   /**
    * 睡眠指定时间
    * @param ms 毫秒数
-   * @protected
    */
   protected sleep(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
@@ -187,7 +219,6 @@ export abstract class BaseChannel {
    * @param fn 要重试的函数
    * @param maxRetries 最大重试次数
    * @param baseDelay 基础延迟时间（毫秒）
-   * @protected
    */
   protected async retryWithBackoff<T>(
     fn: () => Promise<T>,
@@ -215,7 +246,6 @@ export abstract class BaseChannel {
    * 分类错误
    * @param error 原始错误
    * @returns 渠道错误
-   * @protected
    */
   protected classifyError(error: unknown): ChannelError {
     if (error instanceof ChannelError) {
@@ -250,45 +280,52 @@ export abstract class BaseChannel {
 
   /**
    * 处理错误
-   * @param error 渠道错误
-   * @protected
    */
   protected handleError(error: ChannelError): void {
-    if (this.errorHandler) {
-      this.errorHandler(error);
-    }
+    this.errorHandler?.(error);
   }
 
   /**
-   * 记录错误日志
+   * 获取 Logger 实例（延迟初始化）
+   * Logger 的 name 已包含渠道类型，可直接调用：
+   * - this.logger.info('消息')
+   * - this.logger.warn('警告')
+   * - this.logger.error({ err }, '错误')
+   */
+  protected get logger(): Logger {
+    if (!this._logger) {
+      this._logger = createLogger(`channel-${this.getType()}`);
+    }
+    return this._logger;
+  }
+
+  /**
+   * 记录错误日志（同时保存最后错误信息）
    * @param message 错误消息
    * @param error 渠道错误
-   * @protected
    */
   protected logError(message: string, error: ChannelError): void {
     this.lastError = `${message}: ${error.message}`;
     this.lastErrorAt = new Date();
-    console.error(`[Channel ${this.getType()}] ${message}`, error);
+    this.logger.error({ error }, message);
     if (error.originalError) {
-      console.error(`[Channel ${this.getType()}] 原始错误:`, error.originalError);
+      this.logger.error({ originalError: error.originalError }, "原始错误");
     }
   }
 
   /**
    * 记录信息日志
    * @param message 信息消息
-   * @protected
    */
   protected logInfo(message: string): void {
-    console.log(`[Channel ${this.getType()}] ${message}`);
+    this.logger.info(message);
   }
 
   /**
    * 记录警告日志
    * @param message 警告消息
-   * @protected
    */
   protected logWarn(message: string): void {
-    console.warn(`[Channel ${this.getType()}] ${message}`);
+    this.logger.warn(message);
   }
 }

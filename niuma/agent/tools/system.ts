@@ -7,12 +7,13 @@
 import process from "node:process";
 
 // ==================== 第三方库 ====================
-import { z } from "zod";
 import psTree from "ps-tree";
+import { z } from "zod";
 
 // ==================== 本地模块 ====================
-import { BaseTool } from "./base";
 import { ToolExecutionError } from "../../types/error";
+
+import { BaseTool } from "./base";
 
 // ==================== 常量定义 ====================
 const MAX_PROCESS_LIMIT = 100; // 最大进程列表数量

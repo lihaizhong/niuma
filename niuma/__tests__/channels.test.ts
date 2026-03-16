@@ -6,10 +6,12 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 
 // ==================== 本地模块 ====================
-import { ChannelRegistry } from "../channels/registry";
-import { CLIChannel } from "../channels/cli";
-import type { InboundMessage, OutboundMessage } from "../types/message";
 import { ChannelStatus } from "../channels/base";
+import { CLIChannel } from "../channels/cli";
+import { ChannelRegistry } from "../channels/registry";
+
+import type { InboundMessage, OutboundMessage } from "../types/message";
+
 
 describe("渠道系统", () => {
   describe("ChannelRegistry", () => {

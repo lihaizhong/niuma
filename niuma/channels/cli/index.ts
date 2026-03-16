@@ -4,7 +4,10 @@
  */
 
 import readline from "readline";
+
+import { sleep } from "../../utils/retry";
 import { BaseChannel, ChannelStatus } from "../base";
+
 import type { InboundMessage, OutboundMessage } from "../../types/message";
 
 /**
@@ -153,6 +156,8 @@ export class CLIChannel extends BaseChannel {
     if (trimmedInput === "/exit" || trimmedInput === "/quit") {
       this.logInfo("用户请求退出");
       await this.stop();
+      // 给消息处理循环一点时间完成
+      await sleep(100);
       process.exit(0);
       return;
     }

@@ -11,34 +11,34 @@
  * @see 参考 nanobot: https://github.com/HKUDS/nanobot/blob/main/nanobot/agent/loop.py
  */
 
-// ==================== 第三方库 ====================
 import RE2 from "re2";
 
-// ==================== 本地模块 ====================
+import { AsyncQueue } from "../bus/queue";
+import { BaseChannel } from "../channels/base";
+import { ChannelRegistry } from "../channels/registry";
+import { HeartbeatService } from "../heartbeat/service";
 import { createLogger } from "../log";
+import { retryWithBackoff } from "../utils/retry";
+
+import { ContextBuilder } from "./context";
+import { MemoryStore } from "./memory";
+import { SkillsLoader } from "./skills";
+
+import type { EventBus } from "../bus/events";
+import type { ChannelsConfig } from "../config/schema";
+import type { HeartbeatConfig } from "../heartbeat/types";
+import type { LLMProvider } from "../providers/base";
+import type { Session, SessionManager } from "../session/manager";
 import type {
   ChatMessage,
   InboundMessage,
   OutboundMessage,
   ToolDefinition,
 } from "../types";
-import type { Session } from "../session/manager";
-import type { LLMProvider } from "../providers/base";
+import type { ToolRegistry } from "./tools/registry";
 import type { LLMResponse } from "../types/llm";
 import type { ToolCall } from "../types/tool";
-import { EventBus } from "../bus/events";
-import { AsyncQueue } from "../bus/queue";
-import { ToolRegistry } from "./tools/registry";
-import { SessionManager } from "../session/manager";
-import { ContextBuilder } from "./context";
-import { MemoryStore } from "./memory";
-import { SkillsLoader } from "./skills";
-import { retryWithBackoff } from "../utils/retry";
-import type { HeartbeatConfig } from "../heartbeat/types";
-import { HeartbeatService } from "../heartbeat/service";
-import type { ChannelsConfig } from "../config/schema";
-import { ChannelRegistry } from "../channels/registry";
-import { BaseChannel } from "../channels/base";
+
 
 const logger = createLogger("agent-loop");
 

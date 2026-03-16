@@ -11,19 +11,21 @@
  */
 
 // ==================== 内置库 ====================
-import * as path from "path";
 import { platform, machine } from "os";
+import * as path from "path";
 
 // ==================== 第三方库 ====================
 import fs from "fs-extra";
 
 // ==================== 本地模块 ====================
 import { createLogger } from "../log";
+
+import { type MemoryStore } from "./memory";
+import { type SkillsLoader } from "./skills";
+
 import type { ChatMessage, MessageContentPart } from "../types";
 import type { MediaContent } from "../types/message";
 import type { ToolCall } from "../types/tool";
-import { MemoryStore } from "./memory";
-import { SkillsLoader } from "./skills";
 
 const logger = createLogger("context");
 

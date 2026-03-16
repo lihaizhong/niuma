@@ -4,9 +4,11 @@
 
 import { readFile } from "fs/promises";
 import { join } from "path";
-import type { Logger } from "pino";
+
 import cron from "node-cron";
-import type { ScheduledTask } from "node-cron";
+
+import { HeartbeatTaskStatus } from "./types";
+
 import type {
   HeartbeatConfig,
   HeartbeatParseResult,
@@ -15,7 +17,8 @@ import type {
   HeartbeatTask,
   HeartbeatAgent,
 } from "./types";
-import { HeartbeatTaskStatus } from "./types";
+import type { ScheduledTask } from "node-cron";
+import type { Logger } from "pino";
 
 /**
  * 解析 HEARTBEAT.md 文件

@@ -3,15 +3,18 @@
  * @description 基于 oicq SDK 的 QQ Bot 渠道实现
  */
 
+import { createClient, type Client } from "oicq";
+
+import { createLogger } from "../../log";
 import { BaseChannel, ChannelStatus } from "../base";
+
 import type { InboundMessage, OutboundMessage } from "../../types/message";
-import { createClient, Client } from "oicq";
 import type {
   PrivateMessageEvent,
   GroupMessageEvent,
   DiscussMessageEvent,
 } from "oicq";
-import { createLogger } from "../../log";
+
 
 const logger = createLogger("qq-channel");
 

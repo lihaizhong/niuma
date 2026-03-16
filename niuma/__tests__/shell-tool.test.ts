@@ -9,14 +9,14 @@ import { tmpdir } from "os";
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 
 // ==================== 本地模块 ====================
-import { execTool } from "../agent/tools/shell";
-import { ToolExecutionError } from "../types/error";
 import {
   setGlobalRegistry,
   getGlobalRegistry,
   clearGlobalContext,
 } from "../agent/tools/context";
 import { ToolRegistry } from "../agent/tools/registry";
+import { execTool } from "../agent/tools/shell";
+import { ToolExecutionError } from "../types/error";
 
 describe("ExecTool", () => {
   it("应该成功执行简单命令", async () => {

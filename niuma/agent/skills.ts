@@ -6,8 +6,8 @@
  */
 
 // ==================== 内置库 ====================
-import { fileURLToPath } from "url";
 import { join, dirname } from "path";
+import { fileURLToPath } from "url";
 
 // ==================== 第三方库 ====================
 import fs from "fs-extra";

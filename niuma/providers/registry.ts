@@ -5,8 +5,15 @@
  * 支持两步式注册（spec + config field）和智能匹配机制.
  */
 
-/* eslint-disable no-undef */
+ 
 // ==================== 本地模块 ====================
+import { AnthropicProvider } from "./anthropic";
+import { CustomProvider } from "./custom";
+import { DeepSeekProvider } from "./deepseek";
+import { OllamaProvider } from "./ollama";
+import { OpenAIProvider } from "./openai";
+import { OpenRouterProvider } from "./openrouter";
+
 import type { LLMProvider } from "./base";
 import type { LLMConfig } from "../types";
 
@@ -307,7 +314,7 @@ export class ProviderRegistry {
   /**
    * 注册内置提供商
    *
-   * @description 自动注册 OpenAI、Anthropic、OpenRouter、DeepSeek、Custom 提供商
+   * @description 自动注册 OpenAI、Anthropic、OpenRouter、DeepSeek、Custom、Ollama 提供商
    */
   private _registerBuiltinProviders(): void {
     // OpenAI 提供商
@@ -316,12 +323,8 @@ export class ProviderRegistry {
       keywords: ["gpt", "o1", "chatgpt"],
       envKey: "OPENAI_API_KEY",
       displayName: "OpenAI",
-      defaultApiBase: "https://api.openai.com/v1",
-      factory: (config) => {
-        // 动态导入以避免循环依赖
-        const { OpenAIProvider } = require("./openai");
-        return new OpenAIProvider(config);
-      },
+      defaultApiBase: OpenAIProvider.DEFAULT_API_BASE,
+      factory: (config) => new OpenAIProvider(config),
     });
 
     // Anthropic 提供商
@@ -330,12 +333,8 @@ export class ProviderRegistry {
       keywords: ["claude"],
       envKey: "ANTHROPIC_API_KEY",
       displayName: "Anthropic",
-      defaultApiBase: "https://api.anthropic.com",
-      factory: (config) => {
-        // 动态导入以避免循环依赖
-        const { AnthropicProvider } = require("./anthropic");
-        return new AnthropicProvider(config);
-      },
+      defaultApiBase: AnthropicProvider.DEFAULT_API_BASE,
+      factory: (config) => new AnthropicProvider(config),
     });
 
     // OpenRouter 提供商（网关）
@@ -345,12 +344,8 @@ export class ProviderRegistry {
       envKey: "OPENROUTER_API_KEY",
       displayName: "OpenRouter",
       isGateway: true,
-      defaultApiBase: "https://openrouter.ai/api/v1",
-      factory: (config) => {
-        // 动态导入以避免循环依赖
-        const { OpenRouterProvider } = require("./openrouter");
-        return new OpenRouterProvider(config);
-      },
+      defaultApiBase: OpenRouterProvider.DEFAULT_API_BASE,
+      factory: (config) => new OpenRouterProvider(config),
     });
 
     // DeepSeek 提供商
@@ -359,12 +354,8 @@ export class ProviderRegistry {
       keywords: ["deepseek"],
       envKey: "DEEPSEEK_API_KEY",
       displayName: "DeepSeek",
-      defaultApiBase: "https://api.deepseek.com",
-      factory: (config) => {
-        // 动态导入以避免循环依赖
-        const { DeepSeekProvider } = require("./deepseek");
-        return new DeepSeekProvider(config);
-      },
+      defaultApiBase: DeepSeekProvider.DEFAULT_API_BASE,
+      factory: (config) => new DeepSeekProvider(config),
     });
 
     // Custom 提供商
@@ -373,11 +364,17 @@ export class ProviderRegistry {
       keywords: [],
       envKey: "CUSTOM_API_KEY",
       displayName: "Custom",
-      factory: (config) => {
-        // 动态导入以避免循环依赖
-        const { CustomProvider } = require("./custom");
-        return new CustomProvider(config);
-      },
+      factory: (config) => new CustomProvider(config),
+    });
+
+    // Ollama 提供商（本地模型）
+    this.register({
+      name: "ollama",
+      keywords: ["llama", "qwen", "mistral", "gemma", "phi", "codellama"],
+      envKey: "OLLAMA_API_KEY",
+      displayName: "Ollama",
+      defaultApiBase: OllamaProvider.DEFAULT_API_BASE,
+      factory: (config) => new OllamaProvider(config),
     });
   }
 

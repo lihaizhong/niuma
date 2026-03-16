@@ -7,8 +7,8 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { z } from "zod";
 
 // ==================== 本地模块 ====================
-import { ToolRegistry, registerBuiltinTools } from "../agent/tools/registry";
 import { BaseTool } from "../agent/tools/base";
+import { ToolRegistry, registerBuiltinTools } from "../agent/tools/registry";
 
 // ==================== 测试工具 ====================
 class TestTool extends BaseTool {

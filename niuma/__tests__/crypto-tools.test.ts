@@ -6,12 +6,12 @@
 import { describe, it, expect } from "vitest";
 
 // ==================== 本地模块 ====================
-import { ValidationError, ToolExecutionError } from "../types/error";
 import {
   encryptTool,
   decryptTool,
   hashTool,
 } from "../agent/tools/crypto";
+import { ValidationError, ToolExecutionError } from "../types/error";
 
 describe("EncryptTool", () => {
   // 生成 32 字节的随机密钥

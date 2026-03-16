@@ -3,9 +3,6 @@
  * @description 基于 @whiskeysockets/baileys SDK 的 WhatsApp 渠道实现
  */
 
-import { BaseChannel, ChannelStatus } from "../base";
-import type { InboundMessage, OutboundMessage } from "../../types/message";
-import { createLogger } from "../../log";
 import makeWASocket, {
   DisconnectReason,
   useMultiFileAuthState,
@@ -14,6 +11,11 @@ import makeWASocket, {
   type ConnectionState,
   type WAMessage,
 } from "@whiskeysockets/baileys";
+
+import { createLogger } from "../../log";
+import { BaseChannel, ChannelStatus } from "../base";
+
+import type { InboundMessage, OutboundMessage } from "../../types/message";
 
 const logger = createLogger("whatsapp-channel");
 
