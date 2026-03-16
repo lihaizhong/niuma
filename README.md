@@ -193,6 +193,33 @@ niuma chat --agent tester
 
 记忆整合会自动触发，当消息数量超过阈值时，LLM 会整合重要信息到长期记忆中。
 
+### 📱 多渠道接入
+
+支持多种消息渠道，统一接口：
+
+| 渠道 | 协议 | 状态 |
+|------|------|------|
+| CLI | stdin/stdout | ✅ 已完成 |
+| Telegram | HTTP Bot API | ✅ 已完成 |
+| Discord | WebSocket Gateway | ✅ 已完成 |
+| 飞书 | WebSocket 长连接 | ⏸️ 基础框架 |
+| 钉钉 | Stream Mode | ⏸️ 基础框架 |
+| Slack | Socket Mode | ⏸️ 基础框架 |
+| WhatsApp | WebSocket Bridge | ⏸️ 基础框架 |
+| Email | IMAP/SMTP | ⏸️ 基础框架 |
+| QQ | WebSocket | ⏸️ 基础框架 |
+
+```bash
+# 查看渠道状态
+niuma channels status
+
+# 启动渠道
+niuma channels start telegram
+
+# 停止渠道
+niuma channels stop telegram
+```
+
 ### 🎯 可扩展技能系统
 
 支持自定义技能，通过 SKILL.md 定义：
@@ -466,10 +493,10 @@ flowchart TD
 | LLM 提供商 | ✅ 完成 | OpenAI、Anthropic、OpenRouter、DeepSeek、Custom 等多种提供商 |
 | 会话管理 | ✅ 完成 | 会话状态、历史记录、持久化 |
 | 定时任务与心跳 | ✅ 完成 | 支持定时任务调度和主动唤醒 |
+| 多渠道接入 | ✅ 完成 | CLI、Telegram、Discord 渠道，其他渠道基础框架 |
 
 ### 🔄 待开发功能
 
-- **多渠道接入**（Telegram, Discord, 飞书, 钉钉, Slack, WhatsApp, Email, QQ 等）
 - **MCP 协议支持**（对接外部 MCP Server，扩展专业功能）
 
 详细开发计划请参考：[项目开发计划](docs/niuma-development-plan.md)

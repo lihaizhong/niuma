@@ -4,6 +4,43 @@
 
 ## [Unreleased]
 
+### v0.2.2 (2026-03-16)
+
+**Phase 5：多渠道接入**
+- ✅ 新增渠道抽象层：BaseChannel、ChannelStatus、ChannelError
+- ✅ 新增渠道注册表：ChannelRegistry（注册、注销、启动、停止、健康检查）
+- ✅ 实现 CLI 渠道：stdin/stdout 交互、斜杠命令（/help、/exit、/clear、/status）
+- ✅ 实现 Telegram 渠道：Webhook 和 Polling 模式、媒体消息支持
+- ✅ 实现 Discord 渠道：WebSocket Gateway、Embed 消息支持
+- ✅ 实现基础框架：飞书、钉钉、Slack、WhatsApp、Email、QQ
+- ✅ 集成 Agent Loop：多渠道消息接收、消息路由、渠道生命周期管理
+- ✅ 扩展 SessionManager：SessionKey 生成、渠道会话查询、会话统计
+- ✅ 实现 CLI 命令：channels status、channels list、channels start、channels stop
+- ✅ 完整测试覆盖：渠道系统测试（16 个测试用例，100% 通过）
+
+**核心特性：**
+- 统一渠道接口：所有渠道继承 BaseChannel，实现标准化生命周期
+- 消息路由机制：ChannelRegistry 提供消息路由和健康检查
+- 会话隔离：使用 SessionKey 格式（channel:chatId:userId）实现会话隔离
+- 错误处理：指数退避重试、错误分类、详细日志记录
+- 类型安全：完整的 TypeScript 类型定义和 Zod 验证
+
+**依赖更新**
+- ✅ 新增依赖：telegraf ^4.16.3（Telegram Bot API）
+- ✅ 新增依赖：discord.js ^14.18.0（Discord Bot API）
+- ✅ 新增依赖：@slack/bolt ^4.0.0（Slack Bolt API）
+- ✅ 新增依赖：nodemailer ^6.10.1（Email SMTP）
+- ✅ 新增依赖：imapflow ^1.0.170（Email IMAP）
+
+**Bug 修复**
+- ✅ 修复 AgentLoop require 错误：使用 import 替代动态 require
+- ✅ 修复 Promise 回调警告：使用非异步回调包装异步逻辑
+- ✅ 修复 Discord 类型错误：使用 any 类型绕过联合类型限制
+- ✅ 修复 config/merger 类型错误：正确处理 ChannelsConfig 结构
+
+**OpenSpec 变更**
+- ✅ phase-5-multi-channel-access：完整提案、设计、规格和任务
+
 ### v0.2.1 (2026-03-16)
 
 **Phase 6：Heartbeat 服务 + TODO 补全**

@@ -54,7 +54,29 @@
 
 **归档保护：** `openspec/changes/archive/` 不可修改
 
-### 3. Subagent 优先级
+### 3. Subagent 优先使用原则
+
+**强制要求：** 在执行任何任务前，必须先查找并使用适配的 subagent
+
+**查找流程：**
+1. 分析任务类型和需求
+2. 查找 `Subagent 优先级` 表中的匹配项
+3. 如果找到匹配的 subagent，优先使用 `task` 工具调用
+4. 如果没有匹配项，使用 `general-purpose` 或自行处理
+
+**适用场景：**
+- 所有开发任务（代码编写、重构、优化）
+- 代码审查和质量检查
+- 测试和验证
+- 文档生成
+- 搜索和研究
+
+**例外情况：**
+- 简单的文件读写操作（使用 `read_file`、`write_file` 工具）
+- 命令执行（使用 `run_shell_command` 工具）
+- 纯信息查询（使用 `read_file`、`glob`、`search_file_content` 工具）
+
+### 4. Subagent 优先级
 
 | 任务类型 | Subagent |
 |---------|----------|

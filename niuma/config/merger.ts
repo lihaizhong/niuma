@@ -52,7 +52,11 @@ export function mergeConfigs(
 
   // 合并 channels 配置（完全替换）
   if (agentConfig.channels !== undefined) {
-    result.channels = agentConfig.channels;
+    result.channels = {
+      enabled: agentConfig.channels.map(c => c.type),
+      defaults: result.channels?.defaults || { timeout: 30000, retryAttempts: 3 },
+      channels: agentConfig.channels,
+    };
   }
 
   // 合并 cronTasks 配置（完全替换）

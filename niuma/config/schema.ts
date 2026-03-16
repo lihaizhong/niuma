@@ -98,6 +98,14 @@ export type LLMConfig = z.infer<typeof LLMConfigSchema>;
 // 渠道配置 Schema
 // ============================================
 
+/** 渠道通用默认配置 */
+export const ChannelDefaultsSchema = z.object({
+  /** 请求超时时间（毫秒） */
+  timeout: z.number().int().positive().default(30000),
+  /** 重试次数 */
+  retryAttempts: z.number().int().min(0).default(3),
+});
+
 /** Telegram 渠道配置 */
 export const TelegramChannelSchema = z.object({
   type: z.literal("telegram"),
@@ -120,6 +128,10 @@ export const FeishuChannelSchema = z.object({
   enabled: z.boolean().default(true),
   appId: z.string(),
   appSecret: z.string(),
+  encryptKey: z.string().optional(),
+  verificationToken: z.string().optional(),
+  serverPort: z.number().int().positive().optional(),
+  serverPath: z.string().optional(),
 });
 
 /** 钉钉渠道配置 */
@@ -128,6 +140,8 @@ export const DingtalkChannelSchema = z.object({
   enabled: z.boolean().default(true),
   appKey: z.string(),
   appSecret: z.string(),
+  serverPort: z.number().int().positive().optional(),
+  serverPath: z.string().optional(),
 });
 
 /** Slack 渠道配置 */
@@ -137,34 +151,50 @@ export const SlackChannelSchema = z.object({
   botToken: z.string(),
   appToken: z.string().optional(),
   signingSecret: z.string().optional(),
+  serverPort: z.number().int().positive().optional(),
+  serverPath: z.string().optional(),
 });
 
 /** WhatsApp 渠道配置 */
 export const WhatsAppChannelSchema = z.object({
   type: z.literal("whatsapp"),
   enabled: z.boolean().default(true),
-  phoneNumberId: z.string(),
-  accessToken: z.string(),
+  authStatePath: z.string().optional(),
+  browser: z.tuple([z.string(), z.string(), z.string()]).optional(),
 });
 
 /** 邮件渠道配置 */
 export const EmailChannelSchema = z.object({
   type: z.literal("email"),
   enabled: z.boolean().default(true),
-  host: z.string(),
-  port: z.number().int().positive().default(587),
-  secure: z.boolean().default(true),
-  user: z.string(),
-  password: z.string(),
-  from: z.string(),
+  imap: z.object({
+    host: z.string(),
+    port: z.number().int().positive().optional(),
+    user: z.string(),
+    password: z.string(),
+    secure: z.boolean().optional(),
+    inbox: z.string().optional(),
+  }).optional(),
+  smtp: z.object({
+    host: z.string(),
+    port: z.number().int().positive().optional(),
+    secure: z.boolean().optional(),
+    user: z.string(),
+    password: z.string(),
+    from: z.string(),
+  }).optional(),
+  checkInterval: z.number().int().positive().optional(),
 });
 
 /** QQ 渠道配置 */
 export const QQChannelSchema = z.object({
   type: z.literal("qq"),
   enabled: z.boolean().default(true),
-  appId: z.string(),
-  token: z.string(),
+  account: z.number(),
+  password: z.string(),
+  platform: z.number().optional(),
+  useSlider: z.boolean().optional(),
+  deviceFilePath: z.string().optional(),
 });
 
 /** CLI 渠道配置 */
@@ -187,6 +217,23 @@ export const ChannelConfigSchema = z.discriminatedUnion("type", [
 ]);
 
 export type ChannelConfig = z.infer<typeof ChannelConfigSchema>;
+
+/** 渠道配置集合 Schema */
+export const ChannelsConfigSchema = z.object({
+  /** 启用的渠道列表 */
+  enabled: z.array(
+    z.enum(["cli", "telegram", "discord", "feishu", "dingtalk", "slack", "whatsapp", "email", "qq"])
+  ).default(["cli"]),
+  /** 渠道通用默认配置 */
+  defaults: ChannelDefaultsSchema.default({
+    timeout: 30000,
+    retryAttempts: 3,
+  }),
+  /** 各渠道具体配置 */
+  channels: z.array(ChannelConfigSchema).default([]),
+});
+
+export type ChannelsConfig = z.infer<typeof ChannelsConfigSchema>;
 
 // ============================================
 // 定时任务配置 Schema
@@ -351,7 +398,14 @@ export const NiumaConfigSchema = z.object({
   /** LLM 提供商配置 */
   providers: z.record(z.string(), ProviderConfigSchema).default({}),
   /** 渠道配置 */
-  channels: z.array(ChannelConfigSchema).default([]),
+  channels: ChannelsConfigSchema.default({
+    enabled: ["cli"],
+    defaults: {
+      timeout: 30000,
+      retryAttempts: 3,
+    },
+    channels: [],
+  }),
   /** 定时任务配置 */
   cronTasks: z.array(CronTaskConfigSchema).default([]),
   /** 心跳服务配置 */
