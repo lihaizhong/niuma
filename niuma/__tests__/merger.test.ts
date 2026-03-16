@@ -32,6 +32,12 @@ describe("配置合并器", () => {
       },
       channels: [],
       cronTasks: [],
+      heartbeat: {
+        enabled: false,
+        interval: "0 */30 * * * *",
+        filePath: "HEARTBEAT.md",
+        taskTimeout: 300,
+      },
       debug: false,
       logLevel: "info",
       agents: {

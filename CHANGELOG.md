@@ -4,6 +4,41 @@
 
 ## [Unreleased]
 
+### v0.2.1 (2026-03-16)
+
+**Phase 6：Heartbeat 服务 + TODO 补全**
+- ✅ 新增 HeartbeatService：主动唤醒服务，支持定时任务执行
+- ✅ 实现任务执行：通过 Agent.processDirect 执行定时任务
+- ✅ 实现结果发送：将执行结果发送到活跃渠道
+- ✅ 实现渠道获取：通过 Agent.sessions 获取活跃渠道
+- ✅ 实现 Agent ID 上下文：全局 ToolRegistry 存储 Agent ID
+- ✅ 实现 SessionManager 上下文：支持子智能体会话管理
+- ✅ 实现子智能体会话：使用 SessionManager 管理独立会话
+- ✅ 实现消息发送：通过 SessionManager 添加消息
+- ✅ 实现资源清理：子智能体工作区和会话清理
+- ✅ 实现 Cron 精确计算：使用 cron-parser 计算下次执行时间
+- ✅ 实现用户确认：使用 clack/prompts 实现危险命令确认
+- ✅ 实现 --yes/-y 参数：支持非交互环境跳过确认
+- ✅ 实现非交互环境检测：支持 CI、Docker 等环境自动检测
+
+**核心特性：**
+- 全局上下文模式：ToolRegistry 和 SessionManager 全局引用
+- 子智能体完整生命周期：创建、会话管理、消息发送、资源清理
+- Shell 工具安全增强：危险命令确认机制、非交互环境支持
+- Cron 时间计算：精确的下次执行时间计算
+
+**依赖更新**
+- ✅ 新增依赖：cron-parser ^5.5.0
+
+**Bug 修复**
+- ✅ 修复 HeartbeatAgent 类型错误：创建专用接口
+- ✅ 修复 CronJob 导入错误：使用 ScheduledTask 类型
+- ✅ 修复 cron-parser 使用错误：使用 CronParser.parse() 方法
+
+**OpenSpec 变更**
+- ✅ phase-6-heartbeat-service：完整提案、设计、规格和任务
+- ✅ complete-pending-todos：补全所有代码 TODO
+
 ### v0.2.0 (2026-03-16)
 
 **Phase 4：LLM 提供商扩展**

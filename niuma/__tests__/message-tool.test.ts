@@ -3,7 +3,7 @@
  */
 
 // ==================== 第三方库 ====================
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 
 // ==================== 本地模块 ====================
 import {
@@ -11,6 +11,12 @@ import {
   getMessageHistory,
   cleanMessageHistory,
 } from "../agent/tools/message";
+import {
+  setGlobalRegistry,
+  getGlobalRegistry,
+  clearGlobalContext,
+} from "../agent/tools/context";
+import { ToolRegistry } from "../agent/tools/registry";
 
 // 全局类型定义
 declare global {
@@ -170,5 +176,57 @@ describe("Message Cleanup", () => {
     // 清理 0 毫秒前的消息（删除所有消息）
     const deleted = cleanMessageHistory(0);
     expect(typeof deleted).toBe("number");
+  });
+});
+
+describe("Agent ID 上下文", () => {
+  afterEach(() => {
+    // 清空全局状态
+    clearGlobalContext();
+  });
+
+  it("应该从全局上下文获取 Agent ID", async () => {
+    // 设置全局 ToolRegistry 并设置 Agent ID
+    const registry = new ToolRegistry();
+    registry.setAgentId("test-agent-id");
+    setGlobalRegistry(registry);
+
+    // 验证 Agent ID 已设置
+    expect(getGlobalRegistry()?.getAgentId()).toBe("test-agent-id");
+
+    // 发送消息（会使用上下文中的 Agent ID）
+    const result = await messageTool.execute({
+      content: "Test message with agent ID",
+      immediate: true,
+    });
+
+    expect(result).toContain("消息已发送");
+    expect(result).toContain("ID:");
+  });
+
+  it("未设置 Agent ID 时应该使用默认值", async () => {
+    // 确保全局上下文未设置
+    setGlobalRegistry(null);
+
+    // 发送消息（会使用默认 Agent ID）
+    const result = await messageTool.execute({
+      content: "Test message with default agent ID",
+      immediate: true,
+    });
+
+    expect(result).toContain("消息已发送");
+    expect(result).toContain("ID:");
+  });
+
+  it("应该能够更新 Agent ID", async () => {
+    const registry = new ToolRegistry();
+    registry.setAgentId("agent-1");
+    setGlobalRegistry(registry);
+
+    expect(getGlobalRegistry()?.getAgentId()).toBe("agent-1");
+
+    // 更新 Agent ID
+    registry.setAgentId("agent-2");
+    expect(getGlobalRegistry()?.getAgentId()).toBe("agent-2");
   });
 });

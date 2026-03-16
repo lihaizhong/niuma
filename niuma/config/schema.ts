@@ -208,6 +208,27 @@ export const CronTaskConfigSchema = z.object({
 export type CronTaskConfig = z.infer<typeof CronTaskConfigSchema>;
 
 // ============================================
+// 心跳服务配置 Schema
+// ============================================
+
+/**
+ * 心跳服务配置 Schema
+ * 定义心跳服务的行为配置
+ */
+export const HeartbeatConfigSchema = z.object({
+  /** 是否启用心跳服务 */
+  enabled: z.boolean().default(false),
+  /** 检查间隔（Cron 表达式，默认每 30 分钟） */
+  interval: z.string().default("0 */30 * * * *"),
+  /** HEARTBEAT.md 文件路径（相对于工作区根目录） */
+  filePath: z.string().default("HEARTBEAT.md"),
+  /** 任务执行超时时间（秒，默认 5 分钟） */
+  taskTimeout: z.number().int().positive().default(300),
+});
+
+export type HeartbeatConfig = z.infer<typeof HeartbeatConfigSchema>;
+
+// ============================================
 // Agent 配置 Schema
 // ============================================
 
@@ -333,6 +354,13 @@ export const NiumaConfigSchema = z.object({
   channels: z.array(ChannelConfigSchema).default([]),
   /** 定时任务配置 */
   cronTasks: z.array(CronTaskConfigSchema).default([]),
+  /** 心跳服务配置 */
+  heartbeat: HeartbeatConfigSchema.default({
+    enabled: false,
+    interval: "0 */30 * * * *",
+    filePath: "HEARTBEAT.md",
+    taskTimeout: 300,
+  }),
   /** 调试模式 */
   debug: z.boolean().default(false),
   /** 日志级别 */

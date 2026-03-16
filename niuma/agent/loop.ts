@@ -34,6 +34,8 @@ import { ContextBuilder } from "./context";
 import { MemoryStore } from "./memory";
 import { SkillsLoader } from "./skills";
 import { retryWithBackoff } from "../utils/retry";
+import type { HeartbeatConfig } from "../heartbeat/types";
+import { HeartbeatService } from "../heartbeat/service";
 
 const logger = createLogger("agent-loop");
 
@@ -61,6 +63,8 @@ export interface AgentLoopOptions {
   maxTokens?: number;
   /** 记忆窗口大小（默认 100 条消息） */
   memoryWindow?: number;
+  /** 心跳服务配置 */
+  heartbeatConfig?: HeartbeatConfig;
 }
 
 /**
@@ -144,7 +148,7 @@ export class AgentLoop {
   /** 工具注册中心 */
   private readonly tools: ToolRegistry;
   /** 会话管理器 */
-  private readonly sessions: SessionManager;
+  public readonly sessions: SessionManager;
   /** 使用的模型 */
   private readonly model: string;
   /** 最大迭代次数 */
@@ -164,6 +168,8 @@ export class AgentLoop {
   private running = false;
   /** 消息队列 */
   private messageQueue: AsyncQueue<InboundMessage>;
+  /** 心跳服务 */
+  private heartbeatService?: HeartbeatService;
 
   // ============================================
   // 缓存属性
@@ -201,6 +207,19 @@ export class AgentLoop {
 
     // 初始化消息队列
     this.messageQueue = new AsyncQueue();
+
+    // 设置 ToolRegistry 的 Agent ID
+    this.tools.setAgentId("default"); // TODO: 从配置中获取 Agent ID
+
+    // 初始化心跳服务（如果配置启用）
+    if (options.heartbeatConfig?.enabled) {
+      this.heartbeatService = new HeartbeatService({
+        agent: this,
+        config: options.heartbeatConfig,
+        logger: createLogger("heartbeat"),
+        workspaceRoot: this.workspace,
+      });
+    }
   }
 
   // ============================================
@@ -219,6 +238,17 @@ export class AgentLoop {
 
     this.running = true;
     logger.info("启动消息处理循环");
+
+    // 启动心跳服务（如果已配置）
+    if (this.heartbeatService) {
+      try {
+        await this.heartbeatService.start();
+        logger.info("心跳服务已启动");
+      } catch (error) {
+        logger.error({ error }, "启动心跳服务失败");
+        // 不影响主循环继续运行
+      }
+    }
 
     // 监听消息事件
     this.bus.on("MESSAGE_RECEIVED", async (data) => {
@@ -257,10 +287,21 @@ export class AgentLoop {
    * 停止消息处理循环
    * @description 停止监听，清理资源
    */
-  stop(): void {
+  async stop(): Promise<void> {
     logger.info("停止消息处理循环");
     this.running = false;
     this.messageQueue.clear();
+
+    // 停止心跳服务（如果已启动）
+    if (this.heartbeatService) {
+      try {
+        await this.heartbeatService.stop();
+        logger.info("心跳服务已停止");
+      } catch (error) {
+        logger.error({ error }, "停止心跳服务失败");
+        // 不影响主循环停止
+      }
+    }
   }
 
   /**

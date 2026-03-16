@@ -89,6 +89,9 @@ export class SessionManager {
   /** 会话存储目录 */
   private sessionsDir: string;
 
+  /** 最后活跃的会话键 */
+  private lastActiveSessionKey: string | null = null;
+
   /**
    * 创建会话管理器实例
    * @param config 配置选项
@@ -111,6 +114,9 @@ export class SessionManager {
    */
   async getOrCreate(sessionKey: string): Promise<Session> {
     const now = Date.now();
+
+    // 更新最后活跃的会话键
+    this.lastActiveSessionKey = sessionKey;
 
     // 优先从内存缓存获取（检查是否过期）
     const cached = this.cache.get(sessionKey);
@@ -284,6 +290,25 @@ export class SessionManager {
    */
   getSessionsDir(): string {
     return this.sessionsDir;
+  }
+
+  /**
+   * 获取最近活跃的渠道
+   * @description 从最后活跃的会话键中解析出渠道类型
+   * @returns 渠道类型（如 "cli"、"telegram" 等），如果没有活跃会话则返回 null
+   */
+  getLastActiveChannel(): string | null {
+    if (!this.lastActiveSessionKey) {
+      return null;
+    }
+
+    // sessionKey 格式通常是 "channel:sessionId"
+    const parts = this.lastActiveSessionKey.split(":");
+    if (parts.length > 0) {
+      return parts[0];
+    }
+
+    return null;
   }
 
   /**

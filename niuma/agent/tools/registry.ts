@@ -5,6 +5,7 @@
 // ==================== 本地模块 ====================
 import type { ToolDefinition } from "../../types";
 import type { ITool } from "./base";
+import { setGlobalRegistry } from "./context";
 
 // 内置工具导入
 import {
@@ -44,6 +45,9 @@ const ERROR_HINT = "\n\n[分析上述错误并尝试其他方式。]";
  * 注册所有内置工具
  */
 export function registerBuiltinTools(registry: ToolRegistry): void {
+  // 设置全局 registry 引用
+  setGlobalRegistry(registry);
+
   // 文件系统工具
   registry.register(readFileTool);
   registry.register(writeFileTool);
@@ -101,6 +105,21 @@ export function registerBuiltinTools(registry: ToolRegistry): void {
  */
 export class ToolRegistry {
   private tools: Map<string, ITool> = new Map();
+  private agentId: string = "default";
+
+  /**
+   * 设置当前 Agent ID
+   */
+  setAgentId(agentId: string): void {
+    this.agentId = agentId;
+  }
+
+  /**
+   * 获取当前 Agent ID
+   */
+  getAgentId(): string {
+    return this.agentId;
+  }
 
   /**
    * 注册工具

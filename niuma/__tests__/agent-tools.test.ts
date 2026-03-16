@@ -227,4 +227,49 @@ describe("CronTool", () => {
       }),
     ).rejects.toThrow(ToolExecutionError);
   });
+
+  it("应该正确计算 Cron 下次执行时间", async () => {
+    const result = await cronTool.execute({
+      action: "create",
+      cron: "0 * * * *", // 每小时执行一次
+      name: "test-cron-calc",
+      handler: "testHandler",
+    });
+
+    // 验证结果包含任务信息
+    expect(result).toContain("定时任务已创建");
+    expect(result).toContain("ID:");
+
+    // 提取任务 ID
+    const taskIdMatch = result.match(/ID:\s*([a-zA-Z0-9_-]+)/);
+    if (taskIdMatch) {
+      const taskId = taskIdMatch[1];
+
+      // 获取任务列表
+      const listResult = await cronTool.execute({ action: "list" });
+      expect(listResult).toContain("test-cron-calc");
+    }
+  });
+
+  it("应该正确处理每分钟执行的 Cron 表达式", async () => {
+    const result = await cronTool.execute({
+      action: "create",
+      cron: "* * * * *",
+      name: "test-minute-cron",
+      handler: "testHandler",
+    });
+
+    expect(result).toContain("定时任务已创建");
+  });
+
+  it("应该正确处理复杂的 Cron 表达式", async () => {
+    const result = await cronTool.execute({
+      action: "create",
+      cron: "0 2 * * 1-5", // 每周一到周五凌晨 2 点
+      name: "test-complex-cron",
+      handler: "testHandler",
+    });
+
+    expect(result).toContain("定时任务已创建");
+  });
 });

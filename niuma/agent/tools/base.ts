@@ -11,6 +11,8 @@ import type {
   OpenAIToolSchema,
   ToolDefinition,
 } from "../../types";
+import { getGlobalRegistry, getGlobalSessionManager } from "./context";
+import type { SessionManager } from "../../session/manager";
 
 /**
  * 所有工具必须实现的接口
@@ -51,6 +53,21 @@ export abstract class BaseTool<
   abstract readonly name: string;
   abstract readonly description: string;
   abstract readonly parameters: z.ZodType<TInput>;
+
+  /**
+   * 获取当前 Agent ID
+   */
+  protected getAgentId(): string {
+    const registry = getGlobalRegistry();
+    return registry?.getAgentId() || "default";
+  }
+
+  /**
+   * 获取会话管理器
+   */
+  protected getSessionManager(): SessionManager | null {
+    return getGlobalSessionManager();
+  }
 
   /**
    * 获取工具定义（内部格式）
