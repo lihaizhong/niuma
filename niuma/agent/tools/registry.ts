@@ -5,6 +5,7 @@
 // ==================== 本地模块 ====================
 import type { ToolDefinition } from "../../types";
 import type { ITool } from "./base";
+import { setGlobalRegistry } from "./context";
 
 // 内置工具导入
 import {
@@ -25,7 +26,6 @@ import {
   gitBranchTool,
   gitLogTool,
 } from "./git";
-import { archiveTool, extractTool } from "./archive";
 import { pingTool, dnsLookupTool, httpRequestTool } from "./network";
 import {
   jsonParseTool,
@@ -33,6 +33,8 @@ import {
   yamlParseTool,
   yamlStringifyTool,
 } from "./data";
+import { encryptTool, decryptTool, hashTool } from "./crypto";
+import { envGetTool, envSetTool, processListTool, processKillTool } from "./system";
 
 // ==================== 常量定义 ====================
 const ERROR_HINT = "\n\n[分析上述错误并尝试其他方式。]";
@@ -43,6 +45,9 @@ const ERROR_HINT = "\n\n[分析上述错误并尝试其他方式。]";
  * 注册所有内置工具
  */
 export function registerBuiltinTools(registry: ToolRegistry): void {
+  // 设置全局 registry 引用
+  setGlobalRegistry(registry);
+
   // 文件系统工具
   registry.register(readFileTool);
   registry.register(writeFileTool);
@@ -71,10 +76,6 @@ export function registerBuiltinTools(registry: ToolRegistry): void {
   registry.register(gitBranchTool);
   registry.register(gitLogTool);
 
-  // 压缩与解压工具
-  registry.register(archiveTool);
-  registry.register(extractTool);
-
   // 网络工具
   registry.register(pingTool);
   registry.register(dnsLookupTool);
@@ -85,6 +86,17 @@ export function registerBuiltinTools(registry: ToolRegistry): void {
   registry.register(jsonStringifyTool);
   registry.register(yamlParseTool);
   registry.register(yamlStringifyTool);
+
+  // 加密与解密工具
+  registry.register(encryptTool);
+  registry.register(decryptTool);
+  registry.register(hashTool);
+
+  // 系统工具
+  registry.register(envGetTool);
+  registry.register(envSetTool);
+  registry.register(processListTool);
+  registry.register(processKillTool);
 }
 
 /**
@@ -93,6 +105,21 @@ export function registerBuiltinTools(registry: ToolRegistry): void {
  */
 export class ToolRegistry {
   private tools: Map<string, ITool> = new Map();
+  private agentId: string = "default";
+
+  /**
+   * 设置当前 Agent ID
+   */
+  setAgentId(agentId: string): void {
+    this.agentId = agentId;
+  }
+
+  /**
+   * 获取当前 Agent ID
+   */
+  getAgentId(): string {
+    return this.agentId;
+  }
 
   /**
    * 注册工具

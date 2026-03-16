@@ -41,8 +41,70 @@ export const ProviderConfigSchema = z.object({
 export type ProviderConfig = z.infer<typeof ProviderConfigSchema>;
 
 // ============================================
+// LLM 多提供商配置 Schema
+// ============================================
+
+/**
+ * URL 验证 Schema
+ * 验证字符串是否为有效的 HTTP/HTTPS URL
+ */
+const UrlSchema = z.string().url();
+
+/**
+ * LLM 提供商配置 Schema
+ * 定义单个 LLM 提供商的配置结构
+ */
+export const LLMProviderConfigSchema = z.object({
+  /** 模型标识符 */
+  model: z.string(),
+  /** API 密钥 */
+  apiKey: z.string().optional(),
+  /** API 基础 URL */
+  apiBase: z.string().optional(),
+  /** 采样温度（0-2，值越高输出越随机） */
+  temperature: z.number().min(0).max(2).optional(),
+  /** 最大生成 token 数 */
+  maxTokens: z.number().int().positive().optional(),
+  /** Top-p 采样参数（0-1，控制文本多样性） */
+  topP: z.number().min(0).max(1).optional(),
+  /** 停止序列，遇到这些字符串时停止生成 */
+  stopSequences: z.array(z.string()).optional(),
+  /** 频率惩罚（-2.0 到 2.0，降低重复词汇的概率） */
+  frequencyPenalty: z.number().min(-2).max(2).optional(),
+  /** 存在惩罚（-2.0 到 2.0，鼓励谈论新话题） */
+  presencePenalty: z.number().min(-2).max(2).optional(),
+  /** 请求超时时间（毫秒） */
+  timeout: z.number().int().positive().optional(),
+  /** 其他提供商特定选项 */
+  extra: z.record(z.string(), z.unknown()).optional(),
+});
+
+export type LLMProviderConfig = z.infer<typeof LLMProviderConfigSchema>;
+
+/**
+ * LLM 配置 Schema
+ * 定义多提供商配置结构
+ */
+export const LLMConfigSchema = z.object({
+  /** 默认提供商名称 */
+  defaultProvider: z.string().optional(),
+  /** 提供商配置映射 */
+  providers: z.record(z.string(), LLMProviderConfigSchema),
+});
+
+export type LLMConfig = z.infer<typeof LLMConfigSchema>;
+
+// ============================================
 // 渠道配置 Schema
 // ============================================
+
+/** 渠道通用默认配置 */
+export const ChannelDefaultsSchema = z.object({
+  /** 请求超时时间（毫秒） */
+  timeout: z.number().int().positive().default(30000),
+  /** 重试次数 */
+  retryAttempts: z.number().int().min(0).default(3),
+});
 
 /** Telegram 渠道配置 */
 export const TelegramChannelSchema = z.object({
@@ -66,6 +128,10 @@ export const FeishuChannelSchema = z.object({
   enabled: z.boolean().default(true),
   appId: z.string(),
   appSecret: z.string(),
+  encryptKey: z.string().optional(),
+  verificationToken: z.string().optional(),
+  serverPort: z.number().int().positive().optional(),
+  serverPath: z.string().optional(),
 });
 
 /** 钉钉渠道配置 */
@@ -74,6 +140,8 @@ export const DingtalkChannelSchema = z.object({
   enabled: z.boolean().default(true),
   appKey: z.string(),
   appSecret: z.string(),
+  serverPort: z.number().int().positive().optional(),
+  serverPath: z.string().optional(),
 });
 
 /** Slack 渠道配置 */
@@ -83,34 +151,50 @@ export const SlackChannelSchema = z.object({
   botToken: z.string(),
   appToken: z.string().optional(),
   signingSecret: z.string().optional(),
+  serverPort: z.number().int().positive().optional(),
+  serverPath: z.string().optional(),
 });
 
 /** WhatsApp 渠道配置 */
 export const WhatsAppChannelSchema = z.object({
   type: z.literal("whatsapp"),
   enabled: z.boolean().default(true),
-  phoneNumberId: z.string(),
-  accessToken: z.string(),
+  authStatePath: z.string().optional(),
+  browser: z.tuple([z.string(), z.string(), z.string()]).optional(),
 });
 
 /** 邮件渠道配置 */
 export const EmailChannelSchema = z.object({
   type: z.literal("email"),
   enabled: z.boolean().default(true),
-  host: z.string(),
-  port: z.number().int().positive().default(587),
-  secure: z.boolean().default(true),
-  user: z.string(),
-  password: z.string(),
-  from: z.string(),
+  imap: z.object({
+    host: z.string(),
+    port: z.number().int().positive().optional(),
+    user: z.string(),
+    password: z.string(),
+    secure: z.boolean().optional(),
+    inbox: z.string().optional(),
+  }).optional(),
+  smtp: z.object({
+    host: z.string(),
+    port: z.number().int().positive().optional(),
+    secure: z.boolean().optional(),
+    user: z.string(),
+    password: z.string(),
+    from: z.string(),
+  }).optional(),
+  checkInterval: z.number().int().positive().optional(),
 });
 
 /** QQ 渠道配置 */
 export const QQChannelSchema = z.object({
   type: z.literal("qq"),
   enabled: z.boolean().default(true),
-  appId: z.string(),
-  token: z.string(),
+  account: z.number(),
+  password: z.string(),
+  platform: z.number().optional(),
+  useSlider: z.boolean().optional(),
+  deviceFilePath: z.string().optional(),
 });
 
 /** CLI 渠道配置 */
@@ -134,6 +218,23 @@ export const ChannelConfigSchema = z.discriminatedUnion("type", [
 
 export type ChannelConfig = z.infer<typeof ChannelConfigSchema>;
 
+/** 渠道配置集合 Schema */
+export const ChannelsConfigSchema = z.object({
+  /** 启用的渠道列表 */
+  enabled: z.array(
+    z.enum(["cli", "telegram", "discord", "feishu", "dingtalk", "slack", "whatsapp", "email", "qq"])
+  ).default(["cli"]),
+  /** 渠道通用默认配置 */
+  defaults: ChannelDefaultsSchema.default({
+    timeout: 30000,
+    retryAttempts: 3,
+  }),
+  /** 各渠道具体配置 */
+  channels: z.array(ChannelConfigSchema).default([]),
+});
+
+export type ChannelsConfig = z.infer<typeof ChannelsConfigSchema>;
+
 // ============================================
 // 定时任务配置 Schema
 // ============================================
@@ -152,6 +253,27 @@ export const CronTaskConfigSchema = z.object({
 });
 
 export type CronTaskConfig = z.infer<typeof CronTaskConfigSchema>;
+
+// ============================================
+// 心跳服务配置 Schema
+// ============================================
+
+/**
+ * 心跳服务配置 Schema
+ * 定义心跳服务的行为配置
+ */
+export const HeartbeatConfigSchema = z.object({
+  /** 是否启用心跳服务 */
+  enabled: z.boolean().default(false),
+  /** 检查间隔（Cron 表达式，默认每 30 分钟） */
+  interval: z.string().default("0 */30 * * * *"),
+  /** HEARTBEAT.md 文件路径（相对于工作区根目录） */
+  filePath: z.string().default("HEARTBEAT.md"),
+  /** 任务执行超时时间（秒，默认 5 分钟） */
+  taskTimeout: z.number().int().positive().default(300),
+});
+
+export type HeartbeatConfig = z.infer<typeof HeartbeatConfigSchema>;
 
 // ============================================
 // Agent 配置 Schema
@@ -276,9 +398,23 @@ export const NiumaConfigSchema = z.object({
   /** LLM 提供商配置 */
   providers: z.record(z.string(), ProviderConfigSchema).default({}),
   /** 渠道配置 */
-  channels: z.array(ChannelConfigSchema).default([]),
+  channels: ChannelsConfigSchema.default({
+    enabled: ["cli"],
+    defaults: {
+      timeout: 30000,
+      retryAttempts: 3,
+    },
+    channels: [],
+  }),
   /** 定时任务配置 */
   cronTasks: z.array(CronTaskConfigSchema).default([]),
+  /** 心跳服务配置 */
+  heartbeat: HeartbeatConfigSchema.default({
+    enabled: false,
+    interval: "0 */30 * * * *",
+    filePath: "HEARTBEAT.md",
+    taskTimeout: 300,
+  }),
   /** 调试模式 */
   debug: z.boolean().default(false),
   /** 日志级别 */

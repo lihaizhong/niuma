@@ -30,8 +30,21 @@ describe("配置合并器", () => {
           temperature: 0.7,
         },
       },
-      channels: [],
+      channels: {
+        enabled: ["cli"],
+        defaults: {
+          timeout: 30000,
+          retryAttempts: 3,
+        },
+        channels: [],
+      },
       cronTasks: [],
+      heartbeat: {
+        enabled: false,
+        interval: "0 */30 * * * *",
+        filePath: "HEARTBEAT.md",
+        taskTimeout: 300,
+      },
       debug: false,
       logLevel: "info",
       agents: {
@@ -105,12 +118,16 @@ describe("配置合并器", () => {
         ],
       };
       const result = mergeConfigs(globalConfig, agentConfig);
-      expect(result.channels).toEqual([
-        {
-          type: "cli",
-          enabled: true,
-        },
-      ]);
+      expect(result.channels).toEqual({
+        enabled: ["cli"],
+        defaults: { timeout: 30000, retryAttempts: 3 },
+        channels: [
+          {
+            type: "cli",
+            enabled: true,
+          },
+        ],
+      });
     });
 
     it("应该完全替换 cronTasks 配置", () => {

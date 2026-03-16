@@ -44,6 +44,16 @@ export interface Session {
   createdAt: Date;
   /** 更新时间 */
   updatedAt: Date;
+  /** 渠道类型 */
+  channel?: string;
+  /** 用户标识 */
+  userId?: string;
+  /** 聊天标识 */
+  chatId?: string;
+  /** 元数据 */
+  metadata?: Record<string, unknown>;
+  /** 最后活跃时间 */
+  lastActiveAt?: Date;
 }
 
 /**
@@ -89,6 +99,15 @@ export class SessionManager {
   /** 会话存储目录 */
   private sessionsDir: string;
 
+  /** 最后活跃的会话键 */
+  private lastActiveSessionKey: string | null = null;
+
+  /** 最后活跃的渠道 */
+  private lastActiveChannel: string | null = null;
+
+  /** 会话 TTL（毫秒） */
+  private readonly SESSION_TTL = 7 * 24 * 60 * 60 * 1000; // 7 天
+
   /**
    * 创建会话管理器实例
    * @param config 配置选项
@@ -111,6 +130,9 @@ export class SessionManager {
    */
   async getOrCreate(sessionKey: string): Promise<Session> {
     const now = Date.now();
+
+    // 更新最后活跃的会话键
+    this.lastActiveSessionKey = sessionKey;
 
     // 优先从内存缓存获取（检查是否过期）
     const cached = this.cache.get(sessionKey);
@@ -138,6 +160,16 @@ export class SessionManager {
       createdAt: new Date(),
       updatedAt: new Date(),
     };
+
+    // 解析 SessionKey 并设置渠道信息
+    try {
+      const parsed = this.parseSessionKey(sessionKey);
+      newSession.channel = parsed.channel;
+      newSession.chatId = parsed.chatId;
+      newSession.userId = parsed.userId;
+    } catch {
+      // SessionKey 格式无效，保持默认值
+    }
 
     this.cache.set(sessionKey, { session: newSession, timestamp: now });
     return newSession;
@@ -219,6 +251,12 @@ export class SessionManager {
       toolsUsed,
     });
     session.updatedAt = new Date();
+    session.lastActiveAt = new Date();
+
+    // 更新最后活跃的渠道
+    if (session.channel) {
+      this.lastActiveChannel = session.channel;
+    }
   }
 
   /**
@@ -325,6 +363,240 @@ export class SessionManager {
     session.updatedAt = new Date();
   }
 
+  /**
+   * 生成 SessionKey
+   * @description 根据渠道、聊天ID和用户ID生成标准化的会话键
+   * @param channel 渠道类型
+   * @param chatId 聊天ID
+   * @param userId 用户ID（可选）
+   * @returns SessionKey
+   */
+  generateSessionKey(channel: string, chatId: string, userId?: string): string {
+    if (userId) {
+      return `${channel}:${chatId}:${userId}`;
+    }
+    return `${channel}:${chatId}`;
+  }
+
+  /**
+   * 解析 SessionKey
+   * @description 解析 SessionKey，返回渠道、聊天ID和用户ID
+   * @param sessionKey 会话键
+   * @returns 解析结果
+   */
+  parseSessionKey(sessionKey: string): {
+    channel: string;
+    chatId: string;
+    userId?: string;
+  } {
+    const parts = sessionKey.split(":");
+    if (parts.length >= 3) {
+      return {
+        channel: parts[0],
+        chatId: parts[1],
+        userId: parts[2],
+      };
+    } else if (parts.length === 2) {
+      return {
+        channel: parts[0],
+        chatId: parts[1],
+      };
+    } else {
+      throw new Error(`Invalid session key: ${sessionKey}`);
+    }
+  }
+
+  /**
+   * 获取最后活跃的渠道
+   * @returns 最后活跃的渠道类型
+   */
+  getLastActiveChannel(): string | null {
+    return this.lastActiveChannel;
+  }
+
+  /**
+   * 获取最后活跃的会话键
+   * @returns 最后活跃的会话键
+   */
+  getLastActiveSessionKey(): string | null {
+    return this.lastActiveSessionKey;
+  }
+
+  /**
+   * 按渠道查询会话
+   * @description 获取指定渠道的所有会话
+   * @param channel 渠道类型
+   * @returns 会话列表
+   */
+  async getSessionsByChannel(channel: string): Promise<Session[]> {
+    const sessions: Session[] = [];
+
+    // 遍历缓存中的会话
+    for (const cached of this.cache.values()) {
+      if (cached.session.channel === channel) {
+        sessions.push(cached.session);
+      }
+    }
+
+    // 从文件系统加载指定渠道的会话
+    try {
+      const metadata = await this._scanSessionFiles();
+
+      // 遍历文件系统中的会话元数据
+      for (const [sessionKey, meta] of metadata.entries()) {
+        // 跳过已在缓存中的会话
+        if (this.cache.has(sessionKey)) {
+          continue;
+        }
+
+        // 检查是否匹配指定渠道
+        if (meta.channel === channel) {
+          // 从文件加载完整会话
+          const session = await this._loadFromFile(sessionKey);
+          if (session) {
+            sessions.push(session);
+          }
+        }
+      }
+    } catch (error) {
+      console.error(`从文件系统加载渠道 ${channel} 的会话失败`, error);
+    }
+
+    return sessions;
+  }
+
+  /**
+   * 按用户查询会话
+   * @description 获取指定用户的所有会话
+   * @param userId 用户ID
+   * @returns 会话列表
+   */
+  async getSessionsByUser(userId: string): Promise<Session[]> {
+    const sessions: Session[] = [];
+
+    // 遍历缓存中的会话
+    for (const cached of this.cache.values()) {
+      if (cached.session.userId === userId) {
+        sessions.push(cached.session);
+      }
+    }
+
+    // 从文件系统加载指定用户的会话
+    try {
+      const metadata = await this._scanSessionFiles();
+
+      // 遍历文件系统中的会话元数据
+      for (const [sessionKey, meta] of metadata.entries()) {
+        // 跳过已在缓存中的会话
+        if (this.cache.has(sessionKey)) {
+          continue;
+        }
+
+        // 检查是否匹配指定用户
+        if (meta.userId === userId) {
+          // 从文件加载完整会话
+          const session = await this._loadFromFile(sessionKey);
+          if (session) {
+            sessions.push(session);
+          }
+        }
+      }
+    } catch (error) {
+      console.error(`从文件系统加载用户 ${userId} 的会话失败`, error);
+    }
+
+    return sessions;
+  }
+
+  /**
+   * 获取会话统计
+   * @description 统计各渠道的会话数量和活跃会话数量
+   * @returns 会话统计信息
+   */
+  async getSessionStats(): Promise<{
+    total: number;
+    active: number;
+    byChannel: Record<string, number>;
+  }> {
+    const byChannel: Record<string, number> = {};
+    let active = 0;
+    const now = Date.now();
+    const ACTIVE_THRESHOLD = 24 * 60 * 60 * 1000; // 24 小时
+
+    // 统计缓存中的会话
+    for (const cached of this.cache.values()) {
+      const channel = cached.session.channel || "unknown";
+      byChannel[channel] = (byChannel[channel] || 0) + 1;
+
+      // 统计活跃会话（24 小时内有更新）
+      if (cached.session.lastActiveAt && now - cached.session.lastActiveAt.getTime() < ACTIVE_THRESHOLD) {
+        active++;
+      }
+    }
+
+    // 统计文件系统中的会话
+    try {
+      const metadata = await this._scanSessionFiles();
+
+      // 遍历文件系统中的会话元数据
+      for (const [sessionKey, meta] of metadata.entries()) {
+        // 跳过已在缓存中的会话
+        if (this.cache.has(sessionKey)) {
+          continue;
+        }
+
+        // 统计渠道分布
+        const channel = meta.channel || "unknown";
+        byChannel[channel] = (byChannel[channel] || 0) + 1;
+      }
+    } catch (error) {
+      console.error("统计文件系统中的会话失败", error);
+    }
+
+    // 计算总数量（缓存 + 文件系统）
+    const total = this.cache.size + (await this._scanSessionFiles()).size;
+
+    return {
+      total,
+      active,
+      byChannel,
+    };
+  }
+
+  /**
+   * 清理过期会话
+   * @description 删除超过 TTL 的会话
+   * @returns 清理的会话数量
+   */
+  async cleanExpiredSessions(): Promise<number> {
+    const now = Date.now();
+    let cleaned = 0;
+
+    // 清理缓存中的过期会话
+    for (const [sessionKey, cached] of this.cache.entries()) {
+      if (now - cached.session.createdAt.getTime() > this.SESSION_TTL) {
+        this.cache.delete(sessionKey);
+
+        // 删除文件
+        const filePath = this._getSessionFilePath(sessionKey);
+        try {
+          if (fs.existsSync(filePath)) {
+            await fs.unlink(filePath);
+            cleaned++;
+          }
+        } catch (error) {
+          console.error(`删除会话文件失败: ${filePath}`, error);
+        }
+      }
+    }
+
+    if (cleaned > 0) {
+      console.log(`清理了 ${cleaned} 个过期会话`);
+    }
+
+    return cleaned;
+  }
+
   // ==================== 私有方法 ====================
 
   /**
@@ -368,6 +640,81 @@ export class SessionManager {
       // 文件读取或解析失败时返回 null
       return null;
     }
+  }
+
+  /**
+   * 扫描会话文件
+   * @description 扫描会话目录中的所有文件，解析 SessionKey 提取元数据
+   * @returns 会话文件元数据映射 {sessionKey: {channel, userId, chatId}}
+   * @private
+   */
+  private async _scanSessionFiles(): Promise<
+    Map<
+      string,
+      { channel?: string; userId?: string; chatId?: string; createdAt: number }
+    >
+  > {
+    const metadata = new Map<
+      string,
+      { channel?: string; userId?: string; chatId?: string; createdAt: number }
+    >();
+
+    try {
+      // 读取会话目录中的所有文件
+      const files = await fs.readdir(this.sessionsDir);
+
+      // 过滤出 JSON 文件
+      const jsonFiles = files.filter((file) => file.endsWith(".json"));
+
+      // 解析每个文件
+      for (const file of jsonFiles) {
+        const filePath = join(this.sessionsDir, file);
+
+        try {
+          // 读取文件内容
+          const data = await fs.readFile(filePath, "utf-8");
+          const parsed = JSON.parse(data) as Session;
+
+          // 解析 SessionKey 提取元数据
+          const sessionKey = parsed.key;
+          if (!sessionKey) {
+            continue;
+          }
+
+          // SessionKey 格式: "channel:chatId:userId"
+          const parts = sessionKey.split(":");
+          let channel: string | undefined;
+          let chatId: string | undefined;
+          let userId: string | undefined;
+
+          if (parts.length >= 1) {
+            channel = parts[0];
+          }
+          if (parts.length >= 2) {
+            chatId = parts[1];
+          }
+          if (parts.length >= 3) {
+            userId = parts[2];
+          }
+
+          // 存储元数据
+          metadata.set(sessionKey, {
+            channel,
+            userId,
+            chatId,
+            createdAt: new Date(parsed.createdAt).getTime(),
+          });
+        } catch (error) {
+          // 忽略解析失败的文件
+          console.error(`解析会话文件失败: ${filePath}`, error);
+        }
+      }
+    } catch (error) {
+      // 忽略扫描失败
+      console.error(`扫描会话目录失败: ${this.sessionsDir}`, error);
+    }
+
+    return metadata;
   }
 }
 

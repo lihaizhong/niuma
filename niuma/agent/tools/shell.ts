@@ -9,6 +9,8 @@ import { promisify } from "util";
 
 // ==================== 第三方库 ====================
 import { z } from "zod";
+import * as p from "@clack/prompts";
+import chalk from "chalk";
 
 // ==================== 本地模块 ====================
 import { BaseTool } from "./base";
@@ -61,15 +63,31 @@ const DENY_PATTERNS = [
 // ==================== 工具函数 ====================
 
 /**
+ * 检测非交互环境
+ */
+function isNonInteractiveEnvironment(): boolean {
+  return (
+    process.env.CI === "true" ||
+    process.env.CI === "1" ||
+    process.env.DOCKER === "true" ||
+    process.env.TERM === "dumb" ||
+    !process.stdout.isTTY
+  );
+}
+
+/**
  * 检查命令是否危险
  */
-function isDangerousCommand(command: string): {
+function isDangerousCommand(command: string, args?: string[]): {
   isDangerous: boolean;
   description?: string;
   requireConfirmation: boolean;
 } {
+  // 构建完整的命令字符串用于检测
+  const fullCommand = args ? `${command} ${args.join(" ")}` : command;
+
   for (const deny of DENY_PATTERNS) {
-    if (deny.pattern.test(command)) {
+    if (deny.pattern.test(fullCommand)) {
       return {
         isDangerous: true,
         description: deny.description,
@@ -102,6 +120,7 @@ export class ExecTool extends BaseTool {
       .describe("超时时间（毫秒）"),
     runInBackground: z.boolean().optional().describe("是否在后台运行"),
     strict: z.boolean().optional().describe("严格模式（非零退出码抛出异常）"),
+    yes: z.boolean().optional().describe("跳过危险命令确认（--yes/-y）"),
   });
 
   async execute(args: {
@@ -112,6 +131,7 @@ export class ExecTool extends BaseTool {
     timeout?: number;
     runInBackground?: boolean;
     strict?: boolean;
+    yes?: boolean;
   }): Promise<string> {
     const {
       command,
@@ -121,10 +141,11 @@ export class ExecTool extends BaseTool {
       timeout = 30000,
       runInBackground = false,
       strict = false,
+      yes = false,
     } = args;
 
     // 检查危险命令
-    const dangerCheck = isDangerousCommand(command);
+    const dangerCheck = isDangerousCommand(command, cmdArgs);
     if (dangerCheck.isDangerous) {
       if (!dangerCheck.requireConfirmation) {
         throw new ToolExecutionError(
@@ -132,11 +153,28 @@ export class ExecTool extends BaseTool {
           `拒绝执行危险命令: ${command} (${dangerCheck.description})`,
         );
       }
-      // TODO: 实现用户确认机制（当前版本直接拒绝）
-      throw new ToolExecutionError(
-        this.name,
-        `危险命令需要用户确认: ${command} (${dangerCheck.description})`,
-      );
+
+      // 用户确认机制
+      if (!yes && !isNonInteractiveEnvironment()) {
+        const confirmation = await p.confirm({
+          message: `${chalk.yellow("⚠️ 危险命令警告")}\n\n${chalk.red(dangerCheck.description)}\n\n${chalk.gray(`命令: ${command} ${cmdArgs.join(" ")}`)}\n\n${chalk.yellow("确认执行？")}`,
+        });
+
+        if (confirmation !== true) {
+          throw new ToolExecutionError(
+            this.name,
+            `用户取消执行危险命令: ${command}`,
+          );
+        }
+      } else if (isNonInteractiveEnvironment()) {
+        // 非交互环境，使用 --yes 参数
+        if (!yes) {
+          throw new ToolExecutionError(
+            this.name,
+            `非交互环境，危险命令需要使用 --yes 参数: ${command} (${dangerCheck.description})`,
+          );
+        }
+      }
     }
 
     try {

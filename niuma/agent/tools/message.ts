@@ -305,7 +305,7 @@ export class MessageTool extends BaseTool {
       priority,
       status: "queued",
       createdAt: now,
-      agentId: "default", // TODO: 从上下文获取 Agent ID
+      agentId: this.getAgentId(),
       tags,
     };
 

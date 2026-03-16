@@ -95,7 +95,7 @@ describe("10.2 验证所有工具正确注册到 ToolRegistry", () => {
     const registry = new ToolRegistry();
     registerBuiltinTools(registry);
 
-    expect(registry.size).toBe(25);
+    expect(registry.size).toBe(30);
   });
 });
 

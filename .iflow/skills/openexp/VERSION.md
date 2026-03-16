@@ -2,6 +2,19 @@
 
 ## 版本记录
 
+- **v2.4** (2026-03-16)
+  - 优化 token 效率，减少约 52% 的 token 消耗
+  - 精简 SKILL.md，移除详细命令参考到 reference/commands.md
+  - 删除 template-guide.md，内容已整合到 SKILL.md
+  - 简化 impact-calculation.md，保留核心公式
+  - 简化脚本注释（obsidian-cli.sh 和 maintain-experience-vault.py）
+  - 移除 MCP 集成，只保留 CLI
+
+- **v2.3** (2026-03-16)
+  - 添加 CLI 操作约束
+  - 优化为操作手册格式
+  - 添加脚本使用说明
+
 - **v2.2** (2026-03-15)
   - 优化文件格式规范，强制使用标准 YAML frontmatter
   - 添加文件命名规范：`exp_<type>_<timestamp>_<seq>.md`

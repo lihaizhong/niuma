@@ -1,294 +1,102 @@
-# Niuma（牛马）- 项目上下文
+# Niuma（牛马）- AI 助手行为指南
 
 ## 项目概述
 
-Niuma（牛马）是一个企业级多角色 AI 助手系统，基于 TypeScript + Node.js 构建。支持创建多个完全独立的 AI 角色，每个角色拥有独立的配置、工作区、会话、记忆和日志。
+企业级多角色 AI 助手系统，支持独立配置、工作区、会话和记忆。
 
-**当前版本：** v0.1.1  
-**项目状态：** 核心基础设施、Agent 核心、多角色配置系统已完成
+**技术栈、架构、开发规范详见 `openspec/config.yaml`**
 
 ## 行为指导
 
-### 经验积累
-- 如果你觉得当前对话有价值（例如：解决了问题、学到了新知识、发现了重要信息），可以主动提示用户是否将对话内容总结成经验记录
-- 提示方式：简洁自然地询问，例如："这次对话似乎很有价值，是否需要我将其总结成经验记录？"
+### 经验管理
 
-### 经验利用
-在执行任务时，应该主动利用已有的经验来提高效率和质量：
+**积累时机：** 解决问题、学习新知识、发现重要信息时主动提示用户
 
-1. **任务启动时**
-   - 开始任务前，先查询相关经验：`/openexp [任务关键词]`
-   - 例如：开发新功能前，查询 `/openexp 开发工作流程` 或 `/openexp TypeScript 开发规范`
-   - 应用找到的经验到当前任务
+**利用策略：**
+- 任务启动前：`/openexp [关键词]` 查询相关经验
+- 遇到问题时：优先使用高影响力解决方案
+- 用户偏好：自动应用已知的工具和编码偏好
+- 反馈机制：`/openexp 这个经验很有效/不管用：[ID]`
+- 维护：每周运行 `python3 scripts/maintain-experience-vault.py`
 
-2. **遇到问题时**
-   - 遇到技术问题时，查询相关解决方案：`/openexp [问题关键词]`
-   - 例如：遇到 CORS 问题，查询 `/openexp CORS 解决方案`
-   - 优先使用高影响力的方案
+**查询时机：** 任务启动、问题解决、决策制定、最佳实践询问、代码审查
 
-3. **用户偏好应用**
-   - 了解用户偏好（如工具选择、编码风格、工作流程）
-   - 自动应用用户偏好到操作中
-   - 例如：用户偏好 pnpm，则使用 pnpm 而不是 npm
+## 工作流约束
 
-4. **经验反馈**
-   - 应用经验后，主动询问用户效果：`/openexp 这个经验很有效：[经验ID]`
-   - 如果经验无效，提供负面反馈：`/openexp 这个方案不管用：[经验ID]`
-   - 定期运行维护脚本更新影响力：`python3 scripts/maintain-experience-vault.py`
+### 1. fullstack skill 使用策略
 
-5. **经验库维护**
-   - 每周运行一次维护脚本，更新影响力和索引地图
-   - 查看索引地图了解经验库整体情况：`/openexp 查看经验索引地图`
-   - 清理低影响力的过时经验
+**适用场景（复杂任务）：**
+- API 设计和文档生成（5+ 端点）
+- 复杂架构设计（多模块、微服务）
+- 多组件集成（前后端协作）
+- 需要标准化输出
 
-**经验查询时机：**
-- 开始新任务前
-- 遇到问题时
-- 需要做决策时
-- 用户询问最佳实践时
-- 代码审查时
+**触发方式：** `/opsx:apply` 或 `/opsx:propose`
 
-### 工作流约束（强制）
-
-#### 1. 智能使用 fullstack skill
-
-**重要：** fullstack skill 适用于复杂任务，简单任务直接使用 subagent 即可。
-
-##### ✅ 使用 fullstack skill 的场景（复杂任务）
-- **API 设计和文档生成**：5+ 端点、需要完整 OpenAPI 规范
-- **复杂架构设计**：多模块、多服务、微服务架构
-- **多组件集成任务**：需要前后端协作、多个 subagent 协同
-- **需要标准化输出**：生成生产级别的文档和测试用例
-
-**触发方式：**
-```bash
-/opsx:apply           # 触发 skill 并实施变更
-/opsx:propose         # 触发 skill 并创建提案
-```
-
-##### ❌ 不使用 fullstack skill 的场景（简单任务）
-- **简单代码审查**：< 100 行代码、快速 review
-- **小型功能开发**：< 200 行代码、单一功能
-- **快速原型验证**：概念验证、演示代码
-- **Bug 修复**：修复特定问题、无需架构变更
-- **性能敏感任务**：需要快速响应的场景
+**不适用场景（简单任务）：**
+- 简单代码审查（< 100 行）
+- 小型功能开发（< 200 行）
+- 快速原型验证
+- Bug 修复
+- 性能敏感任务
 
 **直接使用 subagent：**
 - 代码审查 → `code-reviewer`
-- 简单开发 → `general-purpose` 或特定领域 subagent
+- 简单开发 → `general-purpose`
 
-**性能对比：**
-- 使用 skill：平均 540 秒，5,000 tokens（适合复杂任务）
-- 不使用 skill：平均 3.2 秒，4,200 tokens（适合简单任务）
+### 2. OpenSpec CLI 强制要求
 
-#### 2. 必须使用 OpenSpec CLI 命令
-- **禁止手动文件操作** - 不要使用 `mv`、`cp`、`mkdir` 等命令操作 openspec 目录
-- **优先使用 openspec CLI** - 所有 openspec 相关操作必须通过 `openspec` 命令完成
-- **严禁修改 .iflow 目录** - 除非用户明确说明，否则绝对不要修改 `.iflow/` 下的任何文件（包括 skills、commands 等）
-- 常用命令：
-  ```bash
-  openspec list                    # 列出所有变更
-  openspec status <change-name>    # 查看变更状态
-  openspec archive <change-name>   # 归档变更（自动处理规格同步）
-  openspec spec list               # 列出所有规格
-  openspec validate <item-name>    # 验证变更或规格
-  ```
-- 正确的工作流顺序：
-  - `/opsx:explore` - 探索模式（可选，复杂任务建议使用）
-  - `/opsx:propose` - 创建提案（包含 proposal、design、specs、tasks）
-  - `/opsx:apply` - 实施变更（仅当 `applyReady: true` 时）
-  - `/opsx:archive` - 归档变更（自动执行 `openspec archive` 命令）
-- **归档内容保护**: `openspec/changes/archive/` 下的已归档变更不可修改，这些作为历史记录保留原样
+- 禁止手动文件操作 `openspec/` 目录
+- 必须使用 `openspec` 命令完成相关操作
+- 严禁修改 `.iflow/` 目录（除非用户明确说明）
 
-#### 3. Subagent 优先级
-每个角色优先使用对应的 subagent 处理：
+**工作流：** `/opsx:explore` → `/opsx:propose` → `/opsx:apply` → `/opsx:archive`
 
-| 角色/任务类型 | 优先使用的 Subagent |
-|--------------|-------------------|
+**归档保护：** `openspec/changes/archive/` 不可修改
+
+### 3. Subagent 优先使用原则
+
+**强制要求：** 在执行任何任务前，必须先查找并使用适配的 subagent
+
+**查找流程：**
+1. 分析任务类型和需求
+2. 查找 `Subagent 优先级` 表中的匹配项
+3. 如果找到匹配的 subagent，优先使用 `task` 工具调用
+4. 如果没有匹配项，使用 `general-purpose` 或自行处理
+
+**适用场景：**
+- 所有开发任务（代码编写、重构、优化）
+- 代码审查和质量检查
+- 测试和验证
+- 文档生成
+- 搜索和研究
+
+**例外情况：**
+- 简单的文件读写操作（使用 `read_file`、`write_file` 工具）
+- 命令执行（使用 `run_shell_command` 工具）
+- 纯信息查询（使用 `read_file`、`glob`、`search_file_content` 工具）
+
+### 4. Subagent 优先级
+
+| 任务类型 | Subagent |
+|---------|----------|
 | 规划分析 | plan-agent |
 | 代码探索 | explore-agent |
 | 代码审查 | code-reviewer |
 | 前端测试 | frontend-tester |
 | 深度研究 | search-specialist |
-| 复杂多步骤任务 | general-purpose |
+| 复杂任务 | general-purpose |
 | 翻译任务 | translate |
 | 教程生成 | tutorial-engineer |
 
-## 技术栈
-
-### 核心技术
-- **TypeScript** - 严格类型检查
-- **Node.js** >=22.0.0 - 运行时环境
-- **pnpm** - 包管理器
-
-### 主要依赖
-
-| 依赖 | 用途 |
-|------|------|
-| langchain | AI/LLM 应用框架 |
-| @langchain/openai | OpenAI 集成 |
-| zod | 运行时类型验证 |
-| json5 | JSON5 配置文件格式 |
-| @sqliteai/sqlite-wasm | SQLite WASM 数据库 |
-| cac | 命令行参数解析 |
-| pino | 日志记录 |
-
-### 开发依赖
-- **tsx** - TypeScript 执行器
-- **vitest** - 单元测试框架
-- **eslint** - 代码规范检查
-
-## 项目结构
-
-```
-niuma/
-├── niuma/                    # 核心模块目录
-│   ├── agent/                # Agent 核心模块
-│   ├── bus/                  # 事件总线
-│   ├── channels/             # 多渠道接入
-│   ├── cli/                  # CLI 入口
-│   ├── config/               # 配置管理
-│   ├── cron/                 # 定时任务
-│   ├── heartbeat/            # 主动唤醒
-│   ├── providers/            # LLM 提供商
-│   ├── session/              # 会话管理
-│   ├── types/                # 类型定义
-│   └── utils/                # 工具函数
-├── openspec/                 # OpenSpec 规范
-├── .iflow/                   # iFlow CLI 配置
-├── docs/                     # 文档
-└── package.json
-```
-
-## 架构设计
-
-### 核心模块
-
-- **Agent** - 智能体核心，处理对话循环、记忆管理、技能调用、工具执行
-- **Tools** - 工具集，包括文件系统操作、Shell 命令、Web 请求、MCP 协议等
-- **Bus** - 事件总线，模块间异步通信
-- **Channels** - 多渠道接入（Telegram, Discord, 飞书, 钉钉, Slack 等）
-- **Providers** - LLM 提供商抽象层（OpenAI, Anthropic, 自定义端点）
-- **Session** - 会话管理，历史记录和状态持久化
-- **Skills** - 可扩展技能系统，动态加载 SKILL.md
-- **Cron** - 定时任务调度服务
-- **Memory** - 双层记忆系统，自动整合长期记忆
-
-### Agent Loop 核心流程
-
-```mermaid
-flowchart TD
-    A[接收消息] --> B[构建上下文<br/>history + memory + skills]
-    B --> C[LLM 调用]
-    C --> D{有工具调用？}
-    D -->|Yes| E[执行工具]
-    D -->|No| F[返回响应]
-    E --> G{迭代次数 < max？}
-    G -->|Yes| C
-    G -->|No| F
-    F --> H[更新记忆]
-    H --> I[返回结果]
-```
-
-### 数据存储
-
-- **SQLite** - 本地数据库（@sqliteai/sqlite-wasm），支持 WASM 和向量检索
-- **向量搜索** - 内置向量存储，用于语义记忆
-
 ## 配置系统
 
-### 多角色架构
-
-```json5
-{
-  "agents": {
-    "defaults": { "progressMode": "normal" },
-    "list": [
-      { "id": "manager", "name": "项目经理", "default": true },
-      { "id": "developer", "name": "开发工程师" }
-    ]
-  }
-}
-```
-
-### 环境变量引用
-
-```json5
-{
-  "providers": {
-    "openai": {
-      "apiKey": "${OPENAI_API_KEY}",
-      "apiBase": "${OPENAI_BASE_URL:https://api.openai.com/v1}"
-    }
-  }
-}
-```
-
-### 配置优先级
-1. 命令行参数
-2. 角色特定配置覆盖
-3. 全局 `~/.niuma/niuma.config.json`
-4. 系统环境变量
-5. 默认值
-
-## 开发规范
-
-### 代码风格
-- 使用 ESLint 进行代码规范检查
-- TypeScript 严格模式开启
-- 使用 ES Module (`"type": "module"`)
-- **注释必须使用中文**，代码标识符使用英文
-- **图表必须使用 mermaid 语法**
-- **OpenSpec specs 主内容必须使用中文**：
-  - 主内容（Requirements、Scenarios 等）必须使用中文
-  - 适用于 `openspec/specs/` 和 `openspec/changes/archive/*/specs/` 下的所有 spec 文件
-
-### 提交规范
-- 遵循 Conventional Commits 规范
-- 提交信息格式：`type: description`
-
-### 版本管理
-- **版本号一致性** - 修改版本号时需同步更新以下文件：
-  - `package.json` - 主版本号
-  - `AGENTS.md` - 当前版本引用
-  - `CHANGELOG.md` - 版本历史记录
-- **遵循语义化版本** - 使用 Semantic Versioning (semver) 规范
-
-### 分支策略
-- `main` - 主分支
-- `feat/*` - 功能分支
-
-## 构建与测试
-
-```bash
-# 安装依赖
-pnpm install
-
-# 开发模式
-pnpm dev
-
-# 构建
-pnpm build
-
-# 运行
-pnpm start
-
-# 测试
-pnpm test
-
-# 代码检查
-pnpm lint
-
-# 类型检查
-pnpm type-check
-```
+**详见 `openspec/config.yaml`**
 
 ## 相关资源
 
-- [变更日志](CHANGELOG.md) - 版本历史和重要变更
-- [项目开发计划](docs/niuma-development-plan.md) - 详细开发计划
-- [LangChain.js 文档](https://js.langchain.com/)
-- [Zod](https://zod.dev/)
+- [变更日志](CHANGELOG.md)
+- [开发计划](docs/niuma-development-plan.md)
 - [nanobot 参考](https://github.com/HKUDS/nanobot)
 
 ---

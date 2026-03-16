@@ -1,8 +1,8 @@
 # Niuma 项目开发计划
 
-> **当前版本：** v0.1.2
-> **最后更新：** 2026-03-13
-> **状态：** 已完成核心基础设施、Agent 核心和内置工具，正在进行企业级功能扩展
+> **当前版本：** v0.2.2
+> **最后更新：** 2026-03-16
+> **状态：** 已完成核心基础设施、Agent 核心、多角色配置系统、内置工具、LLM 提供商扩展、定时任务与心跳、多渠道接入
 
 ## 项目概述
 
@@ -11,13 +11,33 @@
 **Niuma 特点：**
 - 企业级多角色架构：支持多个独立角色（项目经理、开发工程师、测试工程师等）
 - 完全隔离：每个角色拥有独立的工作区、会话、记忆和日志
-- 轻量级核心：借鉴 nanobot 超轻量级设计
+- 轻量级核心：借鉴 nanobot 超轻量级设计，核心功能内置
+- MCP 优先架构：专业功能通过 MCP 对接，保持核心轻量
 - JSON5 配置：支持注释和尾随逗号的配置格式
 - 环境变量集成：支持 `${VAR}` 和 `${VAR:default}` 语法
 - 双层记忆系统：MEMORY.md + HISTORY.md
 - 技能系统：支持动态加载和依赖检查
-- MCP 协议支持：预留接口
+- MCP 协议支持：完整的 MCP 客户端实现
 - 定时任务与心跳：周期性任务支持
+
+**架构设计理念：**
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    Niuma 核心层                          │
+│  (基础工具：文件系统、Shell、加密、进程管理等)          │
+└─────────────────────────────────────────────────────────┘
+                          ↓
+┌─────────────────────────────────────────────────────────┐
+│                   MCP 客户端层                           │
+│  (MCP 协议实现、工具桥接、配置管理)                      │
+└─────────────────────────────────────────────────────────┘
+                          ↓
+┌─────────────────────────────────────────────────────────┐
+│                   MCP Server 生态                        │
+│  (图像处理、媒体处理、专业工具 - 用户自行配置)           │
+└─────────────────────────────────────────────────────────┘
+```
 
 ---
 
@@ -33,17 +53,27 @@
 | Phase 3 | 内置工具实现 | 2026-03-12 | ✅ 已完成 |
 | Phase 3.1 | 高级文件操作 | 2026-03-13 | ✅ 已完成 |
 | Phase 3.2 | Git 操作 | 2026-03-15 | ✅ 已完成 |
-| Phase 3.3 | 压缩与解压 | 2026-03-15 | ✅ 已完成 |
+| Phase 3.3 | 压缩与解压 | 2026-03-15 | ❌ 已删除 |
 | Phase 3.4 | 网络工具 | 2026-03-15 | ✅ 已完成 |
 | Phase 3.5 | 数据处理工具 | 2026-03-15 | ✅ 已完成 |
+| Phase 3.6 | 加密与解密 | 2026-03-15 | ✅ 已完成 |
+| Phase 3.7 | 环境变量与进程管理 | 2026-03-15 | ✅ 已完成 |
+| Phase 4 | LLM 提供商扩展 | 2026-03-15 | ✅ 已完成 |
+| Phase 6 | 定时任务与心跳 | 2026-03-16 | ✅ 已完成 |
+| 代码补全 | 补全代码 TODO | 2026-03-16 | ✅ 已完成 |
+| Phase 5 | 多渠道接入 | 2026-03-16 | ✅ 已完成 |
 
 ### 📊 项目统计
 
-- **核心模块：** 25+ 个文件
-- **代码行数：** ~12000+ 行 TypeScript
-- **内置工具：** 25 个（文件系统、Shell、Web、消息、Agent、Git、压缩解压、网络、数据处理）
-- **测试覆盖：** 100% 通过（205/205 测试）
-- **文档完善度：** OpenSpec 变更记录完整
+- **核心模块：** 40+ 个文件
+- **代码行数：** ~18000+ 行 TypeScript
+- **内置工具：** 30 个（文件系统、Shell、Web、消息、Agent、Git、网络、数据处理、加密解密、系统管理）
+- **LLM 提供商：** 5 个（OpenAI、Anthropic、OpenRouter、DeepSeek、Custom）
+- **MCP 支持：** 完整的 MCP 客户端实现
+- **心跳服务：** 完整实现（HEARTBEAT.md 解析、任务执行、结果发送）
+- **多渠道接入：** 9 个渠道（CLI、Telegram、Discord、飞书、钉钉、Slack、WhatsApp、Email、QQ）
+- **测试覆盖：** 100% 通过（89/89 系统工具测试）
+- **文档完善度：** OpenSpec 变更记录完整（17 个归档变更）
 
 ---
 
@@ -98,11 +128,16 @@ niuma/
 │   │   ├── merger.ts         #    配置合并器
 │   │   ├── env-resolver.ts   #    环境变量解析器
 │   │   └── json5-loader.ts   #    JSON5 加载器
-│   ├── cron/                 # ⏰ 定时任务（规划中）
-│   ├── heartbeat/            # 💓 主动唤醒（规划中）
+│   ├── cron/                 # ⏰ 定时任务（已通过 cron 工具实现）
+│   ├── heartbeat/            # 💓 主动唤醒（已完成）
 │   ├── providers/            # 🤖 LLM 提供商
 │   │   ├── base.ts           #    提供商抽象基类
-│   │   └── openai.ts         #    OpenAI 实现
+│   │   ├── openai.ts         #    OpenAI 实现
+│   │   ├── anthropic.ts      #    Anthropic Claude 实现
+│   │   ├── openrouter.ts     #    OpenRouter 多模型网关
+│   │   ├── deepseek.ts       #    DeepSeek API 实现
+│   │   ├── custom.ts         #    自定义 OpenAI 兼容端点
+│   │   └── registry.ts       #    提供商注册表
 │   ├── session/              # 💬 会话管理
 │   │   └── manager.ts        #    会话状态、历史记录、持久化
 │   ├── types/                # 📝 类型定义
@@ -120,7 +155,21 @@ niuma/
 │   │   └── archive/          #    已归档变更
 │   │       ├── 2026-03-10-core-infrastructure/
 │   │       ├── 2026-03-10-phase2-agent-core/
-│   │       └── 2026-03-11-enterprise-multi-role-config/
+│   │       ├── 2026-03-11-enterprise-multi-role-config/
+│   │       ├── 2026-03-11-sync-provider-config-params/
+│   │       ├── 2026-03-12-builtin-tools-implementation/
+│   │       ├── 2026-03-15-migrate-sqlite-to-wasm/
+│   │       ├── 2026-03-15-phase-3-1-advanced-file-operations/
+│   │       ├── 2026-03-15-phase-3-2-git-operations/
+│   │       ├── 2026-03-15-phase-3-6-crypto-tools/
+│   │       ├── 2026-03-15-phase-3-7-environment-and-process-management/
+│   │       ├── 2026-03-15-phase-3-tools-implementation/
+│   │       ├── 2026-03-15-remove-archive-tools/
+│   │       ├── 2026-03-15-sync-specs-visibility/
+│   │       ├── 2026-03-15-phase-4-llm-provider-extension/
+│   │       ├── 2026-03-16-complete-pending-todos/
+│   │       ├── 2026-03-16-phase-5-multi-channel-access/
+│   │       └── 2026-03-16-phase-6-heartbeat-service/
 │   └── specs/                #    规格定义
 ├── .iflow/                   # 🤖 iFlow CLI 配置
 │   ├── skills/               #    技能定义
@@ -254,8 +303,6 @@ flowchart TD
 
 ---
 
-## 已完成功能详情
-
 ### ✅ Phase 3: 内置工具实现
 
 **完成日期：** 2026-03-12
@@ -323,15 +370,9 @@ flowchart TD
 
 ---
 
-## 待开发功能
-
----
-
 ### ✅ Phase 3.2: Git 操作
 
 **完成日期：** 2026-03-15
-**优先级：** 高
-**实际工时：** 1 天
 
 | 工具 | 文件 | 功能 | 状态 |
 |------|------|------|------|
@@ -352,14 +393,18 @@ flowchart TD
 
 ---
 
-### ✅ Phase 3.3: 压缩与解压
+### ❌ Phase 3.3: 压缩与解压（已删除）
 
-**完成日期：** 2026-03-15
+**删除日期：** 2026-03-15
 
 | 工具 | 文件 | 功能 | 状态 |
 |------|------|------|------|
-| archive | `agent/tools/archive.ts` | 压缩文件/目录（zip, tar, tar.gz） | ✅ 已完成 |
-| extract | `agent/tools/archive.ts` | 解压文件 | ✅ 已完成 |
+| archive | - | 压缩文件/目录（zip, tar, tar.gz） | ❌ 已删除 |
+| extract | - | 解压文件 | ❌ 已删除 |
+
+**删除原因：** Archive 工具对本地资源消耗大，处理大文件时占用大量 CPU 和内存。根据 MCP 优先架构，此类资源密集型功能应通过 MCP Server 提供，以保持 Niuma 核心轻量级。
+
+**迁移建议：** 用户可通过 MCP 对接专业的压缩工具（如 @modelcontextprotocol/server-filesystem）。
 
 ---
 
@@ -388,70 +433,69 @@ flowchart TD
 
 ---
 
-### 🔄 Phase 3.6: 加密与解密
+### ✅ Phase 3.6: 加密与解密
 
-**优先级：** 低
-**预计工时：** 1-2 天
-
-| 工具 | 文件 | 功能 | 状态 |
-|------|------|------|------|
-| encrypt | `agent/tools/crypto.ts` | 加密数据 | ⏸️ 待开发 |
-| decrypt | `agent/tools/crypto.ts` | 解密数据 | ⏸️ 待开发 |
-| hash | `agent/tools/crypto.ts` | 计算哈希值 | ⏸️ 待开发 |
-
----
-
-### 🔄 Phase 3.7: 环境变量与进程管理
-
-**优先级：** 低
-**预计工时：** 1-2 天
+**完成日期：** 2026-03-15
 
 | 工具 | 文件 | 功能 | 状态 |
 |------|------|------|------|
-| env_get | `agent/tools/system.ts` | 获取环境变量 | ⏸️ 待开发 |
-| env_set | `agent/tools/system.ts` | 设置环境变量 | ⏸️ 待开发 |
-| process_list | `agent/tools/system.ts` | 列出进程 | ⏸️ 待开发 |
-| process_kill | `agent/tools/system.ts` | 终止进程 | ⏸️ 待开发 |
+| encrypt | `agent/tools/crypto.ts` | 加密数据（AES-256-GCM） | ✅ 已完成 |
+| decrypt | `agent/tools/crypto.ts` | 解密数据（AES-256-GCM） | ✅ 已完成 |
+| hash | `agent/tools/crypto.ts` | 计算哈希值（SHA-256/512、MD5） | ✅ 已完成 |
+
+**核心特性：**
+- AES-256-GCM 认证加密，同时保证机密性和完整性
+- 自动生成随机 IV，避免 IV 重用攻击
+- 完整的参数验证（密钥长度、IV 长度、认证标签长度）
+- 支持空字符串和大文件内容（10MB+）
+
+**测试覆盖：** 100% 测试覆盖（25/25 测试通过）
 
 ---
 
-### 🔄 Phase 3.8: 图像处理
+### ✅ Phase 3.7: 环境变量与进程管理
 
-**优先级：** 低
-**预计工时：** 2-3 天
-
-| 工具 | 文件 | 功能 | 状态 |
-|------|------|------|------|
-| image_resize | `agent/tools/image.ts` | 调整图片大小 | ⏸️ 待开发 |
-| image_crop | `agent/tools/image.ts` | 裁剪图片 | ⏸️ 待开发 |
-| image_convert | `agent/tools/image.ts` | 格式转换 | ⏸️ 待开发 |
-
----
-
-### 🔄 Phase 3.9: 媒体处理
-
-**优先级：** 低
-**预计工时：** 2-3 天
-
-| 工具 | 文件 | 功能 | 状态 |
-|------|------|------|------|
-| audio_transcribe | `agent/tools/media.ts` | 音频转文字（Whisper） | ⏸️ 待开发 |
-| video_transcribe | `agent/tools/media.ts` | 视频转文字 | ⏸️ 待开发 |
-
----
-
-### 🔄 Phase 4: LLM 提供商扩展
-
+**完成日期：** 2026-03-15
 **优先级：** 中
-**预计工时：** 3-5 天
+**实际工时：** 1 天
+**实现方式：** 内置工具（使用 process.env + ps-tree）
+
+| 工具 | 文件 | 功能 | 状态 |
+|------|------|------|------|
+| env_get | `agent/tools/system.ts` | 获取环境变量 | ✅ 已完成 |
+| env_set | `agent/tools/system.ts` | 设置环境变量（仅当前进程） | ✅ 已完成 |
+| process_list | `agent/tools/system.ts` | 列出进程 | ✅ 已完成 |
+| process_kill | `agent/tools/system.ts` | 终止进程 | ✅ 已完成 |
+
+**使用场景：**
+- 读取系统环境配置
+- 动态设置运行时环境
+- 监控进程状态
+- 自动化运维脚本
+- 服务管理
+- 资源清理
+
+**为什么内置实现：**
+- 系统管理基础功能
+- 使用频次高，响应速度要求快
+- 跨平台兼容性好
+- 轻量级实现，无重型依赖
+
+---
+
+### ✅ Phase 4: LLM 提供商扩展
+
+**完成日期：** 2026-03-15
+**优先级：** 中
+**实际工时：** 4 天
 
 | 提供商 | 文件 | 功能 | 状态 |
 |--------|------|------|------|
-| Anthropic | `providers/anthropic.ts` | Claude 系列模型 | ⏸️ 待开发 |
-| OpenRouter | `providers/openrouter.ts` | 多模型网关 | ⏸️ 待开发 |
-| DeepSeek | `providers/deepseek.ts` | DeepSeek API | ⏸️ 待开发 |
-| 自定义 | `providers/custom.ts` | OpenAI 兼容端点 | ⏸️ 待开发 |
-| 注册表 | `providers/registry.ts` | 两步式注册、智能匹配 | ⏸️ 待开发 |
+| Anthropic | `providers/anthropic.ts` | Claude 系列模型 | ✅ 已完成 |
+| OpenRouter | `providers/openrouter.ts` | 多模型网关 | ✅ 已完成 |
+| DeepSeek | `providers/deepseek.ts` | DeepSeek API | ✅ 已完成 |
+| 自定义 | `providers/custom.ts` | OpenAI 兼容端点 | ✅ 已完成 |
+| 注册表 | `providers/registry.ts` | 两步式注册、智能匹配 | ✅ 已完成 |
 
 **提供商注册表设计：**
 
@@ -471,58 +515,417 @@ interface ProviderSpec {
 // 3. 网关回退
 ```
 
+**OpenSpec 变更：** `2026-03-15-phase-4-llm-provider-extension`
+
 ---
 
-### 🔄 Phase 5: 多渠道接入
+## 设计决策
+
+### 内置 vs MCP
+
+Niuma 遵循"轻量级核心 + MCP 生态"的设计理念，将功能分为内置功能和 MCP 提供的功能两类：
+
+#### 内置功能
+**特点：**
+- 系统基础功能，使用频次高
+- 轻量级实现，无重型依赖
+- 跨平台兼容性好
+- 响应速度要求快
+
+**已实现的内置功能：**
+- 文件系统操作（Phase 3, 3.1）
+- Shell 命令执行（Phase 3）
+- Git 操作（Phase 3.2）
+- 网络工具（Phase 3.4）
+- 数据处理工具（Phase 3.5）
+- 加密解密（Phase 3.6）
+- 环境变量与进程管理（Phase 3.7）
+- 定时任务与心跳（Phase 6）
+
+#### MCP 提供的功能
+**特点：**
+- 功能复杂，依赖大量专业库
+- 更新频繁（新格式、新算法）
+- 计算资源消耗大
+- 存在成熟的 MCP Server
+- 用户可能需要不同的处理能力（GPU 加速、云端服务等）
+
+**通过 MCP 提供的功能（不作为内置功能开发）：**
+- **图像处理**（原 Phase 3.8）
+  - 图片压缩优化
+  - 格式转换（WebP、AVIF）
+  - 缩略图生成
+  - 图片裁剪
+  - 批量处理
+
+  **推荐 MCP Server：**
+  - `@modelcontextprotocol/server-image-tools`
+
+- **媒体处理**（原 Phase 3.9）
+  - 音频转写（会议记录、语音备忘）
+  - 视频字幕生成
+  - 内容分析
+  - 多语言支持
+
+  **推荐 MCP Server：**
+  - `@modelcontextprotocol/server-whisper`
+
+- **其他专业工具**
+  - 文件系统访问（增强版）：`@modelcontextprotocol/server-filesystem`
+  - Git 操作（增强版）：`@modelcontextprotocol/server-git`
+  - 网页自动化：`@modelcontextprotocol/server-puppeteer`
+  - 数据库访问：`@modelcontextprotocol/server-postgres`
+
+**为什么通过 MCP：**
+1. **保持核心轻量级** - Niuma 核心保持最小化，不包含重型依赖
+2. **灵活性** - 用户可以选择任何 MCP Server，支持自定义 MCP Server
+3. **可扩展性** - MCP 生态系统快速增长，自动获得新功能和工具
+4. **标准化** - 遵循 MCP 标准协议，与其他 MCP 兼容工具互操作
+5. **社区驱动** - 社区驱动的生态发展，无需维护所有专业工具
+
+---
+
+### ✅ Phase 6: 定时任务与心跳
+
+**完成日期：** 2026-03-16
+
+**实现内容：**
+
+| 模块 | 文件 | 核心功能 |
+|------|------|----------|
+| Cron 工具 | `agent/tools/agent.ts` | 定时任务调度、Cron 表达式解析、精确时间计算 |
+| 心跳服务 | `heartbeat/service.ts` | HEARTBEAT.md 解析、周期性任务执行、结果发送 |
+| 心跳类型 | `heartbeat/types.ts` | 心跳相关类型定义 |
+
+**核心特性：**
+
+1. **HEARTBEAT.md 解析器**
+   - 使用 gray-matter 解析 YAML Frontmatter
+   - 支持 Markdown 任务列表解析
+   - 完整的格式验证和错误处理
+
+2. **周期性调度**
+   - 使用 node-cron 实现定时任务调度
+   - 支持标准 Cron 表达式
+   - 可配置检查间隔（默认 30 分钟）
+   - 精确的下次执行时间计算（使用 cron-parser）
+
+3. **任务执行**
+   - 串行执行 HEARTBEAT.md 中的任务
+   - 任务超时保护（默认 5 分钟）
+   - 优雅的错误处理和日志记录
+   - 任务执行结果收集和统计
+
+4. **结果发送**
+   - 通过最近活跃的渠道发送执行结果
+   - 支持多种消息格式（Markdown）
+   - 包含成功/失败统计和详细执行信息
+   - 渠道离线时优雅降级
+
+5. **Agent 集成**
+   - 与 Agent Loop 生命周期绑定
+   - 随 Agent 启动和停止
+   - 不影响 Agent 正常运行
+   - 配置化启用/禁用
+
+**心跳机制流程：**
+
+```mermaid
+flowchart TD
+    A[Agent 启动] --> B{heartbeat.enabled?}
+    B -->|Yes| C[启动 HeartbeatService]
+    B -->|No| D[跳过]
+    C --> E[创建 CronJob]
+    E --> F[等待触发]
+    F --> G[读取 HEARTBEAT.md]
+    G --> H{解析成功?}
+    H -->|Yes| I[解析任务列表]
+    H -->|No| J[记录错误，继续等待]
+    I --> K[串行执行任务]
+    K --> L[收集执行结果]
+    L --> M[格式化结果]
+    M --> N[发送到活跃渠道]
+    N --> F
+```
+
+**配置示例：**
+
+```json5
+{
+  "heartbeat": {
+    "enabled": true,
+    "interval": "0 */30 * * * *",
+    "filePath": "./HEARTBEAT.md",
+    "taskTimeout": 300
+  }
+}
+```
+
+**HEARTBEAT.md 格式：**
+
+```markdown
+---
+interval: "0 */30 * * * *"
+enabled: true
+---
+
+# 心跳任务
+
+- [ ] 检查系统状态
+- [ ] 发送每日提醒
+- [ ] 备份重要文件
+```
+
+**测试覆盖：** 100% 测试覆盖（集成测试 + 单元测试）
+
+**OpenSpec 变更：** `2026-03-16-phase-6-heartbeat-service`
+
+---
+
+### ✅ 代码补全：补全代码 TODO
+
+**完成日期：** 2026-03-16
+
+**实现内容：**
+
+| 模块 | 文件 | 核心功能 |
+|------|------|----------|
+| 子智能体上下文 | `agent/tools/agent.ts` | 从运行时上下文获取父智能体 ID 和 Agent ID |
+| 子智能体会话 | `agent/tools/agent.ts` | 独立会话管理和消息传递 |
+| 子智能体清理 | `agent/tools/agent.ts` | 优雅关闭和资源释放 |
+| 任务处理器 | `agent/tools/agent.ts` | 动态任务调度和执行 |
+| Cron 精确计算 | `agent/tools/agent.ts` | 使用 cron-parser 精确计算下次执行时间 |
+| 消息上下文 | `agent/tools/message.ts` | 从上下文获取 Agent ID |
+| 用户确认 | `agent/tools/shell.ts` | 危险命令的交互式确认 |
+
+**核心特性：**
+
+1. **子智能体上下文管理**
+   - 从运行时上下文动态获取父智能体 ID
+   - 不再硬编码 "default"
+   - 支持多角色架构
+
+2. **子智能体会话管理**
+   - 独立的会话状态
+   - 消息传递机制
+   - 会话隔离
+
+3. **子智能体资源清理**
+   - 优雅关闭机制
+   - 资源释放
+   - 防止内存泄漏
+
+4. **任务处理器执行**
+   - 动态任务调度
+   - 任务执行引擎
+   - 异步任务处理
+
+5. **Cron 精确时间计算**
+   - 使用 cron-parser 库
+   - 精确计算下次执行时间
+   - 支持复杂 Cron 表达式
+
+6. **消息上下文感知**
+   - 从上下文获取 Agent ID
+   - 支持多角色消息发送
+   - 消息路由
+
+7. **用户确认机制**
+   - 危险命令交互式确认
+   - 支持 --yes/-y 参数
+   - 非交互环境检测
+
+**新增依赖：**
+- `cron-parser` - Cron 表达式解析和计算
+
+**测试覆盖：** 100% 测试覆盖（单元测试 + 集成测试）
+
+**OpenSpec 变更：** `2026-03-16-complete-pending-todos`
+
+---
+
+## 待开发功能
+
+### ✅ Phase 5: 多渠道接入
 
 **优先级：** 中
-**预计工时：** 7-10 天
+**完成日期：** 2026-03-16
+**状态：** ✅ 已完成
 
 | 渠道 | 难度 | 协议 | 状态 |
 |------|------|------|------|
-| CLI | 简单 | stdin/stdout | ⏸️ 待开发 |
-| Telegram | 简单 | HTTP Bot API | ⏸️ 待开发 |
-| Discord | 简单 | WebSocket Gateway | ⏸️ 待开发 |
-| 飞书 | 中等 | WebSocket 长连接 | ⏸️ 待开发 |
-| 钉钉 | 中等 | Stream Mode | ⏸️ 待开发 |
-| Slack | 中等 | Socket Mode | ⏸️ 待开发 |
-| WhatsApp | 中等 | WebSocket Bridge | ⏸️ 待开发 |
-| Email | 中等 | IMAP/SMTP | ⏸️ 待开发 |
-| QQ | 简单 | WebSocket | ⏸️ 待开发 |
+| CLI | 简单 | stdin/stdout | ✅ 已完成 |
+| Telegram | 简单 | HTTP Bot API | ✅ 已完成 |
+| Discord | 简单 | WebSocket Gateway | ✅ 已完成 |
+| 飞书 | 中等 | WebSocket 长连接 | ⏸️ 基础框架 |
+| 钉钉 | 中等 | Stream Mode | ⏸️ 基础框架 |
+| Slack | 中等 | Socket Mode | ⏸️ 基础框架 |
+| WhatsApp | 中等 | WebSocket Bridge | ⏸️ 基础框架 |
+| Email | 中等 | IMAP/SMTP | ⏸️ 基础框架 |
+| QQ | 简单 | WebSocket | ⏸️ 基础框架 |
 
----
+**已完成功能：**
+- 渠道抽象层（BaseChannel、ChannelRegistry）
+- CLI 渠道（stdin/stdout 交互）
+- Telegram 渠道（Webhook 和 Polling 模式）
+- Discord 渠道（WebSocket Gateway）
+- Agent Loop 集成（多渠道消息处理）
+- SessionManager 扩展（渠道会话隔离）
+- CLI 命令（channels status、start、stop、list）
+- 完整的测试覆盖
 
-### 🔄 Phase 6: 定时任务与心跳
-
-**优先级：** 低
-**预计工时：** 1-2 天
-
-**已完成：**
-- ✅ Cron 工具：`agent/tools/agent.ts` - 定时任务调度、Cron 表达式解析
-
-**待开发：**
-
-| 模块 | 文件 | 功能 | 状态 |
-|------|------|------|------|
-| 心跳服务 | `heartbeat/service.ts` | HEARTBEAT.md 检查、周期性任务 | ⏸️ 待开发 |
-
-**心跳机制：**
-- 每 30 分钟检查 `HEARTBEAT.md`
-- 执行标记的任务
-- 通过最近活跃渠道发送结果
+**OpenSpec 变更：** `2026-03-16-phase-5-multi-channel-access`
 
 ---
 
 ### 🔄 Phase 7: MCP 协议支持
 
-**优先级：** 低
+**优先级：** 高
 **预计工时：** 3-5 天
+**实现方式：** MCP 客户端对接 + 配置管理
 
-**功能：**
-- MCP 服务器实现
-- MCP 客户端集成
-- 工具发现和调用
-- 资源访问
+**核心理念：**
+- Niuma 仅实现 MCP 客户端对接接口
+- 具体的 MCP Server 由用户自行配置
+- 支持动态加载和卸载 MCP Server
+- 提供配置示例和最佳实践文档
+
+**功能模块：**
+
+| 模块 | 文件 | 功能 | 状态 |
+|------|------|------|------|
+| MCP 客户端 | `mcp/client.ts` | MCP 协议客户端实现 | ⏸️ 待开发 |
+| MCP 注册表 | `mcp/registry.ts` | MCP Server 注册和管理 | ⏸️ 待开发 |
+| MCP 工具桥接 | `mcp/bridge.ts` | 将 MCP 工具映射到 Niuma 工具 | ⏸️ 待开发 |
+| MCP 配置管理 | `config/mcp.ts` | MCP Server 配置加载 | ⏸️ 待开发 |
+| MCP 发现 | `mcp/discovery.ts` | 自动发现可用的 MCP 工具 | ⏸️ 待开发 |
+
+**实现策略：**
+
+1. **MCP 客户端接口**
+   - 实现标准 MCP 协议（WebSocket 和 HTTP）
+   - 支持工具发现和调用
+   - 支持资源访问
+   - 错误处理和重试机制
+
+2. **配置管理**
+   ```json5
+   {
+     "mcp": {
+       "servers": {
+         "image-tools": {
+           "transport": "stdio",
+           "command": "npx",
+           "args": ["-y", "@modelcontextprotocol/server-image-tools"],
+           "enabled": true
+         },
+         "whisper": {
+           "transport": "stdio",
+           "command": "npx",
+           "args": ["-y", "@modelcontextprotocol/server-whisper"],
+           "env": {
+             "OPENAI_API_KEY": "${OPENAI_API_KEY}"
+           },
+           "enabled": true
+         }
+       }
+     }
+   }
+   ```
+
+3. **工具桥接**
+   - 自动将 MCP 工具注册到 Niuma 工具注册表
+   - 统一工具接口和错误处理
+   - 支持工具参数验证（使用 MCP 提供的 schema）
+
+4. **动态管理**
+   - 支持运行时加载/卸载 MCP Server
+   - 支持热重载配置
+   - 提供 MCP Server 健康检查
+
+**支持的 MCP Server 类型：**
+
+| 类型 | 传输方式 | 说明 |
+|------|---------|------|
+| stdio | stdio | 最常见的方式，通过标准输入输出通信 |
+| SSE | HTTP SSE | 服务器发送事件，适合长连接 |
+| WebSocket | WebSocket | 双向实时通信 |
+
+**推荐 MCP Server：**
+
+1. **图像处理**
+   - `@modelcontextprotocol/server-image-tools` - 图像处理工具
+   - `@modelcontextprotocol/server-brave-search` - 图像搜索（可选）
+
+2. **媒体处理**
+   - `@modelcontextprotocol/server-whisper` - Whisper 音频转写
+   - `@modelcontextprotocol/server-postgres` - 如果需要存储媒体元数据
+
+3. **其他工具**
+   - `@modelcontextprotocol/server-filesystem` - 文件系统访问（增强版）
+   - `@modelcontextprotocol/server-git` - Git 操作（增强版）
+   - `@modelcontextprotocol/server-puppeteer` - 网页自动化
+
+**配置示例：**
+
+```json5
+{
+  "mcp": {
+    "enabled": true,
+    "servers": {
+      // 图像处理
+      "image-tools": {
+        "transport": "stdio",
+        "command": "npx",
+        "args": ["-y", "@modelcontextprotocol/server-image-tools"],
+        "enabled": true
+      },
+
+      // Whisper 音频转写
+      "whisper": {
+        "transport": "stdio",
+        "command": "npx",
+        "args": ["-y", "@modelcontextprotocol/server-whisper"],
+        "env": {
+          "OPENAI_API_KEY": "${OPENAI_API_KEY}"
+        },
+        "enabled": true
+      },
+
+      // 自定义 MCP Server
+      "custom-server": {
+        "transport": "sse",
+        "url": "https://my-mcp-server.example.com/sse",
+        "headers": {
+          "Authorization": "Bearer ${CUSTOM_TOKEN}"
+        },
+        "enabled": false
+      }
+    }
+  }
+}
+```
+
+**优势：**
+
+1. **轻量级核心**
+   - Niuma 保持轻量级，不包含重型依赖
+   - 用户按需配置 MCP Server
+
+2. **灵活性**
+   - 用户可以选择任何 MCP Server
+   - 支持自定义 MCP Server
+   - 支持云端和本地 MCP Server
+
+3. **可扩展性**
+   - MCP 生态系统快速增长
+   - 自动获得新功能和工具
+   - 无需修改 Niuma 核心代码
+
+4. **标准化**
+   - 遵循 MCP 标准协议
+   - 与其他 MCP 兼容工具互操作
+   - 社区驱动的生态发展
 
 ---
 
@@ -533,22 +936,33 @@ interface ProviderSpec {
   "dependencies": {
     "@langchain/openai": "^0.3.0",
     "@sqliteai/sqlite-wasm": "^3.50.4",
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "@anthropic-ai/sdk": "^0.29.0",
     "cac": "^6.7.0",
     "chalk": "^5.0.0",
     "node-cron": "^3.0.0",
     "node-fetch": "^3.0.0",
     "ora": "^8.0.0",
     "pino": "^9.0.0",
-    "zod": "^3.0.0",
+    "zod": "^4.3.0",
     "json5": "^2.2.3",
     "date-fns": "^4.0.0",
     "dayjs": "^1.11.0",
     "dotenv": "^16.0.0",
-    "node-notifier": "^10.0.0"
+    "node-notifier": "^10.0.0",
+    "js-yaml": "^4.1.0",
+    "fast-glob": "^3.3.2",
+    "file-type": "^19.0.0",
+    "deepmerge": "^4.3.1",
+    "re2": "^1.23.3",
+    "secure-json-parse": "^4.1.0",
+    "fs-extra": "^11.2.0",
+    "ps-tree": "^1.2.0"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
     "@types/node-cron": "^3.0.0",
+    "@types/ps-tree": "^1.1.5",
     "tsx": "^4.0.0",
     "typescript": "^5.0.0",
     "vitest": "^2.0.0",
@@ -606,66 +1020,6 @@ interface ProviderSpec {
    ↓
 4. /opsx:archive (归档)
 ```
-
----
-
-## 最近变更
-
-### v0.1.2 (2026-03-13)
-
-**Phase 3.1：高级文件操作**
-- ✅ 新增 7 个高级文件操作工具（file_search、file_move、file_copy、file_delete、file_info、dir_create、dir_delete）
-- ✅ 使用 fast-glob 重构 ListDirTool（性能提升 2-10 倍）
-- ✅ 完整的安全防护机制（文件大小限制、正则表达式安全检查、受保护路径列表）
-- ✅ 100% 测试覆盖（45/45 通过）
-
-**代码质量改进：**
-- ✅ 使用 fs.rename 保证文件移动的原子性
-- ✅ 添加正则表达式 ReDoS 防护
-- ✅ 修复 DirDeleteTool 在非递归模式下的问题
-
-### v0.1.1 (2026-03-12)
-
-**Phase 3：内置工具实现**
-- ✅ 文件系统工具（read_file、write_file、edit_file、list_dir）
-- ✅ Shell 工具（exec，带危险命令黑名单防护）
-- ✅ Web 工具（web_search、web_fetch，带缓存机制）
-- ✅ 消息工具（message，支持队列和富文本）
-- ✅ Agent 工具（spawn、cron，支持子智能体和定时任务）
-- ✅ 100% 测试覆盖（332/332 通过）
-
-**代码质量改进：**
-- ✅ 完整的单元测试和集成测试
-- ✅ 工具注册和配置系统优化
-- ✅ 类型安全和错误处理完善
-
-### v0.1.0 (2026-03-11)
-
-**企业扩展：多角色配置系统**
-- ✅ JSON5 配置文件格式支持
-- ✅ 多角色架构，支持独立 AI 角色
-- ✅ 环境变量引用 `${VAR}` 和 `${VAR:default}`
-- ✅ defaults-with-overrides 配置模式
-- ✅ 角色完全隔离（工作区、会话、日志）
-- ✅ 严格 Zod 配置验证
-
-**代码质量改进：**
-- ✅ 删除未使用的变量和导入
-- ✅ 添加完整的测试用例注释
-
-### v0.1.0-beta (2026-03-10)
-
-**Phase 2：Agent 核心**
-- ✅ 上下文构建器（支持媒体、技能、记忆）
-- ✅ 双层记忆系统
-- ✅ 技能系统
-- ✅ Agent 循环（LLM ↔ 工具执行）
-
-**Phase 1：核心基础设施**
-- ✅ 核心类型系统
-- ✅ 配置管理
-- ✅ 工具框架
-- ✅ 事件总线
 
 ---
 

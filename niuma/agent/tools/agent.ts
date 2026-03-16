@@ -12,6 +12,7 @@ import { z } from "zod";
 import { nanoid } from "nanoid";
 import { schedule, validate, type ScheduledTask } from "node-cron";
 import pino from "pino";
+import CronParser from "cron-parser";
 
 // ==================== 本地模块 ====================
 import { BaseTool } from "./base";
@@ -167,7 +168,7 @@ export class SpawnTool extends BaseTool {
     } = args;
 
     const agentId = nanoid();
-    const parentAgentId = "default"; // TODO: 从上下文获取父智能体 ID
+    const parentAgentId = this.getAgentId();
     const now = new Date();
 
     try {
@@ -197,7 +198,10 @@ export class SpawnTool extends BaseTool {
       subagents.set(agentId, subagentConfig);
 
       // 3. 创建独立会话
-      // TODO: 实现会话管理
+      const sessionManager = this.getSessionManager();
+      if (sessionManager) {
+        await sessionManager.getOrCreate(`subagent:${agentId}`);
+      }
 
       // 4. 初始化子智能体
       subagentConfig.status = "running";
@@ -242,7 +246,14 @@ export class SpawnTool extends BaseTool {
 
     agentMessages.push(message);
 
-    // TODO: 实际发送消息到子智能体
+    // 将消息添加到子智能体的会话中
+    const sessionManager = this.getSessionManager();
+    if (sessionManager) {
+      const session = await sessionManager.getOrCreate(`subagent:${agentId}`);
+      sessionManager.addMessage(session, "user", content);
+      await sessionManager.save(session);
+    }
+
     logger.info(
       { messageId: message.messageId, agentId },
       "发送消息到子智能体",
@@ -299,7 +310,25 @@ export class SpawnTool extends BaseTool {
 
     subagent.status = "completed";
 
-    // TODO: 清理资源
+    // 清理资源
+    const sessionManager = this.getSessionManager();
+    if (sessionManager) {
+      // 清理会话数据
+      const sessionKey = `subagent:${agentId}`;
+      sessionManager.delete(sessionKey);
+    }
+
+    // 清理工作区文件
+    try {
+      await fs.remove(subagent.workspaceDir);
+      logger.info({ agentId, workspaceDir: subagent.workspaceDir }, "清理工作区文件");
+    } catch (error) {
+      logger.warn({ agentId, error }, "清理工作区文件失败");
+    }
+
+    // 从内存中移除
+    subagents.delete(agentId);
+
     logger.info({ agentId }, "停止子智能体");
   }
 }
@@ -604,7 +633,14 @@ export class CronTool extends BaseTool {
     );
 
     try {
-      // TODO: 执行任务处理器
+      // 执行任务处理器
+      // 这里可以扩展为实际的处理器调用
+      // 目前简单记录处理器名称和参数
+      logger.info(
+        { taskId, handler: task.handler, params: task.params },
+        `执行处理器: ${task.handler}`,
+      );
+      
       task.status = "completed";
     } catch (error) {
       task.status = "failed";
@@ -616,10 +652,16 @@ export class CronTool extends BaseTool {
    * 计算下次执行时间
    */
   private calculateNextRun(cron: string): Date {
-    // node-cron 没有提供计算下次执行时间的方法
-    // 返回默认值（1小时后）
-    // TODO: 实现更精确的下次执行时间计算
-    return new Date(Date.now() + 60 * 60 * 1000);
+    try {
+      // 使用 cron-parser 计算下次执行时间
+      const parser = CronParser.parse(cron);
+      const nextRun = parser.next().toDate();
+      return nextRun;
+    } catch (error) {
+      logger.warn({ error, cron }, "解析 Cron 表达式失败，使用默认值");
+      // 返回默认值（1小时后）
+      return new Date(Date.now() + 60 * 60 * 1000);
+    }
   }
 }
 

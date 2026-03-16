@@ -16,6 +16,11 @@ import type {
  */
 export interface LLMProvider {
   /**
+   * 提供商名称
+   */
+  readonly name: string;
+
+  /**
    * 获取提供商配置
    */
   getConfig(): LLMConfig;

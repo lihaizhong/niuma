@@ -34,6 +34,11 @@ import { ContextBuilder } from "./context";
 import { MemoryStore } from "./memory";
 import { SkillsLoader } from "./skills";
 import { retryWithBackoff } from "../utils/retry";
+import type { HeartbeatConfig } from "../heartbeat/types";
+import { HeartbeatService } from "../heartbeat/service";
+import type { ChannelsConfig } from "../config/schema";
+import { ChannelRegistry } from "../channels/registry";
+import { BaseChannel } from "../channels/base";
 
 const logger = createLogger("agent-loop");
 
@@ -51,6 +56,8 @@ export interface AgentLoopOptions {
   tools: ToolRegistry;
   /** 会话管理器 */
   sessions: SessionManager;
+  /** Agent ID（可选，默认为 "default"） */
+  agentId?: string;
   /** 使用的模型（可选，默认使用 provider 的默认模型） */
   model?: string;
   /** 最大迭代次数（默认 40） */
@@ -61,6 +68,12 @@ export interface AgentLoopOptions {
   maxTokens?: number;
   /** 记忆窗口大小（默认 100 条消息） */
   memoryWindow?: number;
+  /** 心跳服务配置 */
+  heartbeatConfig?: HeartbeatConfig;
+  /** 渠道配置 */
+  channelsConfig?: ChannelsConfig;
+  /** 渠道注册表（可选，如果不提供则创建新的） */
+  channelRegistry?: ChannelRegistry;
 }
 
 /**
@@ -73,6 +86,10 @@ export interface ProcessOptions {
   sessionKey?: string;
   /** 进度回调 */
   onProgress?: ProgressCallback;
+  /** 跳过渠道发送（默认 false） */
+  skipChannelSend?: boolean;
+  /** 元数据 */
+  metadata?: Record<string, unknown>;
 }
 
 /**
@@ -144,7 +161,7 @@ export class AgentLoop {
   /** 工具注册中心 */
   private readonly tools: ToolRegistry;
   /** 会话管理器 */
-  private readonly sessions: SessionManager;
+  public readonly sessions: SessionManager;
   /** 使用的模型 */
   private readonly model: string;
   /** 最大迭代次数 */
@@ -164,6 +181,12 @@ export class AgentLoop {
   private running = false;
   /** 消息队列 */
   private messageQueue: AsyncQueue<InboundMessage>;
+  /** 心跳服务 */
+  private heartbeatService?: HeartbeatService;
+  /** 渠道注册表 */
+  private readonly channelRegistry: ChannelRegistry;
+  /** 渠道配置 */
+  private readonly channelsConfig?: ChannelsConfig;
 
   // ============================================
   // 缓存属性
@@ -201,6 +224,33 @@ export class AgentLoop {
 
     // 初始化消息队列
     this.messageQueue = new AsyncQueue();
+
+    // 初始化渠道注册表
+    this.channelRegistry = options.channelRegistry ?? this._createChannelRegistry();
+    this.channelsConfig = options.channelsConfig;
+
+    // 设置 ToolRegistry 的 Agent ID
+    const agentId = options.agentId ?? "default";
+    this.tools.setAgentId(agentId);
+
+    // 初始化心跳服务（如果配置启用）
+    if (options.heartbeatConfig?.enabled) {
+      this.heartbeatService = new HeartbeatService({
+        agent: this,
+        config: options.heartbeatConfig,
+        logger: createLogger("heartbeat"),
+        workspaceRoot: this.workspace,
+      });
+    }
+  }
+
+  /**
+   * 创建渠道注册表
+   * @returns 渠道注册表实例
+   * @private
+   */
+  private _createChannelRegistry(): ChannelRegistry {
+    return new ChannelRegistry();
   }
 
   // ============================================
@@ -219,6 +269,20 @@ export class AgentLoop {
 
     this.running = true;
     logger.info("启动消息处理循环");
+
+    // 启动渠道
+    await this._startChannels();
+
+    // 启动心跳服务（如果已配置）
+    if (this.heartbeatService) {
+      try {
+        await this.heartbeatService.start();
+        logger.info("心跳服务已启动");
+      } catch (error) {
+        logger.error({ error }, "启动心跳服务失败");
+        // 不影响主循环继续运行
+      }
+    }
 
     // 监听消息事件
     this.bus.on("MESSAGE_RECEIVED", async (data) => {
@@ -257,10 +321,90 @@ export class AgentLoop {
    * 停止消息处理循环
    * @description 停止监听，清理资源
    */
-  stop(): void {
+  async stop(): Promise<void> {
     logger.info("停止消息处理循环");
     this.running = false;
     this.messageQueue.clear();
+
+    // 停止心跳服务（如果已启动）
+    if (this.heartbeatService) {
+      try {
+        await this.heartbeatService.stop();
+        logger.info("心跳服务已停止");
+      } catch (error) {
+        logger.error({ error }, "停止心跳服务失败");
+        // 不影响主循环停止
+      }
+    }
+  }
+
+  /**
+   * 启动渠道
+   * @description 从配置中加载并启动所有启用的渠道
+   * @private
+   */
+  private async _startChannels(): Promise<void> {
+    if (!this.channelsConfig || this.channelsConfig.channels.length === 0) {
+      logger.info("没有配置渠道，跳过渠道启动");
+      return;
+    }
+
+    try {
+      logger.info("开始启动渠道...");
+
+      // 获取启用的渠道列表
+      const enabledChannelTypes = this.channelsConfig.enabled;
+      logger.info(`启用的渠道: ${enabledChannelTypes.join(", ")}`);
+
+      // 从 channels 配置中找到对应的渠道配置
+      const enabledChannelConfigs = this.channelsConfig.channels.filter((c) =>
+        enabledChannelTypes.includes(c.type)
+      );
+
+      // 注册消息处理器到所有渠道
+      for (const channelConfig of enabledChannelConfigs) {
+        const channel = this.channelRegistry.get(channelConfig.type);
+        if (channel) {
+          channel.onMessage(async (message) => {
+            await this.messageQueue.enqueue(message);
+          });
+
+          channel.onError((error) => {
+            logger.error({ error }, `渠道 ${channelConfig.type} 错误`);
+          });
+        } else {
+          logger.warn(`未找到渠道 ${channelConfig.type}，跳过`);
+        }
+      }
+
+      // 启动所有渠道
+      await this.channelRegistry.startAll(enabledChannelTypes);
+
+      logger.info("渠道启动完成");
+    } catch (error) {
+      logger.error({ error }, "启动渠道失败");
+      // 不影响主循环继续运行
+    }
+  }
+
+  /**
+   * 停止渠道
+   * @description 停止所有运行中的渠道
+   * @private
+   */
+  private async _stopChannels(): Promise<void> {
+    if (this.channelRegistry.size() === 0) {
+      logger.info("没有运行中的渠道");
+      return;
+    }
+
+    try {
+      logger.info("停止所有渠道...");
+      await this.channelRegistry.stopAll();
+      logger.info("渠道已停止");
+    } catch (error) {
+      logger.error({ error }, "停止渠道失败");
+    }
   }
 
   /**
@@ -321,7 +465,32 @@ export class AgentLoop {
       replyTo: message.messageId,
     };
 
+    // 通过渠道发送消息
+    await this._sendMessageToChannel(outbound);
+
+    // 同时发送事件（保持兼容性）
     this.bus.emit("MESSAGE_SENT", { message: outbound });
+  }
+
+  /**
+   * 通过渠道发送消息
+   * @description 尝试通过对应的渠道发送消息
+   * @param message 出站消息
+   * @private
+   */
+  private async _sendMessageToChannel(message: OutboundMessage): Promise<void> {
+    try {
+      const channel = this.channelRegistry.get(message.channel);
+      if (channel) {
+        await channel.send(message);
+        logger.debug(`通过渠道 ${message.channel} 发送消息成功`);
+      } else {
+        logger.warn(`未找到渠道 ${message.channel}，无法发送消息`);
+      }
+    } catch (error) {
+      logger.error({ error }, `通过渠道 ${message.channel} 发送消息失败`);
+      // 不抛出错误，避免影响主流程
+    }
   }
 
   /**
