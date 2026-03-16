@@ -20,7 +20,9 @@
     "openspec",
     "opsx",
     "pids",
+    "pino",
     "poweroff",
-    "sqliteai"
+    "sqliteai",
+    "vitest"
   ]
 }

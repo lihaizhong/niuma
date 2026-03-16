@@ -8,42 +8,78 @@ schema: spec-driven
 
 context: |
   ## Project Overview
-  
-  **Niuma (牛马)** - 智能生活助手 CLI 工具，使用 TypeScript 复写 nanobot。
-  目标：提供陪伴感和情绪价值的智能精灵。
+
+  **Niuma (牛马)** - 企业级多角色 AI 助手系统，基于 TypeScript + Node.js 构建。支持创建多个完全独立的 AI 角色，每个角色拥有独立的配置、工作区、会话、记忆和日志。
 
   ## Tech Stack
-  
+
   - **Language**: TypeScript 5.9+
-  - **Runtime**: Node.js 18+
+  - **Runtime**: Node.js >=22.0.0
   - **Package Manager**: pnpm
   - **Test Framework**: vitest
   - **LLM Framework**: langchain
-  - **Database**: better-sqlite3 + sqlite-vec
+  - **Database**: @sqliteai/sqlite-wasm + sqlite-vec
+
+  ### Main Dependencies
+  - langchain - AI/LLM 应用框架
+  - @langchain/openai - OpenAI 集成
+  - zod - 运行时类型验证
+  - json5 - JSON5 配置文件格式
+  - @sqliteai/sqlite-wasm - SQLite WASM 数据库
+  - cac - 命令行参数解析
+  - pino - 日志记录
+
+  ### Dev Dependencies
+  - tsx - TypeScript 执行器
+  - vitest - 单元测试框架
+  - eslint - 代码规范检查
 
   ## Architecture
-  
+
   ```
-  src/
-  ├── agent/          # 核心智能体（loop, context, memory, skills, tools）
-  ├── providers/      # LLM 提供商（OpenAI, Anthropic, OpenRouter...）
-  ├── channels/       # 多渠道接入（CLI, Telegram, Discord...）
-  ├── bus/            # 消息总线（events, queue）
-  ├── session/        # 会话管理
-  ├── config/         # 配置管理
-  └── types/          # 类型定义
+  niuma/
+  ├── niuma/
+  │   ├── agent/          # Agent 核心模块
+  │   ├── bus/            # 事件总线
+  │   ├── channels/       # 多渠道接入
+  │   ├── cli/            # CLI 入口
+  │   ├── config/         # 配置管理
+  │   ├── cron/           # 定时任务
+  │   ├── heartbeat/      # 主动唤醒
+  │   ├── providers/      # LLM 提供商
+  │   ├── session/        # 会话管理
+  │   ├── types/          # 类型定义
+  │   └── utils/          # 工具函数
+  ├── openspec/           # OpenSpec 规范
+  ├── .iflow/             # iFlow CLI 配置
+  └── docs/               # 文档
   ```
 
+  ### Core Modules
+  - **Agent** - 智能体核心，处理对话循环、记忆管理、技能调用、工具执行
+  - **Tools** - 工具集，包括文件系统操作、Shell 命令、Web 请求、MCP 协议等
+  - **Bus** - 事件总线，模块间异步通信
+  - **Channels** - 多渠道接入（Telegram, Discord, 飞书, 钉钉, Slack 等）
+  - **Providers** - LLM 提供商抽象层（OpenAI, Anthropic, 自定义端点）
+  - **Session** - 会话管理，历史记录和状态持久化
+  - **Skills** - 可扩展技能系统，动态加载 SKILL.md
+  - **Cron** - 定时任务调度服务
+  - **Memory** - 双层记忆系统，自动整合长期记忆
+
   ## Coding Conventions
-  
+
   - ES Module syntax (no CommonJS)
   - Strict TypeScript enabled
   - Async/await over Promise chains
   - Prefer composition over inheritance
   - Tools follow nanobot's Tool abstract class pattern
+  - Use ESLint for code style checking
+  - **Comments must be in Chinese**, code identifiers in English
+  - **Diagrams must use mermaid syntax**
+  - **OpenSpec specs main content must be in Chinese**
 
   ## Commit Style
-  
+
   Conventional Commits:
   - `feat:` new features
   - `fix:` bug fixes
@@ -52,12 +88,38 @@ context: |
   - `test:` test changes
   - `chore:` maintenance
 
+  ## Version Management
+
+  - Update `package.json` and `CHANGELOG.md` when changing version
+  - Follow Semantic Versioning (semver) specification
+
+  ## Branch Strategy
+
+  - `main` - main branch
+  - `feat/*` - feature branches
+
+  ## Build & Test Commands
+
+  ```bash
+  pnpm install       # Install dependencies
+  pnpm dev           # Development mode
+  pnpm build         # Build
+  pnpm start         # Run
+  pnpm test          # Test
+  pnpm lint          # Code check
+  pnpm type-check    # Type check
+  ```
+
   ## Key Patterns (from nanobot)
-  
+
   1. **Tool System**: Abstract base class + Registry pattern
   2. **Provider Registry**: Two-step registration (spec + config field)
   3. **Memory System**: Two-layer (MEMORY.md + HISTORY.md)
   4. **Agent Loop**: LLM call ↔ Tool execution cycle
+
+  ---
+
+  **Note**: For detailed behavior guidelines and workflow constraints, please refer to AGENTS.md.
 
 # ============================================================
 # Per-Artifact Rules
