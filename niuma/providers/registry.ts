@@ -5,13 +5,13 @@
  * 支持两步式注册（spec + config field）和智能匹配机制.
  */
 
-/* eslint-disable no-undef */
+ 
 // ==================== 本地模块 ====================
-import { OpenAIProvider } from "./openai";
 import { AnthropicProvider } from "./anthropic";
-import { OpenRouterProvider } from "./openrouter";
-import { DeepSeekProvider } from "./deepseek";
 import { CustomProvider } from "./custom";
+import { DeepSeekProvider } from "./deepseek";
+import { OpenAIProvider } from "./openai";
+import { OpenRouterProvider } from "./openrouter";
 
 import type { LLMProvider } from "./base";
 import type { LLMConfig } from "../types";
