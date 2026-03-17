@@ -25,9 +25,11 @@ import { MemoryStore } from "./memory";
 import { SkillsLoader } from "./skills";
 
 import type { EventBus } from "../bus/events";
+import type { ConfigManager } from "../config/manager";
 import type { ChannelsConfig } from "../config/schema";
 import type { HeartbeatConfig } from "../heartbeat/types";
 import type { LLMProvider } from "../providers/base";
+import type { ProviderRegistry, ProviderSpec } from "../providers/registry";
 import type { Session, SessionManager } from "../session/manager";
 import type {
   ChatMessage,
@@ -74,6 +76,10 @@ export interface AgentLoopOptions {
   channelsConfig?: ChannelsConfig;
   /** 渠道注册表（可选，如果不提供则创建新的） */
   channelRegistry?: ChannelRegistry;
+  /** Provider 注册表（用于 provider 切换） */
+  providerRegistry?: ProviderRegistry;
+  /** 配置管理器（用于获取 provider 列表） */
+  configManager?: ConfigManager;
 }
 
 /**
@@ -109,6 +115,36 @@ export type ProgressEvent =
  * 进度回调函数类型
  */
 export type ProgressCallback = (event: ProgressEvent) => void;
+
+/**
+ * Provider 信息（用于列表显示）
+ */
+export interface ProviderInfo {
+  /** Provider 名称 */
+  name: string;
+  /** 显示名称 */
+  displayName: string;
+  /** 当前使用的模型 */
+  model: string;
+  /** 是否为当前 provider */
+  isCurrent: boolean;
+  /** 是否可用（API Key 已配置） */
+  isAvailable: boolean;
+}
+
+/**
+ * Provider 切换结果
+ */
+export interface ProviderSwitchResult {
+  /** 是否成功 */
+  success: boolean;
+  /** 新的 provider 名称 */
+  providerName: string;
+  /** 新的模型名称 */
+  modelName: string;
+  /** 错误信息（如失败） */
+  error?: string;
+}
 
 /**
  * 默认配置常量
@@ -155,7 +191,13 @@ export class AgentLoop {
   /** 事件总线 */
   private readonly bus: EventBus;
   /** LLM 提供商 */
-  private readonly provider: LLMProvider;
+  private _provider: LLMProvider;
+  /** Provider 注册表 */
+  private readonly providerRegistry?: ProviderRegistry;
+  /** 配置管理器 */
+  private readonly configManager?: ConfigManager;
+  /** 当前 provider 名称 */
+  private currentProviderName?: string;
   /** 工作区路径 */
   private readonly workspace: string;
   /** 工具注册中心 */
@@ -212,7 +254,9 @@ export class AgentLoop {
    */
   constructor(options: AgentLoopOptions) {
     this.bus = options.bus;
-    this.provider = options.provider;
+    this._provider = options.provider;
+    this.providerRegistry = options.providerRegistry;
+    this.configManager = options.configManager;
     this.workspace = options.workspace;
     this.tools = options.tools;
     this.sessions = options.sessions;
@@ -221,6 +265,14 @@ export class AgentLoop {
     this.temperature = options.temperature ?? DEFAULT_TEMPERATURE;
     this.maxTokens = options.maxTokens;
     this.memoryWindow = options.memoryWindow ?? DEFAULT_MEMORY_WINDOW;
+
+    // 初始化当前 provider 名称
+    if (this.configManager) {
+      const availableProviders = this.configManager.listAvailableProviders(options.agentId);
+      if (availableProviders.length > 0) {
+        this.currentProviderName = availableProviders[0].name;
+      }
+    }
 
     // 初始化消息队列
     this.messageQueue = new AsyncQueue();
@@ -242,6 +294,218 @@ export class AgentLoop {
         workspaceRoot: this.workspace,
       });
     }
+  }
+
+  /**
+   * 获取当前提供商
+   */
+  get provider(): LLMProvider {
+    return this._provider;
+  }
+
+  /**
+   * 切换提供商
+   * @param newProvider 新的提供商实例
+   * @param providerName 提供商名称（可选）
+   */
+  setProvider(newProvider: LLMProvider, providerName?: string): void {
+    this._provider = newProvider;
+    this.currentProviderName = providerName;
+    logger.info({ provider: providerName ?? newProvider.name }, "Provider 已切换");
+  }
+
+  // ============================================
+  // Provider 切换方法
+  // ============================================
+
+  /**
+   * 列出所有可用的 provider
+   * @returns Provider 信息列表
+   */
+  listProviders(): ProviderInfo[] {
+    if (!this.providerRegistry) {
+      return [];
+    }
+
+    // 获取所有已配置的 provider（有配置的才显示）
+    const allSpecs = this.providerRegistry.listProviders();
+    
+    // 只显示有配置的 provider
+    const configuredProviders = allSpecs.filter((spec) => {
+      const config = this.providerRegistry!.getProviderConfig(spec.name);
+      return config !== undefined;
+    });
+    
+    return configuredProviders.map((spec) => ({
+      name: spec.name,
+      displayName: spec.displayName,
+      model: this.providerRegistry!.getProviderConfig(spec.name)?.model ?? spec.keywords[0] ?? "unknown",
+      isCurrent: spec.name === this.currentProviderName,
+      isAvailable: Boolean(process.env[spec.envKey]),
+    }));
+  }
+
+  /**
+   * 获取当前 provider 信息
+   * @returns 当前 Provider 信息
+   */
+  getCurrentProvider(): ProviderInfo | null {
+    if (!this.currentProviderName || !this.configManager || !this.providerRegistry) {
+      return null;
+    }
+
+    const spec = this.providerRegistry.listProviders().find(
+      (s) => s.name === this.currentProviderName
+    );
+
+    if (!spec) {
+      return null;
+    }
+
+    return {
+      name: spec.name,
+      displayName: spec.displayName,
+      model: this.providerRegistry.getProviderConfig(spec.name)?.model ?? this._provider.getDefaultModel(),
+      isCurrent: true,
+      isAvailable: Boolean(process.env[spec.envKey]),
+    };
+  }
+
+  /**
+   * 切换到指定的 provider
+   * @param name Provider 名称
+   * @returns 切换结果
+   */
+  switchProvider(name: string): ProviderSwitchResult {
+    if (!this.providerRegistry || !this.configManager) {
+      return {
+        success: false,
+        providerName: this.currentProviderName ?? "",
+        modelName: this._provider.getDefaultModel(),
+        error: "Provider 注册表或配置管理器未初始化",
+      };
+    }
+
+    // 检查 provider 是否存在
+    const spec = this.providerRegistry.listProviders().find((s) => s.name === name);
+    if (!spec) {
+      const availableNames = this.providerRegistry.listProviders().map((s) => s.name).join(", ");
+      return {
+        success: false,
+        providerName: this.currentProviderName ?? "",
+        modelName: this._provider.getDefaultModel(),
+        error: `Provider "${name}" 不存在。可用的 provider: ${availableNames}`,
+      };
+    }
+
+    // 检查 API Key 是否配置
+    const hasApiKey = Boolean(process.env[spec.envKey]);
+    const warning = hasApiKey ? "" : ` (警告: ${spec.envKey} 未设置，该 provider 可能不可用)`;
+
+    try {
+      // 获取 provider 实例
+      const newProvider = this.providerRegistry.getProviderByName(name);
+      if (!newProvider) {
+        return {
+          success: false,
+          providerName: this.currentProviderName ?? "",
+          modelName: this._provider.getDefaultModel(),
+          error: `无法获取 Provider "${name}" 的实例`,
+        };
+      }
+
+      // 获取模型名称
+      const config = this.providerRegistry.getProviderConfig(name);
+      const modelName = config?.model ?? newProvider.getDefaultModel();
+
+      // 切换 provider
+      this.setProvider(newProvider, name);
+
+      return {
+        success: true,
+        providerName: name,
+        modelName,
+        error: warning || undefined,
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      return {
+        success: false,
+        providerName: this.currentProviderName ?? "",
+        modelName: this._provider.getDefaultModel(),
+        error: `切换 Provider 失败: ${message}`,
+      };
+    }
+  }
+
+  /**
+   * 根据模型名切换 provider
+   * @param modelName 模型名称
+   * @returns 切换结果
+   */
+  switchByModel(modelName: string): ProviderSwitchResult {
+    if (!this.providerRegistry || !this.configManager) {
+      return {
+        success: false,
+        providerName: this.currentProviderName ?? "",
+        modelName: this._provider.getDefaultModel(),
+        error: "Provider 注册表或配置管理器未初始化",
+      };
+    }
+
+    // 检查是否包含 provider 前缀（如 "anthropic/claude-sonnet-4-5"）
+    const parts = modelName.split("/");
+    if (parts.length === 2) {
+      const providerName = parts[0];
+      const model = parts[1];
+      const result = this.switchProvider(providerName);
+      
+      if (result.success) {
+        result.modelName = model;
+      }
+      
+      return result;
+    }
+
+    // 尝试通过模型名匹配 provider
+    const newProvider = this.providerRegistry.getProvider(modelName);
+    if (!newProvider) {
+      // 收集所有支持的模型关键词
+      const allSpecs = this.providerRegistry.listProviders();
+      const keywords = allSpecs.flatMap((s) => 
+        s.keywords.map((k) => `${k} (${s.displayName})`)
+      ).join(", ");
+      
+      return {
+        success: false,
+        providerName: this.currentProviderName ?? "",
+        modelName: this._provider.getDefaultModel(),
+        error: `无法匹配模型 "${modelName}" 到任何 provider。支持的模型关键词: ${keywords}`,
+      };
+    }
+
+    // 找到匹配的 provider，确定其名称
+    const matchedSpec = this.providerRegistry.listProviders().find((spec) => {
+      const lowerModel = modelName.toLowerCase();
+      return spec.keywords.some((k) => lowerModel.includes(k.toLowerCase()));
+    });
+
+    if (!matchedSpec) {
+      return {
+        success: false,
+        providerName: this.currentProviderName ?? "",
+        modelName: this._provider.getDefaultModel(),
+        error: `无法确定模型 "${modelName}" 对应的 provider`,
+      };
+    }
+
+    // 切换 provider
+    const result = this.switchProvider(matchedSpec.name);
+    if (result.success) {
+      result.modelName = modelName;
+    }
+
+    return result;
   }
 
   /**
@@ -723,7 +987,7 @@ export class AgentLoop {
       maxRetries: MAX_LLM_RETRIES,
       delays: RETRY_DELAYS,
       fn: async () => {
-        return await this.provider.chat({
+        return await this._provider.chat({
           messages,
           tools,
           model: this.model,
@@ -851,7 +1115,8 @@ export class AgentLoop {
     session: Session,
   ): Promise<string> {
     const whitespaceRegex = new RE2("\\s+", "g");
-    const command = content.toLowerCase().split(whitespaceRegex)[0];
+    const parts = content.toLowerCase().split(whitespaceRegex);
+    const command = parts[0];
 
     switch (command) {
       case "/new": {
@@ -861,7 +1126,7 @@ export class AgentLoop {
         if (session.messages.length > 0) {
           await memoryStore.consolidate({
             session,
-            provider: this.provider,
+            provider: this._provider,
             model: this.model,
             archiveAll: true,
             memoryWindow: this.memoryWindow,
@@ -882,8 +1147,127 @@ export class AgentLoop {
         return this._getHelpText();
       }
 
+      case "/provider": {
+        return this._handleProviderCommand(parts.slice(1));
+      }
+
+      case "/model": {
+        return this._handleModelCommand(parts.slice(1));
+      }
+
       default:
         return `未知命令: ${command}\n\n可用命令:\n${this._getHelpText()}`;
+    }
+  }
+
+  /**
+   * 处理 /provider 命令
+   * @param args 命令参数
+   * @returns 命令输出
+   */
+  private _handleProviderCommand(args: string[]): string {
+    // /provider - 列出所有 provider
+    if (args.length === 0) {
+      return this._formatProviderList();
+    }
+
+    const subCommand = args[0];
+
+    // /provider current - 显示当前 provider
+    if (subCommand === "current") {
+      return this._formatCurrentProvider();
+    }
+
+    // /provider <name> - 切换到指定 provider
+    return this._switchAndFormatProvider(subCommand);
+  }
+
+  /**
+   * 处理 /model 命令
+   * @param args 命令参数（模型名）
+   * @returns 命令输出
+   */
+  private _handleModelCommand(args: string[]): string {
+    if (args.length === 0) {
+      return "用法: /model <model-name>\n示例: /model gpt-4o 或 /model anthropic/claude-sonnet-4-5";
+    }
+
+    const modelName = args.join("-");
+    const result = this.switchByModel(modelName);
+
+    if (result.success) {
+      let message = `✅ 已切换到 Provider: ${result.providerName}\n模型: ${result.modelName}`;
+      if (result.error) {
+        message += `\n⚠️ ${result.error}`;
+      }
+      return message;
+    } else {
+      return `❌ 切换失败: ${result.error}`;
+    }
+  }
+
+  /**
+   * 格式化 provider 列表
+   */
+  private _formatProviderList(): string {
+    const providers = this.listProviders();
+
+    if (providers.length === 0) {
+      return "没有可用的 Provider。请在配置文件中添加 provider 配置。";
+    }
+
+    const lines: string[] = ["可用的 Provider:", "-".repeat(50)];
+
+    for (const p of providers) {
+      const statusDot = p.isAvailable ? "●" : "○";
+      const currentMark = p.isCurrent ? " (当前)" : "";
+      const unavailableMark = !p.isAvailable ? " [未配置]" : "";
+      lines.push(`  ${statusDot} ${p.displayName} (${p.name}) - ${p.model}${currentMark}${unavailableMark}`);
+    }
+
+    lines.push("-".repeat(50));
+    lines.push("用法: /provider <name> 切换 provider");
+    lines.push("      /provider current 显示当前 provider 详情");
+
+    return lines.join("\n");
+  }
+
+  /**
+   * 格式化当前 provider 信息
+   */
+  private _formatCurrentProvider(): string {
+    const current = this.getCurrentProvider();
+
+    if (!current) {
+      return "当前没有活动的 Provider。";
+    }
+
+    const lines: string[] = [
+      "当前 Provider:",
+      "-".repeat(50),
+      `名称: ${current.displayName} (${current.name})`,
+      `模型: ${current.model}`,
+      `状态: ${current.isAvailable ? "● 可用" : "○ API Key 未配置"}`,
+      "-".repeat(50),
+    ];
+
+    return lines.join("\n");
+  }
+
+  /**
+   * 切换 provider 并格式化结果
+   */
+  private _switchAndFormatProvider(name: string): string {
+    const result = this.switchProvider(name);
+
+    if (result.success) {
+      let message = `● 已切换到 Provider: ${result.providerName}\n模型: ${result.modelName}`;
+      if (result.error) {
+        message += `\n○ ${result.error}`;
+      }
+      return message;
+    } else {
+      return `✗ 切换失败: ${result.error}`;
     }
   }
 
@@ -893,8 +1277,12 @@ export class AgentLoop {
   private _getHelpText(): string {
     return `
 可用命令:
-  /new    - 开始新会话，清空当前对话历史并触发记忆归档
-  /help   - 显示此帮助信息
+  /new              - 开始新会话，清空当前对话历史并触发记忆归档
+  /help             - 显示此帮助信息
+  /provider         - 列出所有可用的 Provider
+  /provider <name>  - 切换到指定的 Provider
+  /provider current - 显示当前 Provider 信息
+  /model <name>     - 根据模型名切换 Provider（如 /model gpt-4o）
 
 其他说明:
 - 支持多轮对话，会自动记住上下文
@@ -932,7 +1320,7 @@ export class AgentLoop {
     try {
       await memoryStore.consolidate({
         session,
-        provider: this.provider,
+        provider: this._provider,
         model: this.model,
         memoryWindow: this.memoryWindow,
       });

@@ -20,7 +20,6 @@ import { providerRegistry } from "./providers/registry";
 import { SessionManager } from "./session/manager";
 
 import type { ChannelsConfig } from "./config/schema";
-import type { ProviderRegistry } from "./providers/registry";
 
 const logger = createLogger("cli");
 
@@ -155,9 +154,6 @@ cli
       // 创建渠道注册表（不启动渠道）
       const channelRegistry = createChannelRegistry(channelsConfig);
 
-      // 创建 LLM 提供商
-      const registry: ProviderRegistry = providerRegistry;
-      
       // 初始化提供商配置
       configManager.initializeProviders(options.agent);
       
@@ -168,6 +164,17 @@ cli
         logger.error("未找到可用的 LLM 提供商");
         process.exit(1);
       }
+
+      // 打印当前 provider 信息
+      const availableProviders = configManager.listAvailableProviders(options.agent);
+      logger.info(
+        {
+          provider: provider.name,
+          model: provider.getDefaultModel(),
+          availableProviders: availableProviders.map((p) => p.name),
+        },
+        "当前 Provider 信息"
+      );
 
       // 获取或创建 Agent ID
       const agentId = options.agent || "default";
@@ -182,6 +189,8 @@ cli
         agentId,
         channelsConfig,
         channelRegistry,
+        providerRegistry,
+        configManager,
       });
 
       logger.info("Agent 已启动，等待消息...");

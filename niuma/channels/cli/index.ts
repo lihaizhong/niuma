@@ -223,9 +223,20 @@ CLI 渠道状态：
         `);
         break;
 
-      default:
-        console.log(`未知命令: ${cmd}`);
-        break;
+      default: {
+        // 将未知命令作为消息发送给 AgentLoop 处理
+        const message: InboundMessage = {
+          channel: "cli",
+          senderId: this.userId,
+          chatId: this.chatId,
+          content: command,
+          sessionKey: `${this.chatId}:${this.userId}`,
+          timestamp: Date.now(),
+          messageId: `cli:${++this.messageCounter}`,
+        };
+        await this.handleMessage(message);
+        return; // handleMessage 会调用 prompt，这里直接返回
+      }
     }
 
     this.rl?.prompt();

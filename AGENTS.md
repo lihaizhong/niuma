@@ -49,10 +49,7 @@
 - 禁止手动文件操作 `openspec/` 目录
 - 必须使用 `openspec` 命令完成相关操作
 - 严禁修改 `.iflow/` 目录（除非用户明确说明）
-
-**工作流：** `/opsx:explore` → `/opsx:propose` → `/opsx:apply` → `/opsx:archive`
-
-**归档保护：** `openspec/changes/archive/` 不可修改
+- **归档保护：** `openspec/changes/archive/` 不可修改
 
 ### 3. Subagent 优先使用原则
 
@@ -88,6 +85,23 @@
 | 复杂任务 | general-purpose |
 | 翻译任务 | translate |
 | 教程生成 | tutorial-engineer |
+
+### 5. OpenSpec Command 与 Skill 对应关系
+
+| Command | Skill | 用途 |
+|---------|-------|------|
+| `/opsx:explore` | openspec-explore | 探索需求、澄清问题 |
+| `/opsx:propose` | openspec-propose | 创建变更提案（proposal + design + specs + tasks） |
+| `/opsx:apply` | openspec-apply-change | 实施变更任务 |
+| `/opsx:archive` | openspec-archive-change | 归档已完成的变更 |
+| `/openexp` | openexp | 经验管理（查询/保存/反馈） |
+
+**工作流顺序：** `/opsx:explore` → `/opsx:propose` → `/opsx:apply` → `/opsx:archive`
+
+**使用建议：**
+- 新功能开发：先 explore 再 propose
+- 快速提案：直接使用 `/opsx:propose`
+- 经验积累：任务完成后使用 `/openexp` 保存关键经验
 
 ## 配置系统
 
