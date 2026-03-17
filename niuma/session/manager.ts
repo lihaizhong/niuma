@@ -1,6 +1,6 @@
 /**
  * 会话管理器 - 处理会话创建、持久化和历史记录
- * @description 提供会话的生命周期管理，包括创建、持久化、历史记录查询和清理
+ * 提供会话的生命周期管理，包括创建、持久化、历史记录查询和清理
  */
 
 // ==================== 内置库 ====================
@@ -16,7 +16,7 @@ import type { ChatMessage } from "../types";
 
 /**
  * 会话消息结构
- * @description 单条会话消息的完整信息
+ * 单条会话消息的完整信息
  */
 export interface SessionMessage {
   /** 消息角色 */
@@ -31,7 +31,7 @@ export interface SessionMessage {
 
 /**
  * 会话数据结构
- * @description 会话的完整状态信息
+ * 会话的完整状态信息
  */
 export interface Session {
   /** 会话唯一标识 */
@@ -68,7 +68,7 @@ export interface SessionManagerConfig {
 
 /**
  * 会话管理器
- * @description 负责会话的创建、持久化和历史记录管理
+ * 负责会话的创建、持久化和历史记录管理
  *
  * @example
  * ```typescript
@@ -111,7 +111,7 @@ export class SessionManager {
   /**
    * 创建会话管理器实例
    * @param config 配置选项
-   * @description 存储位置优先级：sessionsDir > ~/.niuma/sessions
+   * 存储位置优先级：sessionsDir > ~/.niuma/sessions
    */
   constructor(config?: SessionManagerConfig) {
     if (config?.sessionsDir) {
@@ -124,7 +124,7 @@ export class SessionManager {
 
   /**
    * 获取或创建会话
-   * @description 如果会话存在则从缓存或文件加载，否则创建新会话（异步）
+   * 如果会话存在则从缓存或文件加载，否则创建新会话（异步）
    * @param sessionKey 会话标识
    * @returns 会话对象
    */
@@ -177,7 +177,7 @@ export class SessionManager {
 
   /**
    * 保存会话到文件
-   * @description 将会话数据持久化到文件系统（异步原子写入）
+   * 将会话数据持久化到文件系统（异步原子写入）
    * @param session 会话对象
    */
   async save(session: Session): Promise<void> {
@@ -210,7 +210,7 @@ export class SessionManager {
 
   /**
    * 获取会话历史记录
-   * @description 将 SessionMessage 转换为 ChatMessage 格式，用于 LLM 调用
+   * 将 SessionMessage 转换为 ChatMessage 格式，用于 LLM 调用
    * @param session 会话对象
    * @param maxMessages 最大消息数量
    * @returns ChatMessage 格式的消息列表
@@ -223,7 +223,7 @@ export class SessionManager {
 
   /**
    * 添加消息到会话
-   * @description 创建新的会话消息并追加到消息列表
+   * 创建新的会话消息并追加到消息列表
    * @param session 会话对象
    * @param role 消息角色
    * @param content 消息内容
@@ -261,7 +261,7 @@ export class SessionManager {
 
   /**
    * 清空会话消息
-   * @description 重置会话消息列表和整合时间戳
+   * 重置会话消息列表和整合时间戳
    * @param session 会话对象
    */
   clear(session: Session): void {
@@ -272,7 +272,7 @@ export class SessionManager {
 
   /**
    * 使会话缓存失效
-   * @description 从内存缓存中移除会话，不影响文件存储
+   * 从内存缓存中移除会话，不影响文件存储
    * @param sessionKey 会话标识
    */
   invalidate(sessionKey: string): void {
@@ -281,7 +281,7 @@ export class SessionManager {
 
   /**
    * 删除会话（包括文件）
-   * @description 从内存缓存和文件系统中彻底删除会话
+   * 从内存缓存和文件系统中彻底删除会话
    * @param sessionKey 会话标识
    */
   delete(sessionKey: string): void {
@@ -299,7 +299,7 @@ export class SessionManager {
 
   /**
    * 获取所有会话键
-   * @description 列出存储目录中的所有会话标识
+   * 列出存储目录中的所有会话标识
    * @returns 会话键列表
    */
   listSessions(): string[] {
@@ -326,7 +326,7 @@ export class SessionManager {
 
   /**
    * 批量添加消息
-   * @description 一次性添加多条消息，减少重复更新时间戳
+   * 一次性添加多条消息，减少重复更新时间戳
    * @param session 会话对象
    * @param messages 消息列表
    */
@@ -355,7 +355,7 @@ export class SessionManager {
 
   /**
    * 更新整合时间戳
-   * @description 记录最后一次记忆整合的时间点
+   * 记录最后一次记忆整合的时间点
    * @param session 会话对象
    */
   updateConsolidated(session: Session): void {
@@ -365,7 +365,7 @@ export class SessionManager {
 
   /**
    * 生成 SessionKey
-   * @description 根据渠道、聊天ID和用户ID生成标准化的会话键
+   * 根据渠道、聊天ID和用户ID生成标准化的会话键
    * @param channel 渠道类型
    * @param chatId 聊天ID
    * @param userId 用户ID（可选）
@@ -380,7 +380,7 @@ export class SessionManager {
 
   /**
    * 解析 SessionKey
-   * @description 解析 SessionKey，返回渠道、聊天ID和用户ID
+   * 解析 SessionKey，返回渠道、聊天ID和用户ID
    * @param sessionKey 会话键
    * @returns 解析结果
    */
@@ -424,7 +424,7 @@ export class SessionManager {
 
   /**
    * 按渠道查询会话
-   * @description 获取指定渠道的所有会话
+   * 获取指定渠道的所有会话
    * @param channel 渠道类型
    * @returns 会话列表
    */
@@ -467,7 +467,7 @@ export class SessionManager {
 
   /**
    * 按用户查询会话
-   * @description 获取指定用户的所有会话
+   * 获取指定用户的所有会话
    * @param userId 用户ID
    * @returns 会话列表
    */
@@ -510,7 +510,7 @@ export class SessionManager {
 
   /**
    * 获取会话统计
-   * @description 统计各渠道的会话数量和活跃会话数量
+   * 统计各渠道的会话数量和活跃会话数量
    * @returns 会话统计信息
    */
   async getSessionStats(): Promise<{
@@ -565,7 +565,7 @@ export class SessionManager {
 
   /**
    * 清理过期会话
-   * @description 删除超过 TTL 的会话
+   * 删除超过 TTL 的会话
    * @returns 清理的会话数量
    */
   async cleanExpiredSessions(): Promise<number> {
@@ -601,7 +601,7 @@ export class SessionManager {
 
   /**
    * 获取会话文件路径
-   * @description 使用 SHA256 hash 生成安全的文件名，防止路径遍历攻击
+   * 使用 SHA256 hash 生成安全的文件名，防止路径遍历攻击
    * @param sessionKey 会话标识
    * @returns 文件完整路径
    */
@@ -615,7 +615,7 @@ export class SessionManager {
 
   /**
    * 从文件加载会话
-   * @description 读取并解析会话文件，转换日期字段（异步）
+   * 读取并解析会话文件，转换日期字段（异步）
    * @param sessionKey 会话标识
    * @returns 会话对象或 null（文件不存在或解析失败时）
    */
@@ -644,7 +644,7 @@ export class SessionManager {
 
   /**
    * 扫描会话文件
-   * @description 扫描会话目录中的所有文件，解析 SessionKey 提取元数据
+   * 扫描会话目录中的所有文件，解析 SessionKey 提取元数据
    * @returns 会话文件元数据映射 {sessionKey: {channel, userId, chatId}}
    * @private
    */
@@ -720,6 +720,6 @@ export class SessionManager {
 
 /**
  * 默认会话管理器实例
- * @description 使用默认配置创建的会话管理器
+ * 使用默认配置创建的会话管理器
  */
 export const sessionManager = new SessionManager();

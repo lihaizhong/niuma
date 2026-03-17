@@ -1,6 +1,6 @@
 /**
  * QQ 渠道实现
- * @description 基于 oicq SDK 的 QQ Bot 渠道实现
+ * 基于 oicq SDK 的 QQ Bot 渠道实现
  */
 
 import { createClient, type Client } from "oicq";
@@ -37,7 +37,7 @@ export interface QQChannelConfig {
 
 /**
  * QQ 渠道
- * @description 基于 oicq SDK 的 QQ Bot 渠道实现
+ * 基于 oicq SDK 的 QQ Bot 渠道实现
  */
 export class QQChannel extends BaseChannel {
   private config: Required<Omit<QQChannelConfig, "enabled">> & {

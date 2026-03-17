@@ -1,14 +1,12 @@
 /**
- * Agent 工具
- * 提供子智能体创建和管理、定时任务调度等功能
+ * Cron 工具
+ * 提供定时任务调度功能
  */
 
 // ==================== 内置库 ====================
-import { join } from "path";
 
 // ==================== 第三方库 ====================
 import CronParser from "cron-parser";
-import fs from "fs-extra";
 import { nanoid } from "nanoid";
 import { schedule, validate, type ScheduledTask } from "node-cron";
 import pino from "pino";
@@ -23,79 +21,11 @@ import { BaseTool } from "./base";
 const logger = pino({ level: "info" });
 
 /**
- * 子智能体存储（内存实现）
- */
-const subagents: Map<string, SubagentConfig> = new Map();
-
-/**
- * 消息存储
- */
-const agentMessages: AgentMessage[] = [];
-
-/**
  * Cron 任务存储（内存实现，生产环境应使用数据库）
  */
 const cronTasks: Map<string, CronTask> = new Map();
 
 // ==================== 类型定义 ====================
-
-/**
- * 子智能体状态
- */
-type SubagentStatus =
-  | "initializing"
-  | "running"
-  | "paused"
-  | "completed"
-  | "failed"
-  | "timeout";
-
-/**
- * 子智能体配置
- */
-interface SubagentConfig {
-  agentId: string;
-  parentAgentId: string;
-  configPath?: string;
-  workspaceDir: string;
-  model?: ModelConfig;
-  tools?: {
-    allowed: string[];
-    denied: string[];
-  };
-  memory?: {
-    enabled: boolean;
-    sharedWithParent?: boolean;
-  };
-  timeout?: number;
-  createdAt: Date;
-  status: SubagentStatus;
-  result?: string;
-  error?: string;
-}
-
-/**
- * 模型配置
- */
-interface ModelConfig {
-  provider: string;
-  model: string;
-  temperature?: number;
-  maxTokens?: number;
-}
-
-/**
- * 父子智能体通信消息
- */
-interface AgentMessage {
-  messageId: string;
-  senderId: string;
-  receiverId: string;
-  content: string;
-  type: "request" | "response" | "notification";
-  timestamp: Date;
-  status?: "queued" | "delivered" | "read";
-}
 
 /**
  * Cron 任务定义
@@ -117,222 +47,6 @@ interface CronTask {
 }
 
 // ==================== 类定义 ====================
-
-/**
- * Spawn 工具：创建子智能体
- */
-export class SpawnTool extends BaseTool {
-  readonly name = "spawn";
-  readonly description =
-    "创建和管理子智能体。支持配置继承、资源隔离、工具权限控制等。";
-  readonly parameters = z.object({
-    config: z
-      .record(z.string(), z.unknown())
-      .optional()
-      .describe("子智能体配置"),
-    initialMessage: z.string().optional().describe("初始消息"),
-    task: z.string().optional().describe("任务描述"),
-    timeout: z
-      .number()
-      .int()
-      .positive()
-      .optional()
-      .describe("超时时间（毫秒）"),
-    allowedTools: z.array(z.string()).optional().describe("允许的工具列表"),
-    deniedTools: z.array(z.string()).optional().describe("禁止的工具列表"),
-    memorySharing: z
-      .object({
-        read: z.boolean().optional().describe("是否可读取父智能体记忆"),
-        write: z.boolean().optional().describe("是否可写入父智能体记忆"),
-      })
-      .optional()
-      .describe("记忆共享配置"),
-  });
-
-  async execute(args: {
-    config?: Record<string, unknown>;
-    initialMessage?: string;
-    task?: string;
-    timeout?: number;
-    allowedTools?: string[];
-    deniedTools?: string[];
-    memorySharing?: { read?: boolean; write?: boolean };
-  }): Promise<string> {
-    const {
-      config = {},
-      initialMessage,
-      task,
-      timeout,
-      allowedTools,
-      deniedTools,
-      memorySharing,
-    } = args;
-
-    const agentId = nanoid();
-    const parentAgentId = this.getAgentId();
-    const now = new Date();
-
-    try {
-      // 1. 创建工作区
-      const workspaceDir = join(process.cwd(), ".niuma", "subagents", agentId);
-      await fs.ensureDir(workspaceDir);
-
-      // 2. 创建独立配置
-      const subagentConfig: SubagentConfig = {
-        agentId,
-        parentAgentId,
-        workspaceDir,
-        model: config.model as ModelConfig | undefined,
-        tools: {
-          allowed: allowedTools || [],
-          denied: deniedTools || [],
-        },
-        memory: {
-          enabled: true,
-          sharedWithParent: memorySharing?.read || false,
-        },
-        timeout,
-        createdAt: now,
-        status: "initializing",
-      };
-
-      subagents.set(agentId, subagentConfig);
-
-      // 3. 创建独立会话
-      const sessionManager = this.getSessionManager();
-      if (sessionManager) {
-        await sessionManager.getOrCreate(`subagent:${agentId}`);
-      }
-
-      // 4. 初始化子智能体
-      subagentConfig.status = "running";
-
-      logger.info({ agentId, task, workspaceDir }, "创建子智能体");
-
-      // 5. 如果有初始消息，发送给子智能体
-      if (initialMessage) {
-        await this.sendMessageToSubagent(agentId, initialMessage);
-      }
-
-      return `子智能体已创建（ID: ${agentId}）${task ? `，任务: ${task}` : ""}${workspaceDir ? `，工作区: ${workspaceDir}` : ""}`;
-    } catch (error) {
-      throw new ToolExecutionError(
-        this.name,
-        `创建子智能体失败: ${(error as Error).message}`,
-      );
-    }
-  }
-
-  /**
-   * 发送消息到子智能体
-   */
-  private async sendMessageToSubagent(
-    agentId: string,
-    content: string,
-  ): Promise<void> {
-    const subagent = subagents.get(agentId);
-    if (!subagent) {
-      throw new ToolExecutionError(this.name, `子智能体不存在: ${agentId}`);
-    }
-
-    const message: AgentMessage = {
-      messageId: nanoid(),
-      senderId: subagent.parentAgentId,
-      receiverId: agentId,
-      content,
-      type: "request",
-      timestamp: new Date(),
-      status: "queued",
-    };
-
-    agentMessages.push(message);
-
-    // 将消息添加到子智能体的会话中
-    const sessionManager = this.getSessionManager();
-    if (sessionManager) {
-      const session = await sessionManager.getOrCreate(`subagent:${agentId}`);
-      sessionManager.addMessage(session, "user", content);
-      await sessionManager.save(session);
-    }
-
-    logger.info(
-      { messageId: message.messageId, agentId },
-      "发送消息到子智能体",
-    );
-  }
-
-  /**
-   * 接收来自子智能体的消息
-   */
-  private receiveMessageFromSubagent(
-    agentId: string,
-    content: string,
-  ): AgentMessage {
-    const subagent = subagents.get(agentId);
-    if (!subagent) {
-      throw new ToolExecutionError(this.name, `子智能体不存在: ${agentId}`);
-    }
-
-    const message: AgentMessage = {
-      messageId: nanoid(),
-      senderId: agentId,
-      receiverId: subagent.parentAgentId,
-      content,
-      type: "response",
-      timestamp: new Date(),
-      status: "delivered",
-    };
-
-    agentMessages.push(message);
-
-    logger.info(
-      { messageId: message.messageId, agentId },
-      "接收来自子智能体的消息",
-    );
-
-    return message;
-  }
-
-  /**
-   * 获取子智能体信息
-   */
-  getSubagentInfo(agentId: string): SubagentConfig | undefined {
-    return subagents.get(agentId);
-  }
-
-  /**
-   * 停止子智能体
-   */
-  async stopSubagent(agentId: string): Promise<void> {
-    const subagent = subagents.get(agentId);
-    if (!subagent) {
-      throw new ToolExecutionError(this.name, `子智能体不存在: ${agentId}`);
-    }
-
-    subagent.status = "completed";
-
-    // 清理资源
-    const sessionManager = this.getSessionManager();
-    if (sessionManager) {
-      // 清理会话数据
-      const sessionKey = `subagent:${agentId}`;
-      sessionManager.delete(sessionKey);
-    }
-
-    // 清理工作区文件
-    try {
-      await fs.remove(subagent.workspaceDir);
-      logger.info({ agentId, workspaceDir: subagent.workspaceDir }, "清理工作区文件");
-    } catch (error) {
-      logger.warn({ agentId, error }, "清理工作区文件失败");
-    }
-
-    // 从内存中移除
-    subagents.delete(agentId);
-
-    logger.info({ agentId }, "停止子智能体");
-  }
-}
 
 /**
  * Cron 工具：管理定时任务
@@ -641,7 +355,7 @@ export class CronTool extends BaseTool {
         { taskId, handler: task.handler, params: task.params },
         `执行处理器: ${task.handler}`,
       );
-      
+
       task.status = "completed";
     } catch (error) {
       task.status = "failed";
@@ -667,5 +381,4 @@ export class CronTool extends BaseTool {
 }
 
 // 导出工具实例
-export const spawnTool = new SpawnTool();
 export const cronTool = new CronTool();

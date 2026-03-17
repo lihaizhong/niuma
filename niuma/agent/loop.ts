@@ -1,7 +1,7 @@
 /**
  * Agent 循环 - 核心处理引擎
  *
- * @description 实现消息处理循环，支持：
+ * 实现消息处理循环，支持：
  * - 多轮 LLM ↔ 工具执行迭代
  * - 斜杠命令处理
  * - 记忆整合
@@ -148,7 +148,7 @@ export interface ProviderSwitchResult {
 
 /**
  * 默认配置常量
- * @description 与 niuma/config/schema.ts 中的默认值保持一致
+ * 与 niuma/config/schema.ts 中的默认值保持一致
  */
 const DEFAULT_MAX_ITERATIONS = 40;
 const DEFAULT_TEMPERATURE = 0.7;
@@ -160,7 +160,7 @@ const CONSOLIDATION_THRESHOLD_RATIO = 0.8;
 /**
  * Agent 循环 - 核心处理引擎
  *
- * @description 从消息总线接收消息，通过 LLM 处理并执行工具调用，
+ * 从消息总线接收消息，通过 LLM 处理并执行工具调用，
  * 支持多轮迭代直到 LLM 返回最终响应。
  *
  * @example
@@ -523,7 +523,7 @@ export class AgentLoop {
 
   /**
    * 启动消息处理循环
-   * @description 开始监听消息总线，处理入站消息
+   * 开始监听消息总线，处理入站消息
    */
   async run(): Promise<void> {
     if (this.running) {
@@ -583,7 +583,7 @@ export class AgentLoop {
 
   /**
    * 停止消息处理循环
-   * @description 停止监听，清理资源
+   * 停止监听，清理资源
    */
   async stop(): Promise<void> {
     logger.info("停止消息处理循环");
@@ -604,7 +604,7 @@ export class AgentLoop {
 
   /**
    * 启动渠道
-   * @description 从配置中加载并启动所有启用的渠道
+   * 从配置中加载并启动所有启用的渠道
    * @private
    */
   private async _startChannels(): Promise<void> {
@@ -653,7 +653,7 @@ export class AgentLoop {
 
   /**
    * 停止渠道
-   * @description 停止所有运行中的渠道
+   * 停止所有运行中的渠道
    * @private
    */
   private async _stopChannels(): Promise<void> {
@@ -673,7 +673,7 @@ export class AgentLoop {
 
   /**
    * 直接处理消息
-   * @description 用于 CLI 或 cron 直接调用，不经过消息总线
+   * 用于 CLI 或 cron 直接调用，不经过消息总线
    * @param content 消息内容
    * @param options 处理选项
    * @returns 处理结果字符串
@@ -708,7 +708,7 @@ export class AgentLoop {
 
   /**
    * 处理单条消息
-   * @description 内部消息处理流程
+   * 内部消息处理流程
    * @param message 入站消息
    */
   private async _processMessage(message: InboundMessage): Promise<void> {
@@ -738,7 +738,7 @@ export class AgentLoop {
 
   /**
    * 通过渠道发送消息
-   * @description 尝试通过对应的渠道发送消息
+   * 尝试通过对应的渠道发送消息
    * @param message 出站消息
    * @private
    */
@@ -759,7 +759,7 @@ export class AgentLoop {
 
   /**
    * 内部消息处理逻辑
-   * @description 核心处理流程
+   * 核心处理流程
    */
   private async _processMessageInternal(
     message: InboundMessage,
@@ -811,7 +811,7 @@ export class AgentLoop {
 
   /**
    * 处理系统消息
-   * @description 处理子智能体通知等系统消息
+   * 处理子智能体通知等系统消息
    */
   private async _processSystemMessage(message: InboundMessage): Promise<void> {
     // 直接处理不保存历史
@@ -852,7 +852,7 @@ export class AgentLoop {
 
   /**
    * 执行 Agent 迭代循环
-   * @description 多轮 LLM ↔ 工具执行迭代
+   * 多轮 LLM ↔ 工具执行迭代
    */
   private async _runAgentLoop(
     messages: ChatMessage[],
@@ -964,7 +964,7 @@ export class AgentLoop {
 
   /**
    * 调用 LLM（带重试机制）
-   * @description 指数退避重试，最多 4 次
+   * 指数退避重试，最多 4 次
    */
   private async _callLLMWithRetry(
     messages: ChatMessage[],
@@ -1324,7 +1324,7 @@ ${channelCommands}
 
   /**
    * 触发记忆整合
-   * @description 当消息数量超过阈值时，自动整合旧消息到记忆系统
+   * 当消息数量超过阈值时，自动整合旧消息到记忆系统
    */
   private async _consolidateMemory(session: Session): Promise<void> {
     // 检查是否需要整合

@@ -1,6 +1,6 @@
 /**
  * 渠道抽象基类
- * @description 定义所有渠道必须实现的接口
+ * 定义所有渠道必须实现的接口
  */
 
 import { createLogger, type Logger } from "../log";
@@ -76,7 +76,7 @@ export class ChannelError extends Error {
 
 /**
  * 渠道抽象基类
- * @description 所有渠道实现必须继承此基类
+ * 所有渠道实现必须继承此基类
  */
 export abstract class BaseChannel {
   // ============================================
@@ -113,13 +113,13 @@ export abstract class BaseChannel {
 
   /**
    * 启动渠道
-   * @description 连接到对应的消息平台并开始接收消息
+   * 连接到对应的消息平台并开始接收消息
    */
   public abstract start(): Promise<void>;
 
   /**
    * 停止渠道
-   * @description 断开连接并释放所有资源
+   * 断开连接并释放所有资源
    */
   public abstract stop(): Promise<void>;
 
@@ -142,7 +142,7 @@ export abstract class BaseChannel {
   /**
    * 注册消息处理器
    * @param handler 消息处理函数
-   * @description 在收到消息时调用此处理器
+   * 在收到消息时调用此处理器
    */
   public onMessage(handler: MessageHandler): void {
     this.messageHandler = handler;
@@ -151,7 +151,7 @@ export abstract class BaseChannel {
   /**
    * 注册错误处理器
    * @param handler 错误处理函数
-   * @description 在发生错误时调用此处理器
+   * 在发生错误时调用此处理器
    */
   public onError(handler: (error: ChannelError) => void): void {
     this.errorHandler = handler;

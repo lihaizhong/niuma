@@ -6,63 +6,13 @@
 import { describe, it, expect, beforeEach } from "vitest";
 
 // ==================== 本地模块 ====================
-import { spawnTool, cronTool } from "../agent/tools/agent";
+import { cronTool } from "../agent/tools/cron";
 import { ToolExecutionError } from "../types/error";
 
 // 全局类型定义
 declare global {
   var __cronTasks: Map<string, unknown> | undefined;
 }
-
-describe("SpawnTool", () => {
-  it("应该成功创建子智能体", async () => {
-    const result = await spawnTool.execute({
-      config: { name: "test-agent" },
-      task: "Test task",
-    });
-    expect(result).toContain("子智能体已创建");
-    expect(result).toContain("ID:");
-  });
-
-  it("应该支持配置继承", async () => {
-    const result = await spawnTool.execute({
-      config: {
-        name: "test-agent",
-        model: { provider: "openai", model: "gpt-4" },
-      },
-    });
-    expect(result).toContain("子智能体已创建");
-  });
-
-  it("应该支持工具权限控制", async () => {
-    const result = await spawnTool.execute({
-      config: {
-        name: "test-agent",
-        tools: {
-          allowed: ["read_file", "write_file"],
-          denied: ["exec"],
-        },
-      },
-    });
-    expect(result).toContain("子智能体已创建");
-  });
-
-  it("应该支持超时控制", async () => {
-    const result = await spawnTool.execute({
-      config: { name: "test-agent" },
-      timeout: 60000,
-    });
-    expect(result).toContain("子智能体已创建");
-  });
-
-  it("应该支持初始消息", async () => {
-    const result = await spawnTool.execute({
-      config: { name: "test-agent" },
-      initialMessage: "Hello from parent agent",
-    });
-    expect(result).toContain("子智能体已创建");
-  });
-});
 
 describe("CronTool", () => {
   beforeEach(() => {

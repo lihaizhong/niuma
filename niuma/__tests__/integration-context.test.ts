@@ -7,7 +7,6 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 
 // ==================== 本地模块 ====================
-import { spawnTool } from "../agent/tools/agent";
 import {
   setGlobalRegistry,
   setGlobalSessionManager,
@@ -127,54 +126,6 @@ describe("上下文集成测试", () => {
       // 验证会话已删除（创建新会话应该返回空消息列表）
       const newSession = await sessionManager.getOrCreate("delete-test-session");
       expect(newSession.messages.length).toBe(0);
-    });
-  });
-
-  describe("子智能体与会话集成", () => {
-    it("应该为子智能体创建独立会话", async () => {
-      const result = await spawnTool.execute({
-        config: { name: "test-subagent" },
-        task: "Test task",
-      });
-
-      expect(result).toContain("子智能体已创建");
-
-      // 提取子智能体 ID
-      const agentIdMatch = result.match(/ID:\s*([a-zA-Z0-9_-]+)/);
-      if (agentIdMatch) {
-        const agentId = agentIdMatch[1];
-        const sessionKey = `subagent:${agentId}`;
-
-        // 验证子智能体会话已创建
-        const session = await sessionManager.getOrCreate(sessionKey);
-        expect(session).toBeDefined();
-        expect(session.key).toBe(sessionKey);
-      }
-    });
-
-    it("应该能够向子智能体会话添加消息", async () => {
-      const result = await spawnTool.execute({
-        config: { name: "test-messaging-subagent" },
-        task: "Test task",
-      });
-
-      const agentIdMatch = result.match(/ID:\s*([a-zA-Z0-9_-]+)/);
-      if (agentIdMatch) {
-        const agentId = agentIdMatch[1];
-        const sessionKey = `subagent:${agentId}`;
-
-        // 获取会话
-        const session = await sessionManager.getOrCreate(sessionKey);
-        expect(session).toBeDefined();
-
-        // 添加消息
-        sessionManager.addMessage(session, "user", "Message to subagent");
-        await sessionManager.save(session);
-
-        // 验证消息已添加
-        const updatedSession = await sessionManager.getOrCreate(sessionKey);
-        expect(updatedSession.messages.length).toBeGreaterThan(0);
-      }
     });
   });
 

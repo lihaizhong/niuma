@@ -1,6 +1,6 @@
 /**
  * 渠道类型定义
- * @description 渠道相关的类型定义
+ * 渠道相关的类型定义
  */
 
 import type { BaseChannel } from "./base";

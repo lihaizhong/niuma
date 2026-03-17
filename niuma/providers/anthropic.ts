@@ -1,7 +1,7 @@
 /**
  * Anthropic 提供商实现
  *
- * @description 基于 Anthropic SDK 的 Claude 系列模型提供商实现。
+ * 基于 Anthropic SDK 的 Claude 系列模型提供商实现。
  * 支持同步/流式聊天、工具调用、Anthropic beta 功能等。
  */
 
@@ -25,7 +25,7 @@ import type {
 /**
  * Anthropic 提供商配置
  *
- * @description 扩展基础 LLM 配置，支持 Anthropic 特定选项
+ * 扩展基础 LLM 配置，支持 Anthropic 特定选项
  */
 export interface AnthropicConfig extends LLMConfig {
   /** Anthropic API 版本 */
@@ -42,7 +42,7 @@ export interface AnthropicConfig extends LLMConfig {
 /**
  * Anthropic 提供商
  *
- * @description 实现 LLMProvider 接口，通过 Anthropic SDK 调用 Claude API。
+ * 实现 LLMProvider 接口，通过 Anthropic SDK 调用 Claude API。
  *
  * @example
  * ```typescript
@@ -121,7 +121,7 @@ export class AnthropicProvider implements LLMProvider {
   /**
    * @inheritdoc
    *
-   * @description 发送消息到 Anthropic 并返回响应。
+   * 发送消息到 Anthropic 并返回响应。
    * 支持工具调用、自定义模型参数等。
    */
   async chat(options: ChatOptions): Promise<LLMResponse> {
@@ -166,7 +166,7 @@ export class AnthropicProvider implements LLMProvider {
   /**
    * @inheritdoc
    *
-   * @description 以流式方式发送消息并逐块返回响应。
+   * 以流式方式发送消息并逐块返回响应。
    */
   async *chatStream(options: ChatOptions): AsyncIterable<LLMStreamChunk> {
     const { messages, tools, model, temperature, maxTokens } = options;
@@ -224,7 +224,7 @@ export class AnthropicProvider implements LLMProvider {
   /**
    * 检查提供商是否可用
    *
-   * @description 通过发送一个简单请求验证 API 配置。
+   * 通过发送一个简单请求验证 API 配置。
    * @returns 如果配置有效返回 true
    */
   async isAvailable(): Promise<boolean> {
@@ -270,7 +270,7 @@ export class AnthropicProvider implements LLMProvider {
   /**
    * 提取系统消息
    *
-   * @description 从消息列表中提取 system 消息
+   * 从消息列表中提取 system 消息
    * @param messages - 消息列表
    * @returns 系统消息内容，如果没有则返回 undefined
    */
@@ -287,7 +287,7 @@ export class AnthropicProvider implements LLMProvider {
   /**
    * 转换消息格式
    *
-   * @description 将内部消息格式转换为 Anthropic 格式
+   * 将内部消息格式转换为 Anthropic 格式
    * @param messages - 内部消息列表
    * @returns Anthropic 消息列表（不包含 system 消息）
    */
@@ -343,7 +343,7 @@ export class AnthropicProvider implements LLMProvider {
   /**
    * 转换工具定义
    *
-   * @description 将内部工具格式转换为 Anthropic 工具格式
+   * 将内部工具格式转换为 Anthropic 工具格式
    * @param tools - 内部工具定义
    * @returns Anthropic 工具格式
    */
@@ -440,7 +440,7 @@ export class AnthropicProvider implements LLMProvider {
   /**
    * 处理错误
    *
-   * @description 将各种错误转换为 ProviderError
+   * 将各种错误转换为 ProviderError
    * @param error - 原始错误
    * @returns ProviderError 实例
    */

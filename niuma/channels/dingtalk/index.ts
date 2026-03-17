@@ -1,6 +1,6 @@
 /**
  * 钉钉渠道实现
- * @description 基于 dingtalk-sdk 的钉钉开放平台渠道实现
+ * 基于 dingtalk-sdk 的钉钉开放平台渠道实现
  */
 
 import dingtalkSdk from "dingtalk-sdk";
@@ -71,7 +71,7 @@ export interface DingtalkChannelConfig {
 
 /**
  * 钉钉渠道
- * @description 基于 dingtalk-sdk 的钉钉开放平台渠道实现
+ * 基于 dingtalk-sdk 的钉钉开放平台渠道实现
  */
 export class DingtalkChannel extends BaseChannel {
   private config: Required<Omit<DingtalkChannelConfig, "enabled">> & {

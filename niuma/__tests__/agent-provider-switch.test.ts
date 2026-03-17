@@ -1,17 +1,18 @@
 /**
  * AgentLoop Provider 切换功能测试
  *
- * @description 测试 AgentLoop 的 provider 切换方法和斜杠命令处理
+ * 测试 AgentLoop 的 provider 切换方法和斜杠命令处理
  */
 
-import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 
-import { AgentLoop, type ProviderInfo, type ProviderSwitchResult } from "../agent/loop";
-import { ProviderRegistry } from "../providers/registry";
-import { EventBus } from "../bus/events";
+import { AgentLoop } from "../agent/loop";
 import { ToolRegistry } from "../agent/tools/registry";
+import { EventBus } from "../bus/events";
+import { ProviderRegistry } from "../providers/registry";
 import { SessionManager } from "../session/manager";
 
+import type { ConfigManager } from "../config/manager";
 import type { LLMProvider } from "../providers/base";
 import type { LLMConfig, LLMResponse, LLMStreamChunk } from "../types";
 
@@ -128,7 +129,7 @@ describe("AgentLoop Provider 切换", () => {
       sessions,
       workspace: "/tmp/test-niuma",
       providerRegistry: registry,
-      configManager: configManager as unknown as import("../config/manager").ConfigManager,
+      configManager: configManager as unknown as ConfigManager,
     });
   });
 

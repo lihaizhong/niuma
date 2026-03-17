@@ -1,6 +1,6 @@
 /**
  * Slack 渠道实现
- * @description 基于 Slack Web API 的渠道实现
+ * 基于 Slack Web API 的渠道实现
  * @note 支持 Web API 发送消息，需要配合 Webhook 或 Events API 接收消息
  */
 
@@ -64,7 +64,7 @@ export interface SlackChannelConfig {
 
 /**
  * Slack 渠道
- * @description 基于 Slack Web API 的渠道实现
+ * 基于 Slack Web API 的渠道实现
  */
 export class SlackChannel extends BaseChannel {
   private config: Required<Omit<SlackChannelConfig, "appToken" | "signingSecret" | "enabled">> & {

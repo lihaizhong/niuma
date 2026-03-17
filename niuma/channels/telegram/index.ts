@@ -1,6 +1,6 @@
 /**
  * Telegram 渠道实现
- * @description Telegram Bot API 的渠道实现
+ * Telegram Bot API 的渠道实现
  */
 
 import { Telegraf, type Context } from "telegraf";
@@ -25,7 +25,7 @@ export interface TelegramChannelConfig {
 
 /**
  * Telegram 渠道
- * @description Telegram Bot API 的渠道实现
+ * Telegram Bot API 的渠道实现
  */
 export class TelegramChannel extends BaseChannel {
   /** Telegraf 实例 */

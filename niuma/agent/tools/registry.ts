@@ -2,8 +2,8 @@
  * 工具注册中心 - 管理和执行工具
  */
 
-import { spawnTool, cronTool } from "./agent";
 import { setGlobalRegistry } from "./context";
+import { cronTool } from "./cron";
 import { encryptTool, decryptTool, hashTool } from "./crypto";
 import {
   jsonParseTool,
@@ -28,6 +28,7 @@ import {
 import { messageTool } from "./message";
 import { pingTool, dnsLookupTool, httpRequestTool } from "./network";
 import { execTool } from "./shell";
+import { spawnTool } from "./spawn";
 import { envGetTool, envSetTool, processListTool, processKillTool } from "./system";
 import { webSearchTool, webFetchTool } from "./web";
 
@@ -63,8 +64,8 @@ export function registerBuiltinTools(registry: ToolRegistry): void {
   registry.register(messageTool);
 
   // Agent 工具
-  registry.register(spawnTool);
   registry.register(cronTool);
+  registry.register(spawnTool);
 
   // Git 工具
   registry.register(gitStatusTool);

@@ -1,6 +1,6 @@
 /**
  * 渠道注册表
- * @description 管理所有已注册的渠道，提供统一的渠道管理接口
+ * 管理所有已注册的渠道，提供统一的渠道管理接口
  */
 
 import { createLogger } from "../log";
@@ -27,7 +27,7 @@ const logger = createLogger("channel-registry");
 
 /**
  * 渠道注册表
- * @description 管理所有已注册的渠道
+ * 管理所有已注册的渠道
  */
 export class ChannelRegistry {
   /** 渠道映射表 */
@@ -39,7 +39,7 @@ export class ChannelRegistry {
   /**
    * 注册渠道
    * @param channel 渠道实例
-   * @description 将渠道注册到注册表中
+   * 将渠道注册到注册表中
    */
   public register(channel: BaseChannel): void {
     const channelType = channel.getType();
@@ -54,7 +54,7 @@ export class ChannelRegistry {
   /**
    * 注销渠道
    * @param channelType 渠道类型
-   * @description 从注册表中移除渠道
+   * 从注册表中移除渠道
    */
   public unregister(channelType: string): void {
     const channel = this.channels.get(channelType);
@@ -104,7 +104,7 @@ export class ChannelRegistry {
   /**
    * 批量启动渠道
    * @param channelTypes 要启动的渠道类型列表，如果不指定则启动所有渠道
-   * @description 启动指定的渠道，按顺序启动
+   * 启动指定的渠道，按顺序启动
    */
   public async startAll(channelTypes?: string[]): Promise<void> {
     const channelsToStart = channelTypes || this.list();
@@ -136,7 +136,7 @@ export class ChannelRegistry {
   /**
    * 批量停止渠道
    * @param channelTypes 要停止的渠道类型列表，如果不指定则停止所有渠道
-   * @description 停止指定的渠道，按顺序停止
+   * 停止指定的渠道，按顺序停止
    */
   public async stopAll(channelTypes?: string[]): Promise<void> {
     const channelsToStop = channelTypes || this.list();
@@ -197,7 +197,7 @@ export class ChannelRegistry {
    * 更新渠道状态
    * @param channelType 渠道类型
    * @param status 新的渠道状态
-   * @description 当渠道状态发生变化时调用此方法
+   * 当渠道状态发生变化时调用此方法
    */
   public updateStatus(channelType: string, status: ChannelStatus): void {
     this.channelStatuses.set(channelType, status);
@@ -239,7 +239,7 @@ export class ChannelRegistry {
 
   /**
    * 清空所有渠道
-   * @description 停止所有渠道并清空注册表
+   * 停止所有渠道并清空注册表
    */
   public async clear(): Promise<void> {
     await this.stopAll();
@@ -251,7 +251,7 @@ export class ChannelRegistry {
   /**
    * 从配置加载渠道
    * @param config 渠道配置
-   * @description 根据配置加载并注册渠道
+   * 根据配置加载并注册渠道
    */
   public async loadFromConfig(config: ChannelsConfig): Promise<void> {
     logger.info(`从配置加载渠道，启用渠道: ${config.enabled.join(", ")}`);

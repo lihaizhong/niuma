@@ -1,7 +1,7 @@
 /**
  * 自定义提供商实现
  *
- * @description 基于 OpenAI 提供商实现自定义 OpenAI 兼容端点.
+ * 基于 OpenAI 提供商实现自定义 OpenAI 兼容端点.
  */
 
 /* eslint-disable no-undef */
@@ -26,7 +26,7 @@ export interface CustomConfig extends LLMConfig {
 /**
  * 自定义提供商
  *
- * @description 继承 OpenAIProvider，支持自定义 OpenAI 兼容端点。
+ * 继承 OpenAIProvider，支持自定义 OpenAI 兼容端点。
  */
 export class CustomProvider extends OpenAIProvider {
   /** @inheritdoc */

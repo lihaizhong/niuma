@@ -70,7 +70,7 @@ export interface SkillFullInfo extends SkillInfo {
 
 /**
  * 技能加载器
- * @description 发现、加载和管理技能
+ * 发现、加载和管理技能
  * 工作区技能位置：workspace/skills/
  * 内置技能位置：代码包中的 skills 目录
  */
@@ -213,7 +213,7 @@ export class SkillsLoader {
 
   /**
    * 刷新技能缓存
-   * @description 强制重新扫描技能目录
+   * 强制重新扫描技能目录
    */
   refresh(): void {
     this.skillsCache = null;
@@ -333,7 +333,7 @@ export class SkillsLoader {
 
   /**
    * 解析 YAML frontmatter（安全模式）
-   * @description 使用 js-yaml 库解析，禁止执行任意代码
+   * 使用 js-yaml 库解析，禁止执行任意代码
    * @param yamlStr YAML 字符串
    * @returns 解析后的对象
    */
@@ -408,7 +408,7 @@ export class SkillsLoader {
 
   /**
    * 检查技能依赖是否满足
-   * @description 同时检查顶层 requires 和 nanobot 元数据中的 requires
+   * 同时检查顶层 requires 和 nanobot 元数据中的 requires
    * @param metadata 技能元数据
    * @returns 可用性和缺失依赖
    */

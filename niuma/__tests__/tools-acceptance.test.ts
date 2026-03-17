@@ -12,8 +12,8 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { z } from "zod";
 
 // ==================== 本地模块 ====================
-import { spawnTool, cronTool } from "../agent/tools/agent";
 import { BaseTool } from "../agent/tools/base";
+import { cronTool } from "../agent/tools/cron";
 import {
   readFileTool,
   writeFileTool,
@@ -59,10 +59,6 @@ describe("10.1 验证所有工具继承自 BaseTool", () => {
     expect(messageTool).toBeInstanceOf(BaseTool);
   });
 
-  it("SpawnTool 应该继承自 BaseTool", () => {
-    expect(spawnTool).toBeInstanceOf(BaseTool);
-  });
-
   it("CronTool 应该继承自 BaseTool", () => {
     expect(cronTool).toBeInstanceOf(BaseTool);
   });
@@ -82,7 +78,6 @@ describe("10.2 验证所有工具正确注册到 ToolRegistry", () => {
       "web_search",
       "web_fetch",
       "message",
-      "spawn",
       "cron",
     ];
 
@@ -267,14 +262,6 @@ describe("10.6 验证所有工具有完整的 Zod 参数验证", () => {
     expect(schema).toBeInstanceOf(z.ZodType);
 
     const result = schema.safeParse({ content: "test" });
-    expect(result.success).toBe(true);
-  });
-
-  it("spawn 应该有完整的参数验证", () => {
-    const schema = spawnTool.parameters;
-    expect(schema).toBeInstanceOf(z.ZodType);
-
-    const result = schema.safeParse({});
     expect(result.success).toBe(true);
   });
 

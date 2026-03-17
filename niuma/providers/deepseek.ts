@@ -1,7 +1,7 @@
 /**
  * DeepSeek 提供商实现
  *
- * @description 基于 OpenAI 提供商实现 DeepSeek 系列模型。
+ * 基于 OpenAI 提供商实现 DeepSeek 系列模型。
  */
 
 import { OpenAIProvider } from "./openai";
@@ -18,7 +18,7 @@ export interface DeepSeekConfig extends LLMConfig {
 /**
  * DeepSeek 提供商
  *
- * @description 继承 OpenAIProvider，通过自定义 API Base 指向 DeepSeek。
+ * 继承 OpenAIProvider，通过自定义 API Base 指向 DeepSeek。
  */
 export class DeepSeekProvider extends OpenAIProvider {
   /** @inheritdoc */

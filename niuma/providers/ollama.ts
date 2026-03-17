@@ -1,7 +1,7 @@
 /**
  * Ollama 提供商实现
  *
- * @description 基于 OpenAI 兼容 API 的 Ollama 本地模型提供商。
+ * 基于 OpenAI 兼容 API 的 Ollama 本地模型提供商。
  * Ollama 运行在本地，默认地址 http://127.0.0.1:11434
  */
 
@@ -45,7 +45,7 @@ export interface OllamaConfig extends LLMConfig {
 /**
  * Ollama 提供商
  *
- * @description 实现 LLMProvider 接口，通过 OpenAI 兼容 API 调用 Ollama 本地模型。
+ * 实现 LLMProvider 接口，通过 OpenAI 兼容 API 调用 Ollama 本地模型。
  *
  * @example
  * ```typescript

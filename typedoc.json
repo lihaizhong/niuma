@@ -1,0 +1,22 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": ["niuma/index.ts"],
+  "out": "docs/api/reference",
+  "plugin": ["typedoc-plugin-markdown"],
+  "readme": "none",
+  "excludePrivate": true,
+  "excludeInternal": true,
+  "excludeProtected": false,
+  "includeVersion": true,
+  "gitRevision": "main",
+  "entryFileName": "index.md",
+  "hidePageHeader": true,
+  "hidePageTitle": false,
+  "hideBreadcrumbs": true,
+  "useCodeBlocks": true,
+  "parametersFormat": "table",
+  "propertiesFormat": "table",
+  "typeDeclarationFormat": "table",
+  "indexFormat": "table",
+  "outputFileStrategy": "members"
+}

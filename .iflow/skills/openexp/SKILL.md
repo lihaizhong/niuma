@@ -15,7 +15,7 @@ license: MIT
 compatibility: iFlow CLI
 metadata:
   author: niuma
-  version: "2.7"
+  version: "2.8"
   tags: [learning, memory, experience, knowledge-base, obsidian]
 ---
 
@@ -50,8 +50,8 @@ metadata:
 
 **步骤：**
 ```bash
-# 1. 创建经验
-./scripts/obsidian-cli.sh create Preferences/exp_preference_20260317_001.md '---
+# 1. 创建经验（OPENEXP_SCRIPTS 已通过自动查找设置）
+$OPENEXP_SCRIPTS/obsidian-cli.sh create Preferences/exp_preference_20260317_001.md '---
 id: exp_preference_20260317_001
 type: preference
 tags: [preference, package-manager]
@@ -71,18 +71,34 @@ created: 2026-03-17T10:00:00+08:00
 
 ```bash
 # 搜索相关经验
-./scripts/obsidian-cli.sh search "preference"
-./scripts/obsidian-cli.sh search "convention"
+$OPENEXP_SCRIPTS/obsidian-cli.sh search "preference"
+$OPENEXP_SCRIPTS/obsidian-cli.sh search "convention"
 
 # 根据结果应用已知的偏好和约定
 ```
 
+## 脚本路径自动查找
+
+脚本位置不固定，使用通配符动态查找，支持任意 CLI/IDE 工具：
+
+```bash
+# 动态查找：匹配所有 */skills/openexp/scripts/obsidian-cli.sh
+OPENEXP_SCRIPTS=$(find . -path "*/skills/openexp/scripts/obsidian-cli.sh" -type f 2>/dev/null | head -1 | xargs dirname 2>/dev/null)
+
+# 后续使用 $OPENEXP_SCRIPTS/obsidian-cli.sh 调用
+```
+
+**查找范围：**
+- 自动发现所有符合 `*/skills/openexp/scripts/` 结构的目录
+- 支持 `.iflow`、`.claude`、`.cursor`、`.aider`、`.continue`、`.cline`、`.windsurf` 等任意配置目录
+- 无需维护工具列表，新增工具自动兼容
+
 ## 操作流程
 
-1. **查找经验**：执行 `./scripts/obsidian-cli.sh search <query>`，返回最相关的经验
-2. **添加经验**：执行 `./scripts/obsidian-cli.sh create <path> '<content>'`，告知用户已记录
-3. **更新经验**：执行 `./scripts/obsidian-cli.sh update <path> frontmatter-edit usage_count <n>`
-4. **维护经验库**：执行 `python3 scripts/maintain-experience-vault.py`（建议每周）
+1. **查找经验**：执行 `$OPENEXP_SCRIPTS/obsidian-cli.sh search <query>`，返回最相关的经验
+2. **添加经验**：执行 `$OPENEXP_SCRIPTS/obsidian-cli.sh create <path> '<content>'`，告知用户已记录
+3. **更新经验**：执行 `$OPENEXP_SCRIPTS/obsidian-cli.sh update <path> frontmatter-edit usage_count <n>`
+4. **维护经验库**：执行 `python3 $OPENEXP_SCRIPTS/maintain-experience-vault.py`（建议每周）
 
 ## 常用命令
 
@@ -143,7 +159,7 @@ created: 2026-03-11T13:02:45+08:00
 所有经验库操作必须通过 `obsidian-cli.sh` 完成。原因：
 - **可追溯**：操作被正确记录，支持变更历史
 - **格式一致**：自动填充 frontmatter，避免人为错误
-- **健壮性**：内置超时和重试机制，避免 Obsidian 响应慢导致失败
+- **简洁高效**：本地应用访问速度快，无需复杂的重试机制
 
 ### 敏感信息保护
 不要记录密码、API 密钥、token 等敏感信息。原因：经验库以明文存储，不适合保存机密数据。
@@ -166,7 +182,7 @@ created: 2026-03-11T13:02:45+08:00
 2. **临时存储**：在内存中记录经验内容，告知用户"将在下次可用时同步"
 3. **检查修复**：
    ```bash
-   ./scripts/obsidian-cli.sh check
+   $OPENEXP_SCRIPTS/obsidian-cli.sh check
    ```
 4. **绕过 CLI**：仅在用户明确要求时，可直接操作 `~/Exp Vault` 目录
 
@@ -177,7 +193,7 @@ created: 2026-03-11T13:02:45+08:00
 1. 向用户报告具体错误信息
 2. 检查 obsidian CLI 是否正确安装：
    ```bash
-   ./scripts/obsidian-cli.sh check
+   $OPENEXP_SCRIPTS/obsidian-cli.sh check
    ```
 3. 如果 CLI 不可用，告知用户并建议检查 Obsidian 设置
 4. **不要尝试绕过 CLI 直接操作文件**
