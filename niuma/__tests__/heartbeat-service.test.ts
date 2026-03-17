@@ -3,13 +3,13 @@
  */
 
 // ==================== 内置库 ====================
-import { join } from "path";
 import { tmpdir } from "os";
-import fs from "fs-extra";
+import { join } from "path";
 
 // ==================== 第三方库 ====================
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import fs from "fs-extra";
 import pino from "pino";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 
 // ==================== 本地模块 ====================
 import { HeartbeatService, parseHeartbeatFile } from "../heartbeat/service";
@@ -176,14 +176,14 @@ describe("HeartbeatService", () => {
       await service.start();
 
       // 验证服务正在运行
-      expect((service as any).isRunning).toBe(true);
+      expect((service as unknown as { isRunning: boolean }).isRunning).toBe(true);
     });
 
     it("应该停止服务", async () => {
       await service.start();
       await service.stop();
 
-      expect((service as any).isRunning).toBe(false);
+      expect((service as unknown as { isRunning: boolean }).isRunning).toBe(false);
     });
 
     it("重复启动应该发出警告", async () => {
@@ -191,13 +191,13 @@ describe("HeartbeatService", () => {
       await service.start(); // 重复启动
 
       // 应该仍然在运行
-      expect((service as any).isRunning).toBe(true);
+      expect((service as unknown as { isRunning: boolean }).isRunning).toBe(true);
     });
 
     it("停止未运行的服务应该发出警告", async () => {
       await service.stop(); // 未启动就停止
 
-      expect((service as any).isRunning).toBe(false);
+      expect((service as unknown as { isRunning: boolean }).isRunning).toBe(false);
     });
   });
 
@@ -280,7 +280,7 @@ enabled: false
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
       // 服务应该仍在运行
-      expect((service as any).isRunning).toBe(true);
+      expect((service as unknown as { isRunning: boolean }).isRunning).toBe(true);
     });
 
     it("应该处理 HEARTBEAT.md 文件不存在", async () => {
@@ -290,7 +290,7 @@ enabled: false
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
       // 服务应该仍在运行
-      expect((service as any).isRunning).toBe(true);
+      expect((service as unknown as { isRunning: boolean }).isRunning).toBe(true);
     });
   });
 });

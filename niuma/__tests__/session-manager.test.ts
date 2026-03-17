@@ -3,11 +3,11 @@
  */
 
 // ==================== 内置库 ====================
-import { join } from "path";
 import { tmpdir } from "os";
-import fs from "fs-extra";
+import { join } from "path";
 
 // ==================== 第三方库 ====================
+import fs from "fs-extra";
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 
 // ==================== 本地模块 ====================
@@ -137,7 +137,7 @@ describe("SessionManager", () => {
     it("应该处理无效角色", async () => {
       const session = await manager.getOrCreate("cli:test-invalid-role");
 
-      manager.addMessage(session, "invalid" as any, "Test");
+      manager.addMessage(session, "invalid" as "user", "Test");
 
       expect(session.messages[0].role).toBe("user");
     });

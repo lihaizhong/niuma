@@ -198,51 +198,6 @@ if (allowedChannels.includes(channel)) {
 }
 ```
 
-## Agent 工具安全
-
-### 工具权限控制
-
-```typescript
-// 限制子智能体的工具访问
-await spawnTool.execute({
-  config: {
-    name: 'restricted-agent',
-    tools: {
-      allowed: ['read_file', 'write_file'],  // 只允许文件操作
-      denied: ['exec', 'web_search']          // 禁止危险工具
-    }
-  }
-})
-```
-
-### 工作区隔离
-
-```typescript
-// 为每个子智能体创建独立的工作区
-await spawnTool.execute({
-  config: {
-    name: 'isolated-agent',
-    workspaceDir: '/safe/workspace/agent-123'  // 独立工作区
-  }
-})
-```
-
-### 超时控制
-
-```typescript
-// 防止子智能体无限运行
-await spawnTool.execute({
-  config: { name: 'agent' },
-  timeout: 60000  // 60 秒后终止
-})
-```
-
-### 资源限制
-
-```typescript
-// TODO: 实现 CPU 和内存限制
-```
-
 ## Cron 工具安全
 
 ### 任务验证

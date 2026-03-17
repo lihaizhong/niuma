@@ -3,11 +3,14 @@
  */
 
 // ==================== 第三方库 ====================
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 
 // ==================== 本地模块 ====================
 import { EventBus, EventNames } from "../bus/events";
-import type { EventPayload } from "../types/events";
+
+import type { EventPayload, EventMap } from "../types/events";
+import type { LLMResponse } from "../types/llm";
+import type { InboundMessage, OutboundMessage } from "../types/message";
 
 describe("EventBus", () => {
   let bus: EventBus;
@@ -24,6 +27,7 @@ describe("EventBus", () => {
       bus.emit("MESSAGE_RECEIVED", {
         message: {
           channel: "cli",
+          senderId: "test-user",
           chatId: "test-123",
           content: "Hello",
         },
@@ -33,7 +37,7 @@ describe("EventBus", () => {
     });
 
     it("应该传递正确的事件数据", () => {
-      let receivedData: any = null;
+      let receivedData: EventMap["TOOL_CALL_START"] | null = null;
       bus.on("TOOL_CALL_START", (data) => {
         receivedData = data;
       });
@@ -72,7 +76,7 @@ describe("EventBus", () => {
       bus.on("LLM_RESPONSE", handler);
 
       bus.emit("LLM_RESPONSE", {
-        response: { content: "test" } as any,
+        response: { content: "test" } as unknown as LLMResponse,
         duration: 100,
       });
 
@@ -136,7 +140,7 @@ describe("EventBus", () => {
 
       // 验证监听器已注册并工作
       freshBus.emit("MESSAGE_RECEIVED", {
-        message: { channel: "cli", chatId: "test", content: "test" },
+        message: { channel: "cli", senderId: "test-user", chatId: "test", content: "test" },
       });
       expect(handler).toHaveBeenCalledTimes(1);
 
@@ -148,7 +152,7 @@ describe("EventBus", () => {
 
       // 再次发射事件
       freshBus.emit("MESSAGE_RECEIVED", {
-        message: { channel: "cli", chatId: "test", content: "test" },
+        message: { channel: "cli", senderId: "test-user", chatId: "test", content: "test" },
       });
 
       // 验证监听器已被移除
@@ -174,11 +178,15 @@ describe("EventBus", () => {
       let receivedPayload: EventPayload | null = null;
 
       // 直接访问内部 EventEmitter 来验证载荷格式
-      const originalEmit = (bus as any).bus.emit.bind((bus as any).bus);
-      (bus as any).bus.emit = (type: string, payload: EventPayload) => {
+      // 注意：这里需要访问私有属性进行测试，使用 any 是合理的
+      /* eslint-disable @typescript-eslint/no-explicit-any */
+      const busInternal = bus as any;
+      const originalEmit = busInternal.bus.emit.bind(busInternal.bus);
+      busInternal.bus.emit = (type: string, payload: EventPayload) => {
         receivedPayload = payload;
         return originalEmit(type, payload);
       };
+      /* eslint-enable @typescript-eslint/no-explicit-any */
 
       const handler = vi.fn();
       bus.on("HEARTBEAT", handler);
@@ -219,12 +227,12 @@ describe("EventBus", () => {
       });
 
       // 发射所有类型的事件
-      bus.emit("MESSAGE_RECEIVED", { message: {} as any });
-      bus.emit("MESSAGE_SENT", { message: {} as any });
+      bus.emit("MESSAGE_RECEIVED", { message: {} as unknown as InboundMessage });
+      bus.emit("MESSAGE_SENT", { message: {} as unknown as OutboundMessage });
       bus.emit("TOOL_CALL_START", { toolName: "test", args: {}, callId: "1" });
       bus.emit("TOOL_CALL_END", { toolName: "test", result: "", success: true, duration: 0 });
       bus.emit("LLM_REQUEST_START", { messages: [], model: "test" });
-      bus.emit("LLM_RESPONSE", { response: {} as any, duration: 0 });
+      bus.emit("LLM_RESPONSE", { response: {} as unknown as LLMResponse, duration: 0 });
       bus.emit("ERROR", { error: new Error() });
       bus.emit("HEARTBEAT", { timestamp: 0, uptime: 0 });
 

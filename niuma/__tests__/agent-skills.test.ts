@@ -3,11 +3,11 @@
  */
 
 // ==================== 内置库 ====================
-import { join } from "path";
 import { tmpdir } from "os";
-import fs from "fs-extra";
+import { join } from "path";
 
 // ==================== 第三方库 ====================
+import fs from "fs-extra";
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 
 // ==================== 本地模块 ====================
@@ -270,7 +270,7 @@ Content`,
       expect(metadata?.description).toBe("Skill with metadata");
       expect(metadata?.requires?.bins).toContain("git");
       expect(metadata?.requires?.env).toContain("API_KEY");
-      expect((metadata as any)?.custom_field).toBe("custom_value");
+      expect((metadata as Record<string, unknown>)?.custom_field).toBe("custom_value");
     });
   });
 

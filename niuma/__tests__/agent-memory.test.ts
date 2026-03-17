@@ -3,17 +3,19 @@
  */
 
 // ==================== 内置库 ====================
-import { join } from "path";
 import { tmpdir } from "os";
-import fs from "fs-extra";
+import { join } from "path";
 
 // ==================== 第三方库 ====================
+import fs from "fs-extra";
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 
 // ==================== 本地模块 ====================
 import { MemoryStore, SAVE_MEMORY_TOOL } from "../agent/memory";
+
+import type { LLMProvider } from "../providers/base";
 import type { Session, SessionMessage } from "../session/manager";
-import type { LLMProvider, LLMResponse } from "../providers/base";
+import type { LLMResponse, ToolParameterSchema } from "../types";
 
 describe("MemoryStore", () => {
   let store: MemoryStore;
@@ -230,7 +232,7 @@ describe("MemoryStore", () => {
               }),
             },
           ],
-        } as LLMResponse),
+        } as unknown as LLMResponse),
       } as unknown as LLMProvider;
 
       const messages: Partial<SessionMessage>[] = [];
@@ -275,11 +277,12 @@ describe("MemoryStore", () => {
     });
 
     it("应该定义必需的参数", () => {
-      const props = SAVE_MEMORY_TOOL.parameters.properties;
+      const params = SAVE_MEMORY_TOOL.parameters as ToolParameterSchema;
+      const props = params.properties;
       expect(props).toHaveProperty("history_entry");
       expect(props).toHaveProperty("memory_update");
-      expect(SAVE_MEMORY_TOOL.parameters.required).toContain("history_entry");
-      expect(SAVE_MEMORY_TOOL.parameters.required).toContain("memory_update");
+      expect(params.required).toContain("history_entry");
+      expect(params.required).toContain("memory_update");
     });
   });
 });

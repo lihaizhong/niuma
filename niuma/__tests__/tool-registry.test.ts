@@ -164,7 +164,6 @@ describe("ToolRegistry", () => {
       expect(newRegistry.has("web_search")).toBe(true);
       expect(newRegistry.has("web_fetch")).toBe(true);
       expect(newRegistry.has("message")).toBe(true);
-      expect(newRegistry.has("spawn")).toBe(true);
       expect(newRegistry.has("cron")).toBe(true);
     });
 
