@@ -1,5 +1,16 @@
 # 命令参考
 
+## 脚本路径查找
+
+执行命令前，先动态查找脚本位置：
+
+```bash
+# 查找脚本目录
+OPENEXP_SCRIPTS=$(find . -path "*/skills/openexp/scripts/obsidian-cli.sh" -type f 2>/dev/null | head -1 | xargs dirname 2>/dev/null)
+
+# 后续使用 $OPENEXP_SCRIPTS/obsidian-cli.sh 调用
+```
+
 ## 环境变量配置
 
 | 变量 | 默认值 | 说明 |
@@ -13,16 +24,14 @@
 # 设置超时为 60 秒，重试 3 次
 export OBSIDIAN_TIMEOUT=60
 export OBSIDIAN_RETRIES=3
-./scripts/obsidian-cli.sh search pnpm
+$OPENEXP_SCRIPTS/obsidian-cli.sh search pnpm
 ```
 
 ## Obsidian CLI Wrapper
 
-**路径：** `scripts/obsidian-cli.sh`
-
 **基本语法：**
 ```bash
-./scripts/obsidian-cli.sh [选项] <命令> [参数]
+$OPENEXP_SCRIPTS/obsidian-cli.sh [选项] <命令> [参数]
 ```
 
 **选项：**
@@ -35,17 +44,17 @@ export OBSIDIAN_RETRIES=3
 
 | 命令 | 参数 | 说明 | 示例 |
 |------|------|------|------|
-| `search` | `<query> [mode]` | 搜索笔记 | `./scripts/obsidian-cli.sh search CORS content` |
-| `create` | `<path> [content] [mode]` | 创建笔记 | `./scripts/obsidian-cli.sh create Preferences/test.md '内容'` |
-| `update` | `<path> <mode> [content] [key] [value]` | 更新笔记 | `./scripts/obsidian-cli.sh update Preferences/test.md frontmatter-edit usage_count 10` |
-| `read` | `<path>` | 读取笔记 | `./scripts/obsidian-cli.sh read Preferences/test.md` |
-| `list` | `[directory]` | 列出笔记 | `./scripts/obsidian-cli.sh list Preferences` |
-| `frontmatter` | `<path> <mode> [key] [value]` | 操作 properties | `./scripts/obsidian-cli.sh frontmatter Preferences/test.md print` |
-| `delete` | `<path> <confirm>` | 删除笔记 | `./scripts/obsidian-cli.sh delete Preferences/test.md Preferences/test.md` |
-| `open` | `<path>` | 在 Obsidian 中打开 | `./scripts/obsidian-cli.sh open Preferences/test.md` |
-| `move` | `<old> <new>` | 移动或重命名 | `./scripts/obsidian-cli.sh move old.md new.md` |
-| `version` | - | 获取 obsidian 版本 | `./scripts/obsidian-cli.sh version` |
-| `check` | - | 检查 obsidian 是否可用 | `./scripts/obsidian-cli.sh check` |
+| `search` | `<query> [mode]` | 搜索笔记 | `$OPENEXP_SCRIPTS/obsidian-cli.sh search CORS content` |
+| `create` | `<path> [content] [mode]` | 创建笔记 | `$OPENEXP_SCRIPTS/obsidian-cli.sh create Preferences/test.md '内容'` |
+| `update` | `<path> <mode> [content] [key] [value]` | 更新笔记 | `$OPENEXP_SCRIPTS/obsidian-cli.sh update Preferences/test.md frontmatter-edit usage_count 10` |
+| `read` | `<path>` | 读取笔记 | `$OPENEXP_SCRIPTS/obsidian-cli.sh read Preferences/test.md` |
+| `list` | `[directory]` | 列出笔记 | `$OPENEXP_SCRIPTS/obsidian-cli.sh list Preferences` |
+| `frontmatter` | `<path> <mode> [key] [value]` | 操作 properties | `$OPENEXP_SCRIPTS/obsidian-cli.sh frontmatter Preferences/test.md print` |
+| `delete` | `<path> <confirm>` | 删除笔记 | `$OPENEXP_SCRIPTS/obsidian-cli.sh delete Preferences/test.md Preferences/test.md` |
+| `open` | `<path>` | 在 Obsidian 中打开 | `$OPENEXP_SCRIPTS/obsidian-cli.sh open Preferences/test.md` |
+| `move` | `<old> <new>` | 移动或重命名 | `$OPENEXP_SCRIPTS/obsidian-cli.sh move old.md new.md` |
+| `version` | - | 获取 obsidian 版本 | `$OPENEXP_SCRIPTS/obsidian-cli.sh version` |
+| `check` | - | 检查 obsidian 是否可用 | `$OPENEXP_SCRIPTS/obsidian-cli.sh check` |
 
 ---
 
@@ -58,8 +67,8 @@ export OBSIDIAN_RETRIES=3
 
 **示例：**
 ```bash
-./scripts/obsidian-cli.sh search pnpm content
-./scripts/obsidian-cli.sh search pnpm fuzzy
+$OPENEXP_SCRIPTS/obsidian-cli.sh search pnpm content
+$OPENEXP_SCRIPTS/obsidian-cli.sh search pnpm fuzzy
 ```
 
 ### 创建模式
@@ -71,13 +80,13 @@ export OBSIDIAN_RETRIES=3
 **示例：**
 ```bash
 # 创建新笔记
-./scripts/obsidian-cli.sh create Preferences/test.md '测试内容'
+$OPENEXP_SCRIPTS/obsidian-cli.sh create Preferences/test.md '测试内容'
 
 # 追加内容
-./scripts/obsidian-cli.sh create Preferences/test.md '## 新增内容' append
+$OPENEXP_SCRIPTS/obsidian-cli.sh create Preferences/test.md '## 新增内容' append
 
 # 覆盖笔记
-./scripts/obsidian-cli.sh create Preferences/test.md '新内容' overwrite
+$OPENEXP_SCRIPTS/obsidian-cli.sh create Preferences/test.md '新内容' overwrite
 ```
 
 ### 更新模式
@@ -91,31 +100,29 @@ export OBSIDIAN_RETRIES=3
 **示例：**
 ```bash
 # 追加内容
-./scripts/obsidian-cli.sh update Preferences/test.md append '## 新增内容'
+$OPENEXP_SCRIPTS/obsidian-cli.sh update Preferences/test.md append '## 新增内容'
 
 # 覆盖内容
-./scripts/obsidian-cli.sh update Preferences/test.md overwrite '新内容'
+$OPENEXP_SCRIPTS/obsidian-cli.sh update Preferences/test.md overwrite '新内容'
 
 # 编辑 frontmatter
-./scripts/obsidian-cli.sh update Preferences/test.md frontmatter-edit 'tags' 'test, updated'
-./scripts/obsidian-cli.sh update Preferences/test.md frontmatter-edit usage_count 10
+$OPENEXP_SCRIPTS/obsidian-cli.sh update Preferences/test.md frontmatter-edit 'tags' 'test, updated'
+$OPENEXP_SCRIPTS/obsidian-cli.sh update Preferences/test.md frontmatter-edit usage_count 10
 
 # 删除 frontmatter 键
-./scripts/obsidian-cli.sh update Preferences/test.md frontmatter-delete 'old_key'
+$OPENEXP_SCRIPTS/obsidian-cli.sh update Preferences/test.md frontmatter-delete 'old_key'
 
 # 打印 frontmatter
-./scripts/obsidian-cli.sh update Preferences/test.md frontmatter-print
+$OPENEXP_SCRIPTS/obsidian-cli.sh update Preferences/test.md frontmatter-print
 ```
 
 ---
 
 ## 经验库维护脚本
 
-**路径：** `scripts/maintain-experience-vault.py`
-
 **基本用法：**
 ```bash
-python3 scripts/maintain-experience-vault.py
+python3 $OPENEXP_SCRIPTS/maintain-experience-vault.py
 ```
 
 **功能：**

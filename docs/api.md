@@ -49,20 +49,33 @@ TypeScript 5.9+ | Node.js 22+ | pnpm | LangChain | Zod | SQLite WASM
 
 ### 分层架构
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                      应用层                              │
-│   CLI  │  Channels  │  Cron  │  Heartbeat              │
-├─────────────────────────────────────────────────────────┤
-│                      业务层                              │
-│   Agent Loop  │  Tools  │  Memory  │  Skills            │
-├─────────────────────────────────────────────────────────┤
-│                      服务层                              │
-│   Config Manager  │  Session Manager  │  Event Bus      │
-├─────────────────────────────────────────────────────────┤
-│                      基础层                              │
-│        Providers  │  Types  │  Utils                    │
-└─────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph L1["应用层"]
+        A1[CLI]
+        A2[Channels]
+        A3[Cron]
+        A4[Heartbeat]
+    end
+
+    subgraph L2["业务层"]
+        B1[Agent Loop]
+        B2[Tools]
+        B3[Memory]
+        B4[Skills]
+    end
+
+    subgraph L3["服务层"]
+        C1[Config Manager]
+        C2[Session Manager]
+        C3[Event Bus]
+    end
+
+    subgraph L4["基础层"]
+        D1[Providers]
+        D2[Types]
+        D3[Utils]
+    end
 ```
 
 ### 核心流程
