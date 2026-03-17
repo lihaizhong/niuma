@@ -200,25 +200,96 @@ niuma chat --agent tester
 | 渠道 | 协议 | 状态 |
 |------|------|------|
 | CLI | stdin/stdout | ✅ 已完成 |
-| Telegram | HTTP Bot API | ✅ 已完成 |
 | Discord | WebSocket Gateway | ✅ 已完成 |
-| 飞书 | WebSocket 长连接 | ⏸️ 基础框架 |
-| 钉钉 | Stream Mode | ⏸️ 基础框架 |
-| Slack | Socket Mode | ⏸️ 基础框架 |
-| WhatsApp | WebSocket Bridge | ⏸️ 基础框架 |
-| Email | IMAP/SMTP | ⏸️ 基础框架 |
-| QQ | WebSocket | ⏸️ 基础框架 |
+| 飞书 | WebSocket 长连接 | ✅ 已完成 |
+| Email | IMAP/SMTP | ✅ 已完成 |
+| QQ | WebSocket | ✅ 已完成 |
+| Telegram | HTTP Bot API | ⏸️ 暂时禁用 |
+| 钉钉 | Stream Mode | ⏸️ 暂时禁用 |
+| Slack | Socket Mode | ⏸️ 暂时禁用 |
+| WhatsApp | WebSocket Bridge | ⏸️ 暂时禁用 |
 
 ```bash
 # 查看渠道状态
 niuma channels status
 
+# 列出所有渠道
+niuma channels list
+
 # 启动渠道
-niuma channels start telegram
+niuma channels start discord
 
 # 停止渠道
-niuma channels stop telegram
+niuma channels stop discord
 ```
+
+### 🔌 服务端接入
+
+Niuma 支持作为服务端接入智能体，导出核心模块供外部程序调用：
+
+```typescript
+import {
+  AgentLoop,
+  ConfigManager,
+  EventBus,
+  SessionManager,
+  ToolRegistry,
+  registerBuiltinTools,
+  ChannelRegistry,
+  DiscordChannel,
+} from 'niuma';
+
+// 创建配置管理器
+const configManager = new ConfigManager();
+const config = configManager.load();
+
+// 创建事件总线
+const bus = new EventBus();
+
+// 创建工具注册表
+const tools = new ToolRegistry();
+registerBuiltinTools(tools);
+
+// 创建会话管理器
+const sessions = new SessionManager({ workspace: config.workspaceDir });
+
+// 创建渠道注册表
+const channelRegistry = new ChannelRegistry();
+channelRegistry.register(new DiscordChannel({ ... }));
+
+// 获取 LLM 提供商
+const provider = configManager.getDefaultProvider();
+
+// 创建 Agent 循环
+const agentLoop = new AgentLoop({
+  bus,
+  provider,
+  tools,
+  sessions,
+  workspace: config.workspaceDir,
+  channelRegistry,
+});
+
+// 启动 Agent
+await agentLoop.run();
+```
+
+**导出的核心模块：**
+
+| 模块 | 说明 |
+|------|------|
+| `AgentLoop` | Agent 核心循环 |
+| `ConfigManager` | 配置管理器 |
+| `EventBus` | 事件总线 |
+| `SessionManager` | 会话管理器 |
+| `ToolRegistry` | 工具注册表 |
+| `ChannelRegistry` | 渠道注册表 |
+| `CLIChannel` | CLI 渠道 |
+| `DiscordChannel` | Discord 渠道 |
+| `FeishuChannel` | 飞书渠道 |
+| `EmailChannel` | Email 渠道 |
+| `QQChannel` | QQ 渠道 |
+| `HeartbeatService` | 心跳服务 |
 
 ### 🎯 可扩展技能系统
 
@@ -523,7 +594,7 @@ flowchart TD
 | LLM 提供商 | ✅ 完成 | OpenAI、Anthropic、OpenRouter、DeepSeek、Custom 等多种提供商 |
 | 会话管理 | ✅ 完成 | 会话状态、历史记录、持久化 |
 | 定时任务与心跳 | ✅ 完成 | 支持定时任务调度和主动唤醒 |
-| 多渠道接入 | ✅ 完成 | CLI、Telegram、Discord 渠道，其他渠道基础框架 |
+| 多渠道接入 | ✅ 完成 | CLI、Discord、飞书、Email、QQ 渠道 |
 
 ### 🔄 待开发功能
 

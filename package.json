@@ -4,13 +4,22 @@
   "type": "module",
   "description": "Niuma (牛马) - 智能生活助手，提供陪伴感和情绪价值的智能精灵",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
   "bin": {
-    "niuma": "./dist/index.js"
+    "niuma": "./dist/cli/index.js"
   },
   "scripts": {
-    "build": "esbuild niuma/index.ts --bundle --platform=node --format=esm --outfile=dist/index.js --packages=external",
-    "start": "node dist/index.js",
-    "dev": "tsx niuma/index.ts",
+    "build": "tsc --project tsconfig.build.json && pnpm build:cli",
+    "build:lib": "tsc --project tsconfig.build.json",
+    "build:cli": "esbuild niuma/cli/index.ts --bundle --platform=node --format=esm --outfile=dist/cli/index.js --packages=external",
+    "start": "node dist/cli/index.js",
+    "dev": "tsx niuma/cli/index.ts",
     "lint": "eslint niuma --ext .ts",
     "lint:fix": "eslint niuma --ext .ts --fix",
     "test": "vitest",
