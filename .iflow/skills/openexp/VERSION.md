@@ -2,6 +2,48 @@
 
 ## 版本记录
 
+- **v2.7** (2026-03-17)
+  - 增强 Description 触发力度：
+    - 使用更"pushy"的措辞
+    - 明确列出强制触发场景
+    - 添加"强制使用"关键词
+  - 优化 SKILL.md 内容结构：
+    - 核心原则添加"为什么"解释
+    - 新增错误恢复指南章节
+    - 说明 CLI 操作的三大好处
+  - 精简所有模板文件：
+    - solution-template.md: 50+ 行 → 25 行
+    - experience-template.md: 50+ 行 → 25 行
+    - workflow-template.md: 50+ 行 → 25 行
+    - knowledge-template.md: 50+ 行 → 25 行
+    - convention-template.md: 80+ 行 → 30 行
+    - preference-template.md: 30+ 行 → 20 行
+
+- **v2.6** (2026-03-17)
+  - 优化 maintain-experience-vault.py：
+    - 添加 argparse 命令行参数支持
+    - 支持 `--vault-path` 指定 Vault 路径
+    - 支持 `--dry-run` 预览模式
+    - 支持 `--backup` 修改前备份
+    - 优化更新逻辑，跳过无变化的文件
+  - 优化 obsidian-cli.sh：
+    - 添加超时处理（默认 30 秒，可通过 `OBSIDIAN_TIMEOUT` 配置）
+    - 添加重试机制（默认 2 次，可通过 `OBSIDIAN_RETRIES` 配置）
+    - 新增 `run_obsidian()` 统一执行函数
+  - 精简所有模板 frontmatter：
+    - 移除自动计算字段（impact_score, backlinks, referenced_weight 等）
+    - 统一 ID 命名格式示例
+    - 添加注释说明其他字段由脚本自动计算
+
+- **v2.5** (2026-03-17)
+  - 增强 Description，添加详细触发场景说明，提高触发准确率
+  - 添加"主动应用经验"章节，指导模型主动查询和应用经验
+  - 添加"快速示例"章节，提供端到端的工作流示例
+  - 添加模板使用说明，在经验类型表格中关联对应模板
+  - 添加"错误处理"章节，明确 CLI 失败时的处理流程
+  - 精简 Frontmatter 字段说明，自动计算字段移到备注
+  - 人性化约束规则，用"核心原则"替代命令式约束
+
 - **v2.4** (2026-03-16)
   - 优化 token 效率，减少约 52% 的 token 消耗
   - 精简 SKILL.md，移除详细命令参考到 reference/commands.md

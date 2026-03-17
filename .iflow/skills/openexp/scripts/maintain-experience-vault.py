@@ -7,10 +7,19 @@
 2. 计算影响力（usage_count × 5 + confidence × 50 + backlinks × 10 + referenced_weight）
 3. 更新索引地图
 4. 识别低影响力经验
+
+用法：
+  python3 maintain-experience-vault.py                    # 默认运行
+  python3 maintain-experience-vault.py --dry-run          # 预览变更
+  python3 maintain-experience-vault.py --backup           # 修改前备份
+  python3 maintain-experience-vault.py --vault-path ~/MyVault  # 指定路径
 """
 
 import os
 import re
+import sys
+import argparse
+import shutil
 import yaml
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -32,6 +41,41 @@ class Config:
     usage_weight: float = 5.0
     confidence_weight: float = 50.0
     backlink_weight: float = 10.0
+    # 运行模式
+    dry_run: bool = False
+    backup: bool = False
+
+
+def parse_args() -> argparse.Namespace:
+    """解析命令行参数"""
+    parser = argparse.ArgumentParser(
+        description='经验库维护脚本 - 计算影响力、更新索引地图',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog='''
+示例:
+  %(prog)s                          # 默认运行
+  %(prog)s --dry-run                # 预览变更，不实际修改
+  %(prog)s --backup                 # 修改前备份到 .backup/
+  %(prog)s --vault-path ~/MyVault   # 指定 Vault 路径
+'''
+    )
+    parser.add_argument(
+        '--vault-path',
+        type=str,
+        default=os.path.expanduser('~/Exp Vault'),
+        help='Vault 路径 (默认: ~/Exp Vault)'
+    )
+    parser.add_argument(
+        '--dry-run',
+        action='store_true',
+        help='预览模式：只显示变更，不实际修改文件'
+    )
+    parser.add_argument(
+        '--backup',
+        action='store_true',
+        help='修改前备份到 <vault>/.backup/ 目录'
+    )
+    return parser.parse_args()
 
 
 CONFIG = Config()
@@ -214,10 +258,35 @@ def calculate_impact_scores(experiences: Dict[str, Experience], reference_graph:
             exp.impact_score = CONFIG.impact_threshold
 
 
+def backup_vault(vault_path: Path) -> Optional[Path]:
+    """备份 Vault 目录"""
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    backup_dir = vault_path / '.backup' / f'backup_{timestamp}'
+    
+    try:
+        backup_dir.parent.mkdir(parents=True, exist_ok=True)
+        # 只备份经验文件，不备份 .backup 目录
+        for exp_dir in vault_path.glob('*/'):
+            if exp_dir.name.startswith('.') or exp_dir.name == 'Poetry':
+                continue
+            dest_dir = backup_dir / exp_dir.name
+            shutil.copytree(exp_dir, dest_dir)
+        print(f"已备份到: {backup_dir}")
+        return backup_dir
+    except Exception as e:
+        print(f"警告：备份失败: {e}")
+        return None
+
+
 def update_experience_frontmatter(experiences: Dict[str, Experience]):
     """更新经验文件的 frontmatter"""
-    print("\n更新 frontmatter...")
+    if CONFIG.dry_run:
+        print("\n[DRY-RUN] 将更新以下 frontmatter:")
+    else:
+        print("\n更新 frontmatter...")
+    
     now = datetime.now().isoformat() + 'Z'
+    updated_count = 0
 
     for exp in experiences.values():
         try:
@@ -231,6 +300,10 @@ def update_experience_frontmatter(experiences: Dict[str, Experience]):
             old_frontmatter = frontmatter_match.group(1)
             frontmatter_data = yaml.safe_load(old_frontmatter.replace('---\n', '').replace('\n---', '')) or {}
 
+            old_score = frontmatter_data.get('impact_score', 0)
+            if abs(old_score - exp.impact_score) < 0.01 and frontmatter_data.get('backlinks') == exp.backlinks:
+                continue  # 无变化，跳过
+
             frontmatter_data['impact_score'] = round(exp.impact_score, 2)
             frontmatter_data['backlinks'] = exp.backlinks
             frontmatter_data['referenced_weight'] = round(exp.referenced_weight, 2)
@@ -239,11 +312,18 @@ def update_experience_frontmatter(experiences: Dict[str, Experience]):
             new_frontmatter = '---\n' + yaml.dump(frontmatter_data, default_flow_style=False, allow_unicode=True) + '---'
             new_content = content.replace(old_frontmatter, new_frontmatter, 1)
 
-            with open(exp.file_path, 'w', encoding='utf-8') as f:
-                f.write(new_content)
+            if CONFIG.dry_run:
+                print(f"  - {exp.id}: impact {old_score:.1f} -> {exp.impact_score:.1f}")
+            else:
+                with open(exp.file_path, 'w', encoding='utf-8') as f:
+                    f.write(new_content)
+                updated_count += 1
 
         except Exception as e:
             print(f"  警告：更新 frontmatter 失败 {exp.file_path}: {e}")
+
+    if not CONFIG.dry_run:
+        print(f"已更新 {updated_count} 个文件")
 
 
 def categorize_experiences(experiences: Dict[str, Experience]) -> Dict[str, List[Experience]]:
@@ -477,11 +557,19 @@ def print_statistics(experiences: Dict[str, Experience], categories: Dict[str, L
 
 
 def main():
+    # 解析命令行参数
+    args = parse_args()
+    
+    # 更新配置
+    CONFIG.vault_path = args.vault_path
+    CONFIG.dry_run = args.dry_run
+    CONFIG.backup = args.backup
+
     vault_path = Path(CONFIG.vault_path)
 
     if not vault_path.exists():
         print(f"错误：Vault 路径不存在: {vault_path}")
-        return
+        sys.exit(1)
 
     print("=" * 60)
     print("经验库维护脚本")
@@ -489,7 +577,15 @@ def main():
     print(f"Vault 路径: {vault_path}")
     print(f"影响力阈值: {CONFIG.impact_threshold}")
     print(f"新经验保护期: {CONFIG.new_experience_days} 天")
+    if CONFIG.dry_run:
+        print("模式: [DRY-RUN] 预览变更，不实际修改")
+    if CONFIG.backup and not CONFIG.dry_run:
+        print("模式: [BACKUP] 修改前备份")
     print()
+
+    # 备份
+    if CONFIG.backup and not CONFIG.dry_run:
+        backup_vault(vault_path)
 
     print("扫描经验文件...")
     experiences = scan_experiences(vault_path)
@@ -510,9 +606,13 @@ def main():
     print("\n生成索引地图...")
     index_map_content = generate_index_map(experiences, categories)
     index_map_path = vault_path / "经验索引地图.md"
-    with open(index_map_path, 'w', encoding='utf-8') as f:
-        f.write(index_map_content)
-    print(f"已更新: {index_map_path}")
+    
+    if CONFIG.dry_run:
+        print(f"[DRY-RUN] 将写入: {index_map_path}")
+    else:
+        with open(index_map_path, 'w', encoding='utf-8') as f:
+            f.write(index_map_content)
+        print(f"已更新: {index_map_path}")
 
     print("\n识别低影响力经验...")
     low_impact = identify_low_impact_experiences(experiences)
@@ -526,7 +626,12 @@ def main():
         print("没有发现低影响力经验")
 
     print_statistics(experiences, categories, low_impact)
-    print("完成！")
+    
+    if CONFIG.dry_run:
+        print("\n[DRY-RUN] 完成！未实际修改任何文件。")
+        print("移除 --dry-run 参数以实际执行变更。")
+    else:
+        print("完成！")
 
 
 if __name__ == "__main__":

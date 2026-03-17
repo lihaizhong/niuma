@@ -3,12 +3,19 @@
 ##############################################################################
 # Obsidian CLI Wrapper
 # 用于简化 obsidian 命令的调用，提供更友好的接口
+#
+# 环境变量配置：
+#   OBSIDIAN_TIMEOUT   - 命令超时时间（秒），默认 30
+#   OBSIDIAN_RETRIES   - 失败重试次数，默认 2
+#   DEFAULT_VAULT_NAME - 默认 Vault 名称，默认 "Exp Vault"
 ##############################################################################
 
 set -e
 
-# 默认 Vault 名称
+# 默认配置（可通过环境变量覆盖）
 DEFAULT_VAULT_NAME="${DEFAULT_VAULT_NAME:-Exp Vault}"
+OBSIDIAN_TIMEOUT="${OBSIDIAN_TIMEOUT:-30}"
+OBSIDIAN_RETRIES="${OBSIDIAN_RETRIES:-2}"
 
 # 颜色输出
 RED='\033[0;31m'
@@ -23,6 +30,45 @@ NC='\033[0m' # No Color
 info() { echo -e "${GREEN}[INFO]${NC} $1"; }
 warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
 error() { echo -e "${RED}[ERROR]${NC} $1" >&2; }
+
+# 带超时和重试的 obsidian 命令执行
+run_obsidian() {
+    local cmd="$1"
+    shift
+    local args=("$@")
+    local attempt=1
+    local exit_code=0
+
+    while [[ $attempt -le $OBSIDIAN_RETRIES ]]; do
+        if [[ $OBSIDIAN_TIMEOUT -gt 0 ]]; then
+            timeout "$OBSIDIAN_TIMEOUT" obsidian $cmd "${args[@]}" 2>&1
+            exit_code=$?
+            
+            # 超时退出码 124
+            if [[ $exit_code -eq 124 ]]; then
+                warn "命令超时 (attempt $attempt/$OBSIDIAN_RETRIES): obsidian $cmd"
+                ((attempt++))
+                sleep 1
+                continue
+            fi
+        else
+            obsidian $cmd "${args[@]}" 2>&1
+            exit_code=$?
+        fi
+
+        if [[ $exit_code -eq 0 ]]; then
+            return 0
+        fi
+
+        if [[ $attempt -lt $OBSIDIAN_RETRIES ]]; then
+            warn "命令失败，重试中 (attempt $attempt/$OBSIDIAN_RETRIES)"
+            sleep 1
+        fi
+        ((attempt++))
+    done
+
+    return $exit_code
+}
 
 check_obsidian_cli() {
     if ! command -v obsidian &> /dev/null; then
@@ -42,7 +88,7 @@ check_obsidian_cli() {
 read_note() {
     local vault_name="$1"
     local note_path="$2"
-    obsidian read path="$note_path" vault="$vault_name"
+    run_obsidian read path="$note_path" vault="$vault_name"
 }
 
 create_note() {
@@ -54,16 +100,16 @@ create_note() {
     case "$mode" in
         "create")
             if [[ -n "$content" ]]; then
-                obsidian create path="$note_path" vault="$vault_name" content="$content"
+                run_obsidian create path="$note_path" vault="$vault_name" content="$content"
             else
-                obsidian create path="$note_path" vault="$vault_name"
+                run_obsidian create path="$note_path" vault="$vault_name"
             fi
             ;;
         "append")
-            obsidian append path="$note_path" vault="$vault_name" content="$content"
+            run_obsidian append path="$note_path" vault="$vault_name" content="$content"
             ;;
         "overwrite")
-            obsidian create path="$note_path" vault="$vault_name" content="$content" overwrite
+            run_obsidian create path="$note_path" vault="$vault_name" content="$content" overwrite
             ;;
         *)
             error "未知的创建模式: $mode"
@@ -84,27 +130,27 @@ update_note() {
 
     case "$mode" in
         "append")
-            obsidian append path="$note_path" vault="$vault_name" content="$content"
+            run_obsidian append path="$note_path" vault="$vault_name" content="$content"
             ;;
         "overwrite")
-            obsidian create path="$note_path" vault="$vault_name" content="$content" overwrite
+            run_obsidian create path="$note_path" vault="$vault_name" content="$content" overwrite
             ;;
         "frontmatter-edit")
             if [[ -z "$key" || -z "$value" ]]; then
                 error "编辑 properties 需要指定 key 和 value"
                 exit 1
             fi
-            obsidian property:set name="$key" value="$value" path="$note_path" vault="$vault_name"
+            run_obsidian property:set name="$key" value="$value" path="$note_path" vault="$vault_name"
             ;;
         "frontmatter-delete")
             if [[ -z "$key" ]]; then
                 error "删除 properties 需要指定 key"
                 exit 1
             fi
-            obsidian property:remove name="$key" path="$note_path" vault="$vault_name"
+            run_obsidian property:remove name="$key" path="$note_path" vault="$vault_name"
             ;;
         "frontmatter-print")
-            obsidian properties path="$note_path" vault="$vault_name"
+            run_obsidian properties path="$note_path" vault="$vault_name"
             return
             ;;
         *)
@@ -126,7 +172,7 @@ delete_note() {
         exit 1
     fi
 
-    obsidian delete path="$note_path" vault="$vault_name"
+    run_obsidian delete path="$note_path" vault="$vault_name"
     info "已删除笔记: $note_path"
 }
 
@@ -135,9 +181,9 @@ list_notes() {
     local directory="${2:-}"
 
     if [[ -n "$directory" ]]; then
-        obsidian files folder="$directory" vault="$vault_name"
+        run_obsidian files folder="$directory" vault="$vault_name"
     else
-        obsidian files vault="$vault_name"
+        run_obsidian files vault="$vault_name"
     fi
 }
 
@@ -148,7 +194,7 @@ search_notes() {
 
     case "$mode" in
         "content"| "fuzzy")
-            obsidian search query="$query" vault="$vault_name"
+            run_obsidian search query="$query" vault="$vault_name"
             ;;
         *)
             error "未知的搜索模式: $mode"
@@ -160,20 +206,20 @@ search_notes() {
 get_frontmatter() {
     local vault_name="$1"
     local note_path="$2"
-    obsidian properties path="$note_path" vault="$vault_name"
+    run_obsidian properties path="$note_path" vault="$vault_name"
 }
 
 open_note() {
     local vault_name="$1"
     local note_path="$2"
-    obsidian open path="$note_path" vault="$vault_name"
+    run_obsidian open path="$note_path" vault="$vault_name"
 }
 
 move_note() {
     local vault_name="$1"
     local old_path="$2"
     local new_path="$3"
-    obsidian move path="$old_path" to="$new_path" vault="$vault_name"
+    run_obsidian move path="$old_path" to="$new_path" vault="$vault_name"
     info "已移动笔记: $old_path → $new_path"
 }
 
@@ -181,17 +227,17 @@ daily_note() {
     local vault_name="$1"
     local date="${2:-}"
     if [[ -n "$date" ]]; then
-        obsidian create path="Daily Notes/$date.md" vault="$vault_name"
+        run_obsidian create path="Daily Notes/$date.md" vault="$vault_name"
     else
         local today
         today=$(date +"%Y-%m-%d")
-        obsidian create path="Daily Notes/$today.md" vault="$vault_name"
+        run_obsidian create path="Daily Notes/$today.md" vault="$vault_name"
     fi
 }
 
 get_version() {
     check_obsidian_cli
-    obsidian version
+    run_obsidian version
 }
 
 is_available() {
@@ -201,7 +247,7 @@ is_available() {
 
 get_default_vault() {
     check_obsidian_cli
-    obsidian vaults verbose
+    run_obsidian vaults verbose
 }
 
 set_default_vault() {
