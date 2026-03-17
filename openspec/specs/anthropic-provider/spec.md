@@ -1,4 +1,10 @@
-## ADDED Requirements
+# Anthropic Provider Specification
+
+## Purpose
+
+定义 Anthropic Provider 的功能规格和行为约束。
+
+## Requirements
 
 ### Requirement: Anthropic 提供商实现
 

@@ -1,7 +1,13 @@
-## ADDED Requirements
+# Agent Id Config Specification
+
+## Purpose
+
+定义 Agent Id Config 的功能规格和行为约束。
+
+## Requirements
 
 ### Requirement: Agent ID 配置
-AgentLoop 必须支持从配置中获取 Agent ID，避免硬编码。
+AgentLoop SHALL支持从配置中获取 Agent ID，避免硬编码。
 
 #### Scenario: 从配置获取 Agent ID
 - **WHEN** 创建 AgentLoop 实例
@@ -17,7 +23,7 @@ AgentLoop 必须支持从配置中获取 Agent ID，避免硬编码。
 - **THEN** 系统使用对应的 Agent ID
 
 ### Requirement: LLM 提供商创建
-系统必须支持根据配置创建 LLM 提供商实例。
+系统SHALL支持根据配置创建 LLM 提供商实例。
 
 #### Scenario: 创建 LLM 提供商
 - **WHEN** 调用 `createLLMProvider(config)` 方法
@@ -34,7 +40,7 @@ AgentLoop 必须支持从配置中获取 Agent ID，避免硬编码。
 - **THEN** 系统创建自定义提供商实例
 
 ### Requirement: AgentLoop 启动
-系统必须支持完整启动 AgentLoop。
+系统SHALL支持完整启动 AgentLoop。
 
 #### Scenario: 启动 AgentLoop
 - **WHEN** 调用 `initialize()` 方法

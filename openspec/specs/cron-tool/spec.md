@@ -1,9 +1,10 @@
-# cron-tool 规格
+# Cron Tool Specification
 
-## 目的
-TBD - 由归档变更 builtin-tools-implementation 创建。归档后更新目的。
+## Purpose
 
-## 需求
+定义 Cron Tool 的功能规格和行为约束。
+
+## Requirements
 ### Requirement: cron 工具管理定时任务
 
 系统 SHALL 提供 cron 工具，能够创建和管理定时任务。

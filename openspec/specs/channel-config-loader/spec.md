@@ -1,7 +1,13 @@
-## ADDED Requirements
+# Channel Config Loader Specification
+
+## Purpose
+
+定义 Channel Config Loader 的功能规格和行为约束。
+
+## Requirements
 
 ### Requirement: 渠道配置加载
-ChannelRegistry 必须支持从配置文件加载渠道实例。
+ChannelRegistry SHALL支持从配置文件加载渠道实例。
 
 #### Scenario: 从配置加载渠道
 - **WHEN** 调用 `loadFromConfig(config)` 方法
@@ -21,7 +27,7 @@ ChannelRegistry 必须支持从配置文件加载渠道实例。
 - **THEN** 系统不创建任何渠道实例
 
 ### Requirement: 渠道工厂
-系统必须实现渠道工厂，根据类型创建对应的渠道实例。
+系统SHALL实现渠道工厂，根据类型创建对应的渠道实例。
 
 #### Scenario: 创建 CLI 渠道
 - **WHEN** 渠道类型为 "cli"
@@ -74,7 +80,7 @@ ChannelRegistry 必须支持从配置文件加载渠道实例。
 - **THEN** 系统跳过该渠道
 
 ### Requirement: 渠道配置验证
-系统必须验证渠道配置的有效性。
+系统SHALL验证渠道配置的有效性。
 
 #### Scenario: 验证必需字段
 - **WHEN** 渠道配置缺少必需字段

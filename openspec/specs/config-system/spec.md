@@ -1,4 +1,10 @@
-## ADDED Requirements
+# Config System Specification
+
+## Purpose
+
+定义 Config System 的功能规格和行为约束。
+
+## Requirements
 
 ### Requirement: 配置 schema 验证
 

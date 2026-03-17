@@ -1,4 +1,10 @@
-## ADDED Requirements
+# Deepseek Provider Specification
+
+## Purpose
+
+定义 Deepseek Provider 的功能规格和行为约束。
+
+## Requirements
 
 ### Requirement: DeepSeek 提供商实现
 

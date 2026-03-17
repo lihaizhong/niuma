@@ -1,9 +1,10 @@
-# git-tools 规格
+# Git Tools Specification
 
-## 目的
-TBD - 由归档变更 phase-3-2-git-operations 创建。归档后更新目的。
+## Purpose
 
-## 需求
+定义 Git Tools 的功能规格和行为约束。
+
+## Requirements
 
 ### 需求：Git status 工具提供仓库状态
 

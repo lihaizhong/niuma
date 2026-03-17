@@ -1,4 +1,10 @@
-## ADDED Requirements
+# Session Manager Specification
+
+## Purpose
+
+定义 Session Manager 的功能规格和行为约束。
+
+## Requirements
 
 ### Requirement: 会话创建与获取
 

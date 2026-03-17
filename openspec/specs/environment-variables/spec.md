@@ -1,4 +1,10 @@
-## ADDED Requirements
+# Environment Variables Specification
+
+## Purpose
+
+定义 Environment Variables 的功能规格和行为约束。
+
+## Requirements
 
 ### Requirement: 读取环境变量
 系统 SHALL 提供 `env_get` 工具，用于读取当前进程的环境变量。

@@ -1,4 +1,10 @@
-## ADDED Requirements
+# Provider Registry Specification
+
+## Purpose
+
+定义 Provider Registry 的功能规格和行为约束。
+
+## Requirements
 
 ### Requirement: 提供商规格定义
 

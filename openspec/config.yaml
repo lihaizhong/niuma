@@ -76,7 +76,7 @@ context: |
   - Use ESLint for code style checking
   - **Comments must be in Chinese**, code identifiers in English
   - **Diagrams must use mermaid syntax**
-  - **OpenSpec specs main content must be in Chinese**
+  - **OpenSpec specs**: Requirement descriptions MUST use English "SHALL" or "MUST" keywords; other content (scenarios, explanations) can be in Chinese
 
   ## Commit Style
 
@@ -159,6 +159,9 @@ rules:
     - Reference existing nanobot code when applicable
 
   specs:
+    - "**Format**: Must include `## Purpose` and `## Requirements` sections"
+    - "**Requirements**: Each requirement MUST use 'SHALL' or 'MUST' keyword in description"
+    - "**Scenarios**: Each requirement MUST have at least one scenario with WHEN/THEN structure"
     - Define inputs, outputs, and edge cases
     - Include TypeScript interface definitions
     - List dependencies on other specs

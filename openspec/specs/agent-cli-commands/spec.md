@@ -1,4 +1,10 @@
-## ADDED Requirements
+# Agent Cli Commands Specification
+
+## Purpose
+
+定义 Agent Cli Commands 的功能规格和行为约束。
+
+## Requirements
 
 ### Requirement: AgentLoop 支持 provider 切换方法
 系统 SHALL 在 AgentLoop 中提供 provider 切换相关方法。

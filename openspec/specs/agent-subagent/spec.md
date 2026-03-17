@@ -1,4 +1,10 @@
-## ADDED Requirements
+# Agent Subagent Specification
+
+## Purpose
+
+定义 Agent Subagent 的功能规格和行为约束。
+
+## Requirements
 
 ### Requirement: 后台任务生成
 

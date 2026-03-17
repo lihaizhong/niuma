@@ -1,9 +1,10 @@
-# web-search-tool 规格
+# Web Search Tool Specification
 
-## 目的
-TBD - 由归档变更 builtin-tools-implementation 创建。归档后更新目的。
+## Purpose
 
-## 需求
+定义 Web Search Tool 的功能规格和行为约束。
+
+## Requirements
 ### Requirement: web_search 工具执行网页搜索
 
 系统 SHALL 提供 web_search 工具，能够使用搜索引擎查找信息。

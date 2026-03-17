@@ -1,9 +1,10 @@
-# message-tool 规格
+# Message Tool Specification
 
-## 目的
-TBD - 由归档变更 builtin-tools-implementation 创建。归档后更新目的。
+## Purpose
 
-## 需求
+定义 Message Tool 的功能规格和行为约束。
+
+## Requirements
 ### Requirement: message 工具发送消息
 
 系统 SHALL 提供 message 工具，能够通过配置的渠道发送消息。

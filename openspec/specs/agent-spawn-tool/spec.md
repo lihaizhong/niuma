@@ -1,9 +1,10 @@
-# agent-spawn-tool 规格
+# Agent Spawn Tool Specification
 
-## 目的
-TBD - 由归档变更 builtin-tools-implementation 创建。归档后更新目的。
+## Purpose
 
-## 需求
+定义 Agent Spawn Tool 的功能规格和行为约束。
+
+## Requirements
 ### Requirement: spawn 工具创建子智能体
 
 系统 SHALL 提供 spawn 工具，能够创建和管理子智能体。
