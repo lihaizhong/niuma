@@ -15,7 +15,7 @@ license: MIT
 compatibility: iFlow CLI
 metadata:
   author: niuma
-  version: "2.7"
+  version: "2.8"
   tags: [learning, memory, experience, knowledge-base, obsidian]
 ---
 
@@ -159,7 +159,7 @@ created: 2026-03-11T13:02:45+08:00
 所有经验库操作必须通过 `obsidian-cli.sh` 完成。原因：
 - **可追溯**：操作被正确记录，支持变更历史
 - **格式一致**：自动填充 frontmatter，避免人为错误
-- **健壮性**：内置超时和重试机制，避免 Obsidian 响应慢导致失败
+- **简洁高效**：本地应用访问速度快，无需复杂的重试机制
 
 ### 敏感信息保护
 不要记录密码、API 密钥、token 等敏感信息。原因：经验库以明文存储，不适合保存机密数据。

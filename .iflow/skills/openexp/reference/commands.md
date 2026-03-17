@@ -15,15 +15,12 @@ OPENEXP_SCRIPTS=$(find . -path "*/skills/openexp/scripts/obsidian-cli.sh" -type 
 
 | 变量 | 默认值 | 说明 |
 |------|--------|------|
-| `OBSIDIAN_TIMEOUT` | 30 | 命令超时时间（秒），设为 0 禁用超时 |
-| `OBSIDIAN_RETRIES` | 2 | 失败重试次数 |
 | `DEFAULT_VAULT_NAME` | Exp Vault | 默认 Vault 名称 |
 
 **示例：**
 ```bash
-# 设置超时为 60 秒，重试 3 次
-export OBSIDIAN_TIMEOUT=60
-export OBSIDIAN_RETRIES=3
+# 指定其他 Vault
+export DEFAULT_VAULT_NAME="My Vault"
 $OPENEXP_SCRIPTS/obsidian-cli.sh search pnpm
 ```
 
