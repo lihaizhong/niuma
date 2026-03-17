@@ -777,7 +777,7 @@ export class AgentLoop {
     // 检查斜杠命令
     const trimmedContent = message.content.trim();
     if (trimmedContent.startsWith("/")) {
-      return await this._handleSlashCommand(trimmedContent, session);
+      return await this._handleSlashCommand(trimmedContent, session, message.channel);
     }
 
     // 添加用户消息到会话
@@ -1113,6 +1113,7 @@ export class AgentLoop {
   private async _handleSlashCommand(
     content: string,
     session: Session,
+    channel?: string,
   ): Promise<string> {
     const whitespaceRegex = new RE2("\\s+", "g");
     const parts = content.toLowerCase().split(whitespaceRegex);
@@ -1144,7 +1145,7 @@ export class AgentLoop {
       }
 
       case "/help": {
-        return this._getHelpText();
+        return this._getHelpText(channel);
       }
 
       case "/provider": {
@@ -1156,7 +1157,7 @@ export class AgentLoop {
       }
 
       default:
-        return `未知命令: ${command}\n\n可用命令:\n${this._getHelpText()}`;
+        return `未知命令: ${command}\n\n可用命令:\n${this._getHelpText(channel)}`;
     }
   }
 
@@ -1273,8 +1274,12 @@ export class AgentLoop {
 
   /**
    * 获取帮助文本
+   * @param channel 渠道类型（用于显示渠道特定命令）
    */
-  private _getHelpText(): string {
+  private _getHelpText(channel?: string): string {
+    // 渠道特定命令
+    const channelCommands = this._getChannelCommands(channel);
+
     return `
 可用命令:
   /new              - 开始新会话，清空当前对话历史并触发记忆归档
@@ -1283,12 +1288,34 @@ export class AgentLoop {
   /provider <name>  - 切换到指定的 Provider
   /provider current - 显示当前 Provider 信息
   /model <name>     - 根据模型名切换 Provider（如 /model gpt-4o）
-
+${channelCommands}
 其他说明:
 - 支持多轮对话，会自动记住上下文
 - 支持工具调用，AI 可以执行文件操作、运行命令等
 - 对话历史会自动压缩到长期记忆中
 `.trim();
+  }
+
+  /**
+   * 获取渠道特定命令
+   * @param channel 渠道类型
+   */
+  private _getChannelCommands(channel?: string): string {
+    switch (channel) {
+      case "cli":
+        return `  /exit, /quit     - 退出程序
+  /clear           - 清空屏幕
+  /status          - 显示渠道状态
+`;
+      case "telegram":
+        // Telegram 渠道特定命令（如有）
+        return "";
+      case "discord":
+        // Discord 渠道特定命令（如有）
+        return "";
+      default:
+        return "";
+    }
   }
 
   // ============================================
