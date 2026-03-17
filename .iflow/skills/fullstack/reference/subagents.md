@@ -1,20 +1,50 @@
 # Subagent 协作策略
 
-本文档详细说明如何有效地使用和协作各种 subagent。
+本文档详细说明如何有效地使用和协作各种 subagent，支持 TDD 工作流。
+
+---
+
+## 目录
+
+- [一、Subagent 分类](#一subagent-分类)
+  - [TDD 角色](#tdd-角色新增)
+  - [开发专家](#开发专家voltagent)
+  - [核心 Subagent](#核心-subagent内置)
+  - [支持 Subagent](#支持-subagent内置)
+- [二、TDD 协作流程](#二tdd-协作流程)
+- [三、任务分解与分配](#三任务分解与分配)
+- [四、并行执行策略](#四并行执行策略)
+- [五、结果合并](#五结果合并)
+- [六、Subagent 最佳实践](#六subagent-最佳实践)
+- [七、常见问题](#七常见问题)
 
 ---
 
 ## 一、Subagent 分类
 
+### 0. TDD 角色（新增）
+
+**核心职责：驱动测试先行开发**
+
+| Subagent | 用途 | TDD 阶段 | 调用时机 |
+|----------|------|---------|---------|
+| `spec-writer` | 编写功能规格和测试规格 | Red | 需求明确后，实现之前 |
+| `tester` | 实现测试用例 | Red | 规格完成后，实现之前 |
+
+**TDD 角色的特殊性：**
+- 必须在开发角色之前调用
+- 输出决定开发角色的输入
+- 测试规格是验收标准
+
 ### 1. 开发专家（VoltAgent）
 
-| Subagent | 用途 | 调用时机 |
-|----------|------|---------|
-| `ui-designer` | 视觉设计和交互专家 | UI/UX 设计决策 |
-| `api-designer` | REST/GraphQL API 架构师 | API 接口、数据模型设计 |
-| `frontend-developer` | 前端开发专家 | 实现前端组件、页面、UI |
-| `backend-developer` | 后端开发专家 | 实现 API、服务端逻辑 |
-| `fullstack-developer` | 全栈开发专家 | 跨前后端的功能开发 |
+| Subagent | 用途 | TDD 阶段 | 调用时机 |
+|----------|------|---------|---------|
+| `ui-designer` | 视觉设计和交互专家 | 规格定义 | UI/UX 设计决策 |
+| `api-designer` | REST/GraphQL API 架构师 | 规格定义 | API 接口、数据模型设计 |
+| `frontend-developer` | 前端开发专家 | Green/Refactor | 使前端测试通过 |
+| `backend-developer` | 后端开发专家 | Green/Refactor | 使后端测试通过 |
+| `fullstack-developer` | 全栈开发专家 | Green/Refactor | 使全栈测试通过 |
 
 ### 2. 核心 Subagent（内置）
 
@@ -28,7 +58,7 @@
 | Subagent | 用途 | 调用时机 |
 |----------|------|---------|
 | `frontend-tester` | 前端测试 | 修改前端文件后验证 |
-| `code-reviewer` | 代码审查 | 完成代码后主动审查 |
+| `code-reviewer` | 代码审查 | Refactor 完成后审查 |
 | `search-specialist` | 搜索专家 | 需要深入研究时 |
 | `general-purpose` | 通用任务 | 复杂的多步骤任务 |
 
@@ -269,6 +299,58 @@ task(subagent="api-designer", prompt=`
 - 数据模型和 Schema
 - 请求/响应格式
 - 错误处理规范
+
+### 2.1 spec-writer（TDD 新增）
+
+**适用场景：**
+- 编写功能规格
+- 定义测试规格和验收标准
+- 在实现之前明确"什么是完成"
+
+**使用示例：**
+```typescript
+task(subagent="spec-writer", prompt=`
+编写用户登录功能的测试规格：
+- 功能：用户使用用户名和密码登录
+- 输入：用户名（string）、密码（string）
+- 输出：登录成功返回 token，失败返回错误信息
+- 边界情况：空用户名、空密码、错误密码、用户不存在
+- 验收标准：所有测试用例定义
+`)
+```
+
+**期望输出：**
+- 功能规格文档（spec.md）
+- 测试规格文档（test.md）
+- 验收标准清单
+- 边界情况列表
+
+**TDD 角色：** 定义测试用例，为 tester 提供输入
+
+### 2.2 tester（TDD 新增）
+
+**适用场景：**
+- 根据测试规格实现测试用例
+- 确保测试在实现前失败（Red 阶段）
+- 验证测试覆盖所有边界情况
+
+**使用示例：**
+```typescript
+task(subagent="tester", prompt=`
+根据测试规格实现用户登录测试：
+- 使用 Vitest 测试框架
+- 覆盖所有边界情况
+- 确保测试当前失败（功能未实现）
+- 测试文件放在 tests/auth/login.test.ts
+`)
+```
+
+**期望输出：**
+- 测试文件（.test.ts）
+- 测试报告（Red 状态：所有测试失败）
+- 覆盖率分析
+
+**TDD 角色：** 确保测试先行且失败，为 developer 提供目标
 
 ### 3. frontend-developer
 

@@ -136,6 +136,7 @@ rules:
     - Define inputs, outputs, and edge cases
     - Include TypeScript interface definitions
     - List dependencies on other specs
+    - **TDD**: Include test specification (test.md) for each capability
 
   design:
     - Include ASCII architecture diagrams
@@ -148,3 +149,6 @@ rules:
     - Each task should be independently verifiable
     - Number tasks for clear ordering
     - Mark dependencies between tasks
+    - **TDD**: Organize tasks in Red → Green → Refactor phases
+    - **TDD**: Test tasks must precede implementation tasks
+    - **TDD**: Each implementation task must have corresponding test verification

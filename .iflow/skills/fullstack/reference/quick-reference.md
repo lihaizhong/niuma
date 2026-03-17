@@ -2,6 +2,20 @@
 
 本文档提供常用命令、Subagent 映射和检查清单的快速参考。
 
+> **代码模式和最佳实践：** [code-patterns.md](code-patterns.md)
+
+---
+
+## 目录
+
+- [一、常用命令](#一常用命令)
+- [二、Subagent 映射](#二subagent-映射)
+- [三、硬约束检查清单](#三硬约束检查清单)
+- [四、任务流程速查](#四任务流程速查)
+- [五、文件操作规则](#五文件操作规则)
+- [六、代码规范速查](#六代码规范速查)
+- [七、常见问题速查](#七常见问题速查)
+
 ---
 
 ## 一、常用命令
@@ -42,6 +56,8 @@
 
 | 任务类型 | 推荐 Subagent | 备选 Subagent |
 |----------|--------------|--------------|
+| **TDD 规格编写** | `spec-writer` | - |
+| **测试实现** | `tester` | - |
 | 规划分析 | `plan-agent` | `general-purpose` |
 | 代码探索 | `explore-agent` | `search-specialist` |
 | UI 设计 | `ui-designer` | `frontend-developer` |
@@ -54,16 +70,13 @@
 | 深度研究 | `search-specialist` | - |
 | 通用任务 | `general-purpose` | - |
 
-### 框架/技术 → Subagent
+### TDD 工作流角色
 
-| 技术 | Subagent | 说明 |
+| 阶段 | Subagent | 输出 |
 |------|----------|------|
-| React | `frontend-developer` | React 开发 |
-| Vue | `frontend-developer` | Vue 开发 |
-| Angular | `frontend-developer` | Angular 开发 |
-| Node.js | `backend-developer` | Node.js 开发 |
-| Express | `backend-developer` | Express 开发 |
-| FastAPI | `backend-developer` | FastAPI 开发 |
+| Red | `spec-writer` → `tester` | 测试规格 + 测试代码 |
+| Green | `developer` | 实现代码 |
+| Refactor | `developer` → `code-reviewer` | 优化代码 |
 
 ---
 
@@ -106,6 +119,16 @@
 
 ## 四、任务流程速查
 
+### TDD 流程（推荐）
+
+```
+1. spec-writer 编写测试规格
+2. tester 实现测试用例（Red）
+3. developer 实现最小代码（Green）
+4. developer 重构优化（Refactor）
+5. code-reviewer 审查
+```
+
 ### 前端开发流程
 
 ```
@@ -131,14 +154,6 @@
 3. fullstack-developer 实现前端
 4. frontend-tester 验证
 5. code-reviewer 审查
-```
-
-### 调研流程
-
-```
-1. explore-agent 探索
-2. plan-agent 规划
-3. /opsx:propose 创建提案
 ```
 
 ---
@@ -192,7 +207,7 @@
 
 ## 六、代码规范速查
 
-### TypeScript
+### TypeScript 基本规范
 
 ```typescript
 // ✅ 好的实践
@@ -241,186 +256,17 @@ workspace/**
 **/credentials*
 ```
 
----
-
-## 七、常用代码模式
-
-### 错误处理
-
-```typescript
-// ✅ 正确的错误处理
-async function fetchData(url: string): Promise<unknown> {
-  try {
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    }
-    return await response.json();
-  } catch (error) {
-    console.error('Failed to fetch:', error);
-    throw error;
-  }
-}
-
-// ❌ 错误的错误处理
-async function fetchData(url: string) {
-  const response = await fetch(url);
-  return response.json();
-}
-```
-
-### 类型定义
-
-```typescript
-// ✅ 明确的类型定义
-interface Result<T> {
-  success: boolean;
-  data?: T;
-  error?: string;
-}
-
-function getResult<T>(data: T): Result<T> {
-  return { success: true, data };
-}
-
-// ❌ 模糊的类型定义
-function getResult(data) {
-  return { success: true, data };
-}
-```
-
-### 异步操作
-
-```typescript
-// ✅ 正确的异步操作
-async function processMultiple(items: string[]): Promise<unknown[]> {
-  return Promise.all(items.map(item => processItem(item)));
-}
-
-// ❌ 错误的异步操作
-async function processMultiple(items) {
-  const results = [];
-  for (const item of items) {
-    results.push(await processItem(item));
-  }
-  return results;
-}
-```
+> **详细代码模式：** [code-patterns.md](code-patterns.md)
 
 ---
 
-## 八、调试技巧
-
-### 日志输出
-
-```typescript
-// ✅ 结构化日志
-console.log('[Component] Rendering with props:', props);
-console.warn('[Component] Invalid value:', value);
-console.error('[Component] Failed to fetch:', error);
-
-// ❌ 非结构化日志
-console.log('Rendering');
-console.log('Invalid value');
-console.log('Error');
-```
-
-### 调试工具
-
-```typescript
-// ✅ 使用调试库
-import debug from 'debug';
-const log = debug('app:component');
-
-log('Rendering with props:', props);
-
-// ❌ 随意 console.log
-console.log('Rendering');
-```
-
----
-
-## 九、性能优化技巧
-
-### 避免不必要的渲染
-
-```typescript
-// ✅ 使用 memo
-import { memo } from 'react';
-
-const ExpensiveComponent = memo(({ data }) => {
-  return <div>{JSON.stringify(data)}</div>;
-});
-```
-
-### 避免不必要的计算
-
-```typescript
-// ✅ 使用 useMemo
-const expensiveValue = useMemo(() => {
-  return computeExpensiveValue(data);
-}, [data]);
-```
-
-### 避免不必要的重新创建
-
-```typescript
-// ✅ 使用 useCallback
-const handleClick = useCallback(() => {
-  console.log('Clicked');
-}, []);
-```
-
----
-
-## 十、安全最佳实践
-
-### 输入验证
-
-```typescript
-// ✅ 验证输入
-function sanitizeInput(input: string): string {
-  return input.replace(/[<>]/g, '');
-}
-
-// ❌ 不验证输入
-function processInput(input: string) {
-  return input;
-}
-```
-
-### SQL 注入防护
-
-```typescript
-// ✅ 使用参数化查询
-const result = await db.query(
-  'SELECT * FROM users WHERE id = ?',
-  [userId]
-);
-
-// ❌ 字符串拼接
-const result = await db.query(
-  `SELECT * FROM users WHERE id = '${userId}'`
-);
-```
-
-### XSS 防护
-
-```typescript
-// ✅ 转义输出
-const safeHTML = escapeHTML(userInput);
-
-// ❌ 直接输出
-const unsafeHTML = userInput;
-```
-
----
-
-## 十一、常见问题速查
+## 七、常见问题速查
 
 ### Q: 如何选择 subagent？
 
 **A:** 根据任务类型选择：
+- TDD 规格 → `spec-writer`
+- TDD 测试 → `tester`
 - 设计 → `ui-designer` 或 `api-designer`
 - 实现 → `frontend-developer` 或 `backend-developer`
 - 测试 → `frontend-tester`
@@ -444,7 +290,7 @@ const unsafeHTML = userInput;
 
 ---
 
-## 十二、常用命令组合
+## 八、常用命令组合
 
 ### 提交代码
 
@@ -481,7 +327,7 @@ yarn build
 
 ---
 
-## 十三、版本管理
+## 九、版本管理
 
 ### 提交信息格式
 

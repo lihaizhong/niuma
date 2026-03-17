@@ -77,6 +77,8 @@
 
 | 任务类型 | Subagent |
 |---------|----------|
+| 测试规格编写 | spec-writer |
+| 测试用例实现 | tester |
 | 规划分析 | plan-agent |
 | 代码探索 | explore-agent |
 | 代码审查 | code-reviewer |
@@ -85,6 +87,27 @@
 | 复杂任务 | general-purpose |
 | 翻译任务 | translate |
 | 教程生成 | tutorial-engineer |
+
+### 4.1 TDD 工作流
+
+**核心原则：** 测试先行，Red → Green → Refactor 循环
+
+**角色协作：**
+```
+spec-writer (测试规格) → tester (测试用例) → developer (实现) → code-reviewer (审查)
+```
+
+**三阶段验证：**
+| 阶段 | 角色 | 状态 | 验证 |
+|------|------|------|------|
+| Red | spec-writer → tester | 测试失败 | ✗ 功能未实现 |
+| Green | developer | 测试通过 | ✓ 最小实现 |
+| Refactor | developer | 测试通过 | ✓ 代码优化 |
+
+**强制约束：**
+- 禁止跳过 Red 阶段
+- 测试任务必须在实现任务之前
+- 重构后测试必须仍然通过
 
 ### 5. OpenSpec Command 与 Skill 对应关系
 
