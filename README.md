@@ -224,14 +224,25 @@ niuma channels stop telegram
 
 支持自定义技能，通过 SKILL.md 定义：
 
+**项目级技能（`.iflow/skills/`）：**
+```
+.iflow/skills/                  # 项目级技能（随项目版本控制）
+├── fullstack/                  # 全栈开发工作流
+│   └── SKILL.md
+├── openexp/                    # 经验管理
+│   └── SKILL.md
+└── openspec-*/                 # OpenSpec 相关技能
+    └── SKILL.md
+```
+
+**用户级技能（`~/.niuma/agents/<id>/skills/`）：**
 ```bash
-~/.niuma/agents/developer/workspace/
-├── skills/
-│   ├── github/
-│   │   └── SKILL.md
-│   ├── weather/
-│   │   └── SKILL.md
-│   └── ...
+~/.niuma/agents/developer/skills/
+├── github/
+│   └── SKILL.md
+├── weather/
+│   └── SKILL.md
+└── ...
 ```
 
 ## 📁 目录结构
@@ -271,7 +282,7 @@ niuma channels stop telegram
 
 ### 开发流程
 
-本项目使用 **OpenSpec** 进行规格驱动的开发（Spec-Driven Development）：
+本项目使用 **OpenSpec** 进行规格驱动的开发（Spec-Driven Development），支持 TDD 工作流：
 
 ```bash
 # 查看所有变更
@@ -289,6 +300,25 @@ openspec validate <item-name>
 # 列出所有规格
 openspec spec list
 ```
+
+**TDD 工作流：**
+
+项目支持测试驱动开发（TDD），遵循 Red → Green → Refactor 循环：
+
+| 阶段 | 角色 | 输出 | 验证 |
+|------|------|------|------|
+| Red | spec-writer → tester | 测试规格 + 测试代码 | 测试必须失败 |
+| Green | developer | 实现代码 | 测试必须通过 |
+| Refactor | developer → code-reviewer | 优化代码 | 测试仍须通过 |
+
+**OpenSpec 命令：**
+
+| Command | Skill | 用途 |
+|---------|-------|------|
+| `/opsx:explore` | openspec-explore | 探索需求、澄清问题 |
+| `/opsx:propose` | openspec-propose | 创建变更提案 |
+| `/opsx:apply` | openspec-apply-change | 实施变更任务 |
+| `/opsx:archive` | openspec-archive-change | 归档已完成的变更 |
 
 **重要提示：**
 - 所有 openspec 相关操作必须使用 `openspec` CLI 命令

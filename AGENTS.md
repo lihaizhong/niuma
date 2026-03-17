@@ -4,7 +4,7 @@
 
 企业级多角色 AI 助手系统，支持独立配置、工作区、会话和记忆。
 
-**技术栈、架构、开发规范详见 `openspec/config.yaml`**
+**技术栈、架构、开发规范详见 `openspec/config.yaml`（仅在 OpenSpec 开发时加载）**
 
 ## 行为指导
 
@@ -37,8 +37,9 @@
 - 简单代码审查（< 100 行）
 - 小型功能开发（< 200 行）
 - 快速原型验证
-- Bug 修复
-- 性能敏感任务
+- 简单 Bug 修复（< 50 行或单文件修改）
+
+**复杂 Bug 修复（> 50 行或多文件）仍适合使用此技能，但可跳过 Red 阶段。**
 
 **直接使用 subagent：**
 - 代码审查 → `code-reviewer`
@@ -75,20 +76,22 @@
 
 ### 4. Subagent 优先级
 
-| 任务类型 | Subagent |
-|---------|----------|
-| 测试规格编写 | spec-writer |
-| 测试用例实现 | tester |
-| 规划分析 | plan-agent |
-| 代码探索 | explore-agent |
-| 代码审查 | code-reviewer |
-| 前端测试 | frontend-tester |
-| 深度研究 | search-specialist |
-| 复杂任务 | general-purpose |
-| 翻译任务 | translate |
-| 教程生成 | tutorial-engineer |
+| 任务类型 | Subagent | 说明 |
+|---------|----------|------|
+| **TDD 规格** | `spec-writer` | 编写测试规格（Red 阶段） |
+| **TDD 测试** | `tester` | 实现测试用例（Red 阶段） |
+| 规划分析 | `plan-agent` | 详细规划实现步骤 |
+| 代码探索 | `explore-agent` | 理解代码库结构 |
+| 代码审查 | `code-reviewer` | 质量和安全检查 |
+| 前端测试 | `frontend-tester` | UI/UX 验证 |
+| 深度研究 | `search-specialist` | 信息搜集和分析 |
+| 复杂任务 | `general-purpose` | 多步骤任务 |
+| 翻译任务 | `translate` | 多语言翻译 |
+| 教程生成 | `tutorial-engineer` | 教程和文档 |
+| 代码解释 | `code-explainer` | 代码分析解释 |
+| 知识检索 | `librarian` | 外部知识查找 |
 
-### 4.1 TDD 工作流
+### 5. TDD 工作流
 
 **核心原则：** 测试先行，Red → Green → Refactor 循环
 
@@ -105,11 +108,15 @@ spec-writer (测试规格) → tester (测试用例) → developer (实现) → 
 | Refactor | developer | 测试通过 | ✓ 代码优化 |
 
 **强制约束：**
-- 禁止跳过 Red 阶段
+- 禁止跳过 Red 阶段（新功能开发）
 - 测试任务必须在实现任务之前
 - 重构后测试必须仍然通过
 
-### 5. OpenSpec Command 与 Skill 对应关系
+**灵活应用：**
+- 复杂 Bug 修复：可跳过 Red，直接修复后写回归测试
+- 简单 Bug 修复（< 50 行）：直接修复即可
+
+### 6. OpenSpec Command 与 Skill 对应关系
 
 | Command | Skill | 用途 |
 |---------|-------|------|
@@ -125,10 +132,6 @@ spec-writer (测试规格) → tester (测试用例) → developer (实现) → 
 - 新功能开发：先 explore 再 propose
 - 快速提案：直接使用 `/opsx:propose`
 - 经验积累：任务完成后使用 `/openexp` 保存关键经验
-
-## 配置系统
-
-**详见 `openspec/config.yaml`**
 
 ## 相关资源
 

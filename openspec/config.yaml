@@ -9,7 +9,7 @@ schema: spec-driven
 context: |
   ## Project Overview
 
-  **Niuma (牛马)** - 企业级多角色 AI 助手系统，基于 TypeScript + Node.js 构建。支持创建多个完全独立的 AI 角色，每个角色拥有独立的配置、工作区、会话、记忆和日志。
+  **Niuma (牛马)** - Enterprise-grade multi-agent AI assistant system built with TypeScript + Node.js. Supports creating multiple fully independent AI roles, each with isolated configuration, workspace, session, memory, and logs.
 
   ## Tech Stack
 
@@ -21,50 +21,50 @@ context: |
   - **Database**: @sqliteai/sqlite-wasm + sqlite-vec
 
   ### Main Dependencies
-  - langchain - AI/LLM 应用框架
-  - @langchain/openai - OpenAI 集成
-  - zod - 运行时类型验证
-  - json5 - JSON5 配置文件格式
-  - @sqliteai/sqlite-wasm - SQLite WASM 数据库
-  - cac - 命令行参数解析
-  - pino - 日志记录
+  - langchain - AI/LLM application framework
+  - @langchain/openai - OpenAI integration
+  - zod - Runtime type validation
+  - json5 - JSON5 configuration file format
+  - @sqliteai/sqlite-wasm - SQLite WASM database
+  - cac - Command-line argument parser
+  - pino - Logging
 
   ### Dev Dependencies
-  - tsx - TypeScript 执行器
-  - vitest - 单元测试框架
-  - eslint - 代码规范检查
+  - tsx - TypeScript executor
+  - vitest - Unit testing framework
+  - eslint - Code style checking
 
   ## Architecture
 
   ```
   niuma/
   ├── niuma/
-  │   ├── agent/          # Agent 核心模块
-  │   ├── bus/            # 事件总线
-  │   ├── channels/       # 多渠道接入
-  │   ├── cli/            # CLI 入口
-  │   ├── config/         # 配置管理
-  │   ├── cron/           # 定时任务
-  │   ├── heartbeat/      # 主动唤醒
-  │   ├── providers/      # LLM 提供商
-  │   ├── session/        # 会话管理
-  │   ├── types/          # 类型定义
-  │   └── utils/          # 工具函数
-  ├── openspec/           # OpenSpec 规范
-  ├── .iflow/             # iFlow CLI 配置
-  └── docs/               # 文档
+  │   ├── agent/          # Agent core module
+  │   ├── bus/            # Event bus
+  │   ├── channels/       # Multi-channel integration
+  │   ├── cli/            # CLI entry point
+  │   ├── config/         # Configuration management
+  │   ├── cron/           # Scheduled tasks
+  │   ├── heartbeat/      # Active wake-up
+  │   ├── providers/      # LLM providers
+  │   ├── session/        # Session management
+  │   ├── types/          # Type definitions
+  │   └── utils/          # Utility functions
+  ├── openspec/           # OpenSpec specification
+  ├── .iflow/             # iFlow CLI configuration
+  └── docs/               # Documentation
   ```
 
   ### Core Modules
-  - **Agent** - 智能体核心，处理对话循环、记忆管理、技能调用、工具执行
-  - **Tools** - 工具集，包括文件系统操作、Shell 命令、Web 请求、MCP 协议等
-  - **Bus** - 事件总线，模块间异步通信
-  - **Channels** - 多渠道接入（Telegram, Discord, 飞书, 钉钉, Slack 等）
-  - **Providers** - LLM 提供商抽象层（OpenAI, Anthropic, 自定义端点）
-  - **Session** - 会话管理，历史记录和状态持久化
-  - **Skills** - 可扩展技能系统，动态加载 SKILL.md
-  - **Cron** - 定时任务调度服务
-  - **Memory** - 双层记忆系统，自动整合长期记忆
+  - **Agent** - Agent core, handles conversation loop, memory management, skill invocation, tool execution
+  - **Tools** - Tool collection including file system, shell commands, web requests, MCP protocol, etc.
+  - **Bus** - Event bus for async inter-module communication
+  - **Channels** - Multi-channel integration (Telegram, Discord, Feishu, DingTalk, Slack, etc.)
+  - **Providers** - LLM provider abstraction layer (OpenAI, Anthropic, custom endpoints)
+  - **Session** - Session management, history and state persistence
+  - **Skills** - Extensible skill system, dynamic SKILL.md loading
+  - **Cron** - Scheduled task service
+  - **Memory** - Two-layer memory system, automatic long-term memory consolidation
 
   ## Coding Conventions
 
@@ -117,6 +117,32 @@ context: |
   3. **Memory System**: Two-layer (MEMORY.md + HISTORY.md)
   4. **Agent Loop**: LLM call ↔ Tool execution cycle
 
+  ## TDD Roles
+
+  OpenSpec development supports TDD workflow with two key roles:
+
+  ### spec-writer
+  - **Responsibility**: Define feature specs and test specs before implementation
+  - **Output**: `specs/<capability>/spec.md` + `specs/<capability>/test.md`
+  - **When**: After proposal creation, before implementation
+
+  ### tester
+  - **Responsibility**: Implement test cases based on test.md, ensure tests fail before implementation
+  - **Output**: `tests/**/*.test.ts`
+  - **When**: After specs completion, before implementation
+
+  ### TDD Directory Structure
+  ```
+  openspec/changes/<change-name>/
+  ├── proposal.md          # Proposal
+  ├── design.md            # Design
+  ├── specs/               # Specs (TDD)
+  │   └── <capability>/
+  │       ├── spec.md      # Feature spec
+  │       └── test.md      # Test spec
+  └── tasks.md             # Tasks (Red → Green → Refactor)
+  ```
+
   ---
 
   **Note**: For detailed behavior guidelines and workflow constraints, please refer to AGENTS.md.
@@ -136,7 +162,9 @@ rules:
     - Define inputs, outputs, and edge cases
     - Include TypeScript interface definitions
     - List dependencies on other specs
-    - **TDD**: Include test specification (test.md) for each capability
+    - **TDD**: spec-writer must create test.md for each capability
+    - **TDD**: test.md must include normal, boundary, and error test cases
+    - **TDD**: test.md must define acceptance criteria and coverage target
 
   design:
     - Include ASCII architecture diagrams
