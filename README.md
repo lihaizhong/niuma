@@ -200,38 +200,120 @@ niuma chat --agent tester
 | 渠道 | 协议 | 状态 |
 |------|------|------|
 | CLI | stdin/stdout | ✅ 已完成 |
-| Telegram | HTTP Bot API | ✅ 已完成 |
 | Discord | WebSocket Gateway | ✅ 已完成 |
-| 飞书 | WebSocket 长连接 | ⏸️ 基础框架 |
-| 钉钉 | Stream Mode | ⏸️ 基础框架 |
-| Slack | Socket Mode | ⏸️ 基础框架 |
-| WhatsApp | WebSocket Bridge | ⏸️ 基础框架 |
-| Email | IMAP/SMTP | ⏸️ 基础框架 |
-| QQ | WebSocket | ⏸️ 基础框架 |
+| 飞书 | WebSocket 长连接 | ✅ 已完成 |
+| Email | IMAP/SMTP | ✅ 已完成 |
+| QQ | WebSocket | ✅ 已完成 |
+| Telegram | HTTP Bot API | ⏸️ 暂时禁用 |
+| 钉钉 | Stream Mode | ⏸️ 暂时禁用 |
+| Slack | Socket Mode | ⏸️ 暂时禁用 |
+| WhatsApp | WebSocket Bridge | ⏸️ 暂时禁用 |
 
 ```bash
 # 查看渠道状态
 niuma channels status
 
+# 列出所有渠道
+niuma channels list
+
 # 启动渠道
-niuma channels start telegram
+niuma channels start discord
 
 # 停止渠道
-niuma channels stop telegram
+niuma channels stop discord
 ```
+
+### 🔌 服务端接入
+
+Niuma 支持作为服务端接入智能体，导出核心模块供外部程序调用：
+
+```typescript
+import {
+  AgentLoop,
+  ConfigManager,
+  EventBus,
+  SessionManager,
+  ToolRegistry,
+  registerBuiltinTools,
+  ChannelRegistry,
+  DiscordChannel,
+} from 'niuma';
+
+// 创建配置管理器
+const configManager = new ConfigManager();
+const config = configManager.load();
+
+// 创建事件总线
+const bus = new EventBus();
+
+// 创建工具注册表
+const tools = new ToolRegistry();
+registerBuiltinTools(tools);
+
+// 创建会话管理器
+const sessions = new SessionManager({ workspace: config.workspaceDir });
+
+// 创建渠道注册表
+const channelRegistry = new ChannelRegistry();
+channelRegistry.register(new DiscordChannel({ ... }));
+
+// 获取 LLM 提供商
+const provider = configManager.getDefaultProvider();
+
+// 创建 Agent 循环
+const agentLoop = new AgentLoop({
+  bus,
+  provider,
+  tools,
+  sessions,
+  workspace: config.workspaceDir,
+  channelRegistry,
+});
+
+// 启动 Agent
+await agentLoop.run();
+```
+
+**导出的核心模块：**
+
+| 模块 | 说明 |
+|------|------|
+| `AgentLoop` | Agent 核心循环 |
+| `ConfigManager` | 配置管理器 |
+| `EventBus` | 事件总线 |
+| `SessionManager` | 会话管理器 |
+| `ToolRegistry` | 工具注册表 |
+| `ChannelRegistry` | 渠道注册表 |
+| `CLIChannel` | CLI 渠道 |
+| `DiscordChannel` | Discord 渠道 |
+| `FeishuChannel` | 飞书渠道 |
+| `EmailChannel` | Email 渠道 |
+| `QQChannel` | QQ 渠道 |
+| `HeartbeatService` | 心跳服务 |
 
 ### 🎯 可扩展技能系统
 
 支持自定义技能，通过 SKILL.md 定义：
 
+**项目级技能（`.iflow/skills/`）：**
+```
+.iflow/skills/                  # 项目级技能（随项目版本控制）
+├── fullstack/                  # 全栈开发工作流
+│   └── SKILL.md
+├── openexp/                    # 经验管理
+│   └── SKILL.md
+└── openspec-*/                 # OpenSpec 相关技能
+    └── SKILL.md
+```
+
+**用户级技能（`~/.niuma/agents/<id>/skills/`）：**
 ```bash
-~/.niuma/agents/developer/workspace/
-├── skills/
-│   ├── github/
-│   │   └── SKILL.md
-│   ├── weather/
-│   │   └── SKILL.md
-│   └── ...
+~/.niuma/agents/developer/skills/
+├── github/
+│   └── SKILL.md
+├── weather/
+│   └── SKILL.md
+└── ...
 ```
 
 ## 📁 目录结构
@@ -271,7 +353,7 @@ niuma channels stop telegram
 
 ### 开发流程
 
-本项目使用 **OpenSpec** 进行规格驱动的开发（Spec-Driven Development）：
+本项目使用 **OpenSpec** 进行规格驱动的开发（Spec-Driven Development），支持 TDD 工作流：
 
 ```bash
 # 查看所有变更
@@ -289,6 +371,25 @@ openspec validate <item-name>
 # 列出所有规格
 openspec spec list
 ```
+
+**TDD 工作流：**
+
+项目支持测试驱动开发（TDD），遵循 Red → Green → Refactor 循环：
+
+| 阶段 | 角色 | 输出 | 验证 |
+|------|------|------|------|
+| Red | spec-writer → tester | 测试规格 + 测试代码 | 测试必须失败 |
+| Green | developer | 实现代码 | 测试必须通过 |
+| Refactor | developer → code-reviewer | 优化代码 | 测试仍须通过 |
+
+**OpenSpec 命令：**
+
+| Command | Skill | 用途 |
+|---------|-------|------|
+| `/opsx:explore` | openspec-explore | 探索需求、澄清问题 |
+| `/opsx:propose` | openspec-propose | 创建变更提案 |
+| `/opsx:apply` | openspec-apply-change | 实施变更任务 |
+| `/opsx:archive` | openspec-archive-change | 归档已完成的变更 |
 
 **重要提示：**
 - 所有 openspec 相关操作必须使用 `openspec` CLI 命令
@@ -493,7 +594,7 @@ flowchart TD
 | LLM 提供商 | ✅ 完成 | OpenAI、Anthropic、OpenRouter、DeepSeek、Custom 等多种提供商 |
 | 会话管理 | ✅ 完成 | 会话状态、历史记录、持久化 |
 | 定时任务与心跳 | ✅ 完成 | 支持定时任务调度和主动唤醒 |
-| 多渠道接入 | ✅ 完成 | CLI、Telegram、Discord 渠道，其他渠道基础框架 |
+| 多渠道接入 | ✅ 完成 | CLI、Discord、飞书、Email、QQ 渠道 |
 
 ### 🔄 待开发功能
 

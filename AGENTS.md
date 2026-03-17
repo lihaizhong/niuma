@@ -4,7 +4,7 @@
 
 企业级多角色 AI 助手系统，支持独立配置、工作区、会话和记忆。
 
-**技术栈、架构、开发规范详见 `openspec/config.yaml`**
+**技术栈、架构、开发规范详见 `openspec/config.yaml`（仅在 OpenSpec 开发时加载）**
 
 ## 行为指导
 
@@ -37,8 +37,9 @@
 - 简单代码审查（< 100 行）
 - 小型功能开发（< 200 行）
 - 快速原型验证
-- Bug 修复
-- 性能敏感任务
+- 简单 Bug 修复（< 50 行或单文件修改）
+
+**复杂 Bug 修复（> 50 行或多文件）仍适合使用此技能，但可跳过 Red 阶段。**
 
 **直接使用 subagent：**
 - 代码审查 → `code-reviewer`
@@ -49,10 +50,7 @@
 - 禁止手动文件操作 `openspec/` 目录
 - 必须使用 `openspec` 命令完成相关操作
 - 严禁修改 `.iflow/` 目录（除非用户明确说明）
-
-**工作流：** `/opsx:explore` → `/opsx:propose` → `/opsx:apply` → `/opsx:archive`
-
-**归档保护：** `openspec/changes/archive/` 不可修改
+- **归档保护：** `openspec/changes/archive/` 不可修改
 
 ### 3. Subagent 优先使用原则
 
@@ -78,20 +76,62 @@
 
 ### 4. Subagent 优先级
 
-| 任务类型 | Subagent |
-|---------|----------|
-| 规划分析 | plan-agent |
-| 代码探索 | explore-agent |
-| 代码审查 | code-reviewer |
-| 前端测试 | frontend-tester |
-| 深度研究 | search-specialist |
-| 复杂任务 | general-purpose |
-| 翻译任务 | translate |
-| 教程生成 | tutorial-engineer |
+| 任务类型 | Subagent | 说明 |
+|---------|----------|------|
+| **TDD 规格** | `spec-writer` | 编写测试规格（Red 阶段） |
+| **TDD 测试** | `tester` | 实现测试用例（Red 阶段） |
+| 规划分析 | `plan-agent` | 详细规划实现步骤 |
+| 代码探索 | `explore-agent` | 理解代码库结构 |
+| 代码审查 | `code-reviewer` | 质量和安全检查 |
+| 前端测试 | `frontend-tester` | UI/UX 验证 |
+| 深度研究 | `search-specialist` | 信息搜集和分析 |
+| 复杂任务 | `general-purpose` | 多步骤任务 |
+| 翻译任务 | `translate` | 多语言翻译 |
+| 教程生成 | `tutorial-engineer` | 教程和文档 |
+| 代码解释 | `code-explainer` | 代码分析解释 |
+| 知识检索 | `librarian` | 外部知识查找 |
 
-## 配置系统
+### 5. TDD 工作流
 
-**详见 `openspec/config.yaml`**
+**核心原则：** 测试先行，Red → Green → Refactor 循环
+
+**角色协作：**
+```
+spec-writer (测试规格) → tester (测试用例) → developer (实现) → code-reviewer (审查)
+```
+
+**三阶段验证：**
+| 阶段 | 角色 | 状态 | 验证 |
+|------|------|------|------|
+| Red | spec-writer → tester | 测试失败 | ✗ 功能未实现 |
+| Green | developer | 测试通过 | ✓ 最小实现 |
+| Refactor | developer | 测试通过 | ✓ 代码优化 |
+
+**强制约束：**
+- 禁止跳过 Red 阶段（新功能开发）
+- 测试任务必须在实现任务之前
+- 重构后测试必须仍然通过
+
+**灵活应用：**
+- 复杂 Bug 修复：可跳过 Red，直接修复后写回归测试
+- 简单 Bug 修复（< 50 行）：直接修复即可
+
+### 6. OpenSpec Command 与 Skill 对应关系
+
+| Command | Skill | 用途 |
+|---------|-------|------|
+| `/opsx:explore` | openspec-explore | 探索需求、澄清问题 |
+| `/opsx:propose` | openspec-propose | 创建变更提案（proposal + design + specs + tasks） |
+| `/opsx:apply` | openspec-apply-change | 实施变更任务 |
+| `/opsx:archive` | openspec-archive-change | 归档已完成的变更 |
+| `/openexp` | openexp | 经验管理（查询/保存/反馈） |
+
+**工作流顺序：** `/opsx:explore` → `/opsx:propose` → `/opsx:apply` → `/opsx:archive`
+
+**使用建议：**
+- 新功能开发：先 explore 再 propose
+- 快速提案：直接使用 `/opsx:propose`
+- 经验积累：任务完成后使用 `/openexp` 保存关键经验
 
 ## 相关资源
 

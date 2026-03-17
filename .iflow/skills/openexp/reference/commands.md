@@ -1,5 +1,21 @@
 # 命令参考
 
+## 环境变量配置
+
+| 变量 | 默认值 | 说明 |
+|------|--------|------|
+| `OBSIDIAN_TIMEOUT` | 30 | 命令超时时间（秒），设为 0 禁用超时 |
+| `OBSIDIAN_RETRIES` | 2 | 失败重试次数 |
+| `DEFAULT_VAULT_NAME` | Exp Vault | 默认 Vault 名称 |
+
+**示例：**
+```bash
+# 设置超时为 60 秒，重试 3 次
+export OBSIDIAN_TIMEOUT=60
+export OBSIDIAN_RETRIES=3
+./scripts/obsidian-cli.sh search pnpm
+```
+
 ## Obsidian CLI Wrapper
 
 **路径：** `scripts/obsidian-cli.sh`

@@ -198,16 +198,13 @@ export class CLIChannel extends BaseChannel {
     const [cmd, ...args] = command.split(" ");
 
     switch (cmd) {
-      case "/help":
-        console.log(`
-可用命令：
-  /help       显示帮助信息
-  /exit       退出程序
-  /quit       退出程序
-  /clear      清空屏幕
-  /status     显示渠道状态
-        `);
-        break;
+      case "/exit":
+      case "/quit":
+        this.logInfo("用户请求退出");
+        await this.stop();
+        await sleep(100);
+        process.exit(0);
+        return;
 
       case "/clear":
         console.clear();
@@ -223,9 +220,20 @@ CLI 渠道状态：
         `);
         break;
 
-      default:
-        console.log(`未知命令: ${cmd}`);
-        break;
+      default: {
+        // 将未知命令作为消息发送给 AgentLoop 处理
+        const message: InboundMessage = {
+          channel: "cli",
+          senderId: this.userId,
+          chatId: this.chatId,
+          content: command,
+          sessionKey: `${this.chatId}:${this.userId}`,
+          timestamp: Date.now(),
+          messageId: `cli:${++this.messageCounter}`,
+        };
+        await this.handleMessage(message);
+        return; // handleMessage 会调用 prompt，这里直接返回
+      }
     }
 
     this.rl?.prompt();
