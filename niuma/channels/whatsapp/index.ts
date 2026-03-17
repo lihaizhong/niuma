@@ -1,6 +1,6 @@
 /**
  * WhatsApp 渠道实现
- * @description 基于 @whiskeysockets/baileys SDK 的 WhatsApp 渠道实现
+ * 基于 @whiskeysockets/baileys SDK 的 WhatsApp 渠道实现
  */
 
 import makeWASocket, {
@@ -43,7 +43,7 @@ export interface WhatsAppChannelConfig {
 
 /**
  * WhatsApp 渠道
- * @description 基于 @whiskeysockets/baileys SDK 的 WhatsApp 渠道实现
+ * 基于 @whiskeysockets/baileys SDK 的 WhatsApp 渠道实现
  */
 export class WhatsAppChannel extends BaseChannel {
   private config: Required<Omit<WhatsAppChannelConfig, "enabled">> & {

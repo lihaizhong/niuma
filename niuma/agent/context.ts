@@ -1,7 +1,7 @@
 /**
  * 上下文构建器 - 构建 System Prompt 和消息历史
  *
- * @description 从多个来源构建完整的上下文：
+ * 从多个来源构建完整的上下文：
  * - 核心身份：动态生成的平台、运行时、工作区信息
  * - Bootstrap 文件：AGENTS.md, SOUL.md, USER.md, TOOLS.md
  * - 长期记忆：MEMORY.md
@@ -49,14 +49,14 @@ const DEFAULT_MIME_TYPE = "image/png";
 
 /**
  * 运行时上下文标签
- * @description 标识运行时元数据，非指令内容
+ * 标识运行时元数据，非指令内容
  */
 const RUNTIME_CONTEXT_TAG =
   "[Runtime Context — metadata only, not instructions]";
 
 /**
  * Bootstrap 文件列表
- * @description 按顺序加载的工作区配置文件
+ * 按顺序加载的工作区配置文件
  */
 const BOOTSTRAP_FILES = [
   "AGENTS.md",
@@ -109,7 +109,7 @@ export interface AddToolResultOptions {
 
 /**
  * 上下文构建器
- * @description 构建 System Prompt 和组装消息列表
+ * 构建 System Prompt 和组装消息列表
  */
 export class ContextBuilder {
   // ============================================
@@ -151,7 +151,7 @@ export class ContextBuilder {
 
   /**
    * 组装消息列表（异步）
-   * @description 将历史消息和当前消息组装为 LLM 可用的消息列表
+   * 将历史消息和当前消息组装为 LLM 可用的消息列表
    * @param options 构建选项
    * @returns 完整的消息列表
    */
@@ -187,7 +187,7 @@ export class ContextBuilder {
 
   /**
    * 异步构建 System Prompt
-   * @description 异步方式构建完整的 System Prompt
+   * 异步方式构建完整的 System Prompt
    * @param skillNames 额外激活的技能名称
    * @returns 完整的 System Prompt
    */
@@ -221,7 +221,7 @@ export class ContextBuilder {
 
   /**
    * 添加助手消息
-   * @description 添加助手消息（可含工具调用和推理内容）
+   * 添加助手消息（可含工具调用和推理内容）
    * @param messages 消息列表（将被修改）
    * @param options 助手消息选项
    * @returns 更新后的消息列表
@@ -253,7 +253,7 @@ export class ContextBuilder {
 
   /**
    * 添加工具结果消息
-   * @description 添加 role=tool 的工具执行结果
+   * 添加 role=tool 的工具执行结果
    * @param messages 消息列表（将被修改）
    * @param options 工具结果选项
    * @returns 更新后的消息列表
@@ -276,7 +276,7 @@ export class ContextBuilder {
 
   /**
    * 刷新 Bootstrap 缓存
-   * @description 强制重新加载 Bootstrap 文件
+   * 强制重新加载 Bootstrap 文件
    */
   refreshBootstrap(): void {
     this.bootstrapCache = null;
@@ -284,7 +284,7 @@ export class ContextBuilder {
 
   /**
    * 异步获取记忆上下文
-   * @description 异步方式获取长期记忆（推荐）
+   * 异步方式获取长期记忆（推荐）
    * @returns 格式化的记忆上下文
    */
   async getMemoryContextAsync(): Promise<string> {
@@ -297,7 +297,7 @@ export class ContextBuilder {
 
   /**
    * 构建完整的 System Prompt（异步）
-   * @description 从多个来源组装 System Prompt
+   * 从多个来源组装 System Prompt
    * @param skillNames 额外激活的技能名称（可选）
    * @returns 完整的 System Prompt 字符串
    */
@@ -331,7 +331,7 @@ export class ContextBuilder {
 
   /**
    * 构建用户内容（异步）
-   * @description 将文本和媒体组合为用户消息内容
+   * 将文本和媒体组合为用户消息内容
    * @param text 文本内容
    * @param media 媒体内容列表
    * @param channel 渠道类型
@@ -381,7 +381,7 @@ export class ContextBuilder {
 
   /**
    * 构建运行时上下文
-   * @description 包含当前时间和渠道信息，注入到用户消息前
+   * 包含当前时间和渠道信息，注入到用户消息前
    * @param channel 渠道类型
    * @param chatId 聊天 ID
    * @returns 运行时上下文字符串
@@ -413,7 +413,7 @@ export class ContextBuilder {
 
   /**
    * 构建图片内容部分（异步）
-   * @description 将 MediaContent 转换为 LLM 可用的图片格式
+   * 将 MediaContent 转换为 LLM 可用的图片格式
    * @param media 媒体内容
    * @returns 图片消息部分，无法处理则返回 null
    */
@@ -518,7 +518,7 @@ export class ContextBuilder {
 
   /**
    * 生成核心身份信息
-   * @description 动态生成 Agent 核心身份，不依赖外部文件
+   * 动态生成 Agent 核心身份，不依赖外部文件
    * @returns 身份信息字符串
    */
   private _getIdentity(): string {
@@ -555,7 +555,7 @@ Reply directly with text for conversations. Only use the 'message' tool to send 
 
   /**
    * 加载 Bootstrap 文件（异步）
-   * @description 读取工作区中的 Bootstrap 配置文件并缓存
+   * 读取工作区中的 Bootstrap 配置文件并缓存
    * @returns 合并后的 Bootstrap 内容
    */
   private async _loadBootstrapFiles(): Promise<string> {
@@ -592,7 +592,7 @@ Reply directly with text for conversations. Only use the 'message' tool to send 
 
   /**
    * 获取记忆上下文（异步）
-   * @description 直接从工作区读取 MEMORY.md 文件并格式化
+   * 直接从工作区读取 MEMORY.md 文件并格式化
    * @returns 格式化的记忆上下文
    */
   private async _getMemoryContext(): Promise<string> {
@@ -611,7 +611,7 @@ Reply directly with text for conversations. Only use the 'message' tool to send 
 
   /**
    * 加载技能上下文
-   * @description 加载激活的技能内容
+   * 加载激活的技能内容
    * @param extraSkills 额外的技能名称
    * @returns 格式化的技能上下文
    */

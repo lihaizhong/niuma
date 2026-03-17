@@ -1,6 +1,6 @@
 /**
  * Discord 渠道实现
- * @description Discord Bot API 的渠道实现
+ * Discord Bot API 的渠道实现
  */
 
 import {
@@ -39,7 +39,7 @@ export interface DiscordChannelConfig {
 
 /**
  * Discord 渠道
- * @description Discord Bot API 的渠道实现
+ * Discord Bot API 的渠道实现
  */
 export class DiscordChannel extends BaseChannel {
   /** Discord 客户端实例 */

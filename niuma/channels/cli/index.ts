@@ -1,6 +1,6 @@
 /**
  * CLI 渠道实现
- * @description 命令行界面的渠道实现，通过 stdin/stdout 进行消息交互
+ * 命令行界面的渠道实现，通过 stdin/stdout 进行消息交互
  */
 
 import readline from "readline";
@@ -24,7 +24,7 @@ export interface CLIChannelConfig {
 
 /**
  * CLI 渠道
- * @description 命令行界面的渠道实现
+ * 命令行界面的渠道实现
  */
 export class CLIChannel extends BaseChannel {
   /** Readline 接口 */

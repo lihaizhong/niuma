@@ -1,7 +1,7 @@
 /**
  * 提供商注册表
  *
- * @description 管理多个 LLM 提供商的注册、查询和自动选择。
+ * 管理多个 LLM 提供商的注册、查询和自动选择。
  * 支持两步式注册（spec + config field）和智能匹配机制.
  */
 
@@ -20,7 +20,7 @@ import type { LLMConfig } from "../types";
 /**
  * 提供商规格
  *
- * @description 描述提供商的元数据和匹配规则
+ * 描述提供商的元数据和匹配规则
  */
 export interface ProviderSpec {
   /** 配置字段名（如 "openai", "anthropic"） */
@@ -42,7 +42,7 @@ export interface ProviderSpec {
 /**
  * 提供商注册表
  *
- * @description 管理提供商的注册、查询和自动选择。
+ * 管理提供商的注册、查询和自动选择。
  */
 export class ProviderRegistry {
   /** 提供商规格映射 */
@@ -91,7 +91,7 @@ export class ProviderRegistry {
   /**
    * 根据模型名获取提供商
    *
-   * @description 智能匹配提供商，优先级：
+   * 智能匹配提供商，优先级：
    * 1. 显式指定（如 "openai/gpt-4o"）
    * 2. 关键词匹配（如 "gpt-4o" → OpenAI）
    * 3. 网关回退（如 OpenRouter）
@@ -184,7 +184,7 @@ export class ProviderRegistry {
   /**
    * 获取所有可用提供商
    *
-   * @description 返回所有配置了 API 密钥的提供商
+   * 返回所有配置了 API 密钥的提供商
    * @returns 可用的提供商规格数组
    */
   listAvailableProviders(): ProviderSpec[] {
@@ -314,7 +314,7 @@ export class ProviderRegistry {
   /**
    * 注册内置提供商
    *
-   * @description 自动注册 OpenAI、Anthropic、OpenRouter、DeepSeek、Custom、Ollama 提供商
+   * 自动注册 OpenAI、Anthropic、OpenRouter、DeepSeek、Custom、Ollama 提供商
    */
   private _registerBuiltinProviders(): void {
     // OpenAI 提供商
@@ -401,7 +401,7 @@ export class ProviderRegistry {
   /**
    * 清除所有提供商实例
    *
-   * @description 用于测试或重新初始化
+   * 用于测试或重新初始化
    */
   clearInstances(): void {
     this.instances.clear();
@@ -410,7 +410,7 @@ export class ProviderRegistry {
   /**
    * 清除所有配置
    *
-   * @description 用于测试或重新初始化
+   * 用于测试或重新初始化
    */
   clearConfigs(): void {
     this.configs.clear();
@@ -419,7 +419,7 @@ export class ProviderRegistry {
   /**
    * 重置注册表
    *
-   * @description 清除所有实例和配置，但保留规格
+   * 清除所有实例和配置，但保留规格
    */
   reset(): void {
     this.clearInstances();
@@ -430,7 +430,7 @@ export class ProviderRegistry {
   /**
    * 清除所有提供商规格
    *
-   * @description 用于测试，清除所有规格、实例和配置
+   * 用于测试，清除所有规格、实例和配置
    */
   clearSpecs(): void {
     this.specs.clear();

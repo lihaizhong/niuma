@@ -1,7 +1,7 @@
 /**
  * Niuma - 服务端接入接口
  *
- * @description 导出核心模块，支持作为服务端接入智能体
+ * 导出核心模块，支持作为服务端接入智能体
  * @example
  * ```typescript
  * import { AgentLoop, ConfigManager, EventBus, SessionManager } from 'niuma';

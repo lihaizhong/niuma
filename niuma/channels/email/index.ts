@@ -1,6 +1,6 @@
 /**
  * Email 渠道实现
- * @description 邮件渠道实现，支持 IMAP 接收和 SMTP 发送
+ * 邮件渠道实现，支持 IMAP 接收和 SMTP 发送
  * @note 需要安装 nodemailer 和 imapflow 依赖
  *       pnpm add nodemailer imapflow
  */
@@ -43,7 +43,7 @@ export interface EmailChannelConfig {
 
 /**
  * Email 渠道
- * @description 邮件渠道实现，支持 IMAP 接收和 SMTP 发送
+ * 邮件渠道实现，支持 IMAP 接收和 SMTP 发送
  */
 export class EmailChannel extends BaseChannel {
   private config: Required<Omit<EmailChannelConfig, "imap" | "smtp" | "enabled">> & {

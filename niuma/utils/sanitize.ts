@@ -1,7 +1,7 @@
 /**
  * 对象清理工具
  *
- * @description 提供安全的对象清理功能，防止原型链污染和恶意属性
+ * 提供安全的对象清理功能，防止原型链污染和恶意属性
  */
 
 import * as cleaner from "fast-clean";
@@ -26,7 +26,7 @@ export interface SanitizeOptions {
 /**
  * 清理对象，防止原型链污染和恶意属性
  *
- * @description 使用 secure-json-parse 防止原型污染，使用 fast-clean 清理不需要的值
+ * 使用 secure-json-parse 防止原型污染，使用 fast-clean 清理不需要的值
  * @param obj 待清理的对象
  * @param options 清理选项
  * @returns 清理后的安全对象

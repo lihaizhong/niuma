@@ -2,7 +2,7 @@
 /**
  * Niuma CLI 入口
  *
- * @description 支持 chat、channels 等命令
+ * 支持 chat、channels 等命令
  */
 
 import cac from "cac";

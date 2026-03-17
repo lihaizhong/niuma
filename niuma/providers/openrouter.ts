@@ -1,7 +1,7 @@
 /**
  * OpenRouter 提供商实现
  *
- * @description 基于 OpenAI 提供商实现 OpenRouter 多模型网关。
+ * 基于 OpenAI 提供商实现 OpenRouter 多模型网关。
  */
 
 import { OpenAIProvider } from "./openai";
@@ -22,7 +22,7 @@ export interface OpenRouterConfig extends LLMConfig {
 /**
  * OpenRouter 提供商
  *
- * @description 继承 OpenAIProvider，通过自定义 API Base 指向 OpenRouter。
+ * 继承 OpenAIProvider，通过自定义 API Base 指向 OpenRouter。
  */
 export class OpenRouterProvider extends OpenAIProvider {
   /** @inheritdoc */

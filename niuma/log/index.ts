@@ -1,7 +1,7 @@
 /**
  * 统一日志管理模块
  *
- * @description 提供统一的 pino logger 实例，支持：
+ * 提供统一的 pino logger 实例，支持：
  * - 默认 logger 实例
  * - 创建带上下文的 logger
  * - 可配置的日志级别

@@ -1,7 +1,7 @@
 /**
  * OpenAI 提供商实现
  *
- * @description 基于 LangChain OpenAI 集成的 LLM 提供商实现。
+ * 基于 LangChain OpenAI 集成的 LLM 提供商实现。
  * 支持同步/流式聊天、工具调用、自定义端点等功能。
  */
 
@@ -33,7 +33,7 @@ import type { BaseMessage, MessageContent } from "@langchain/core/messages";
 /**
  * OpenAI 提供商配置
  *
- * @description 扩展基础 LLM 配置，支持 OpenAI 特定选项
+ * 扩展基础 LLM 配置，支持 OpenAI 特定选项
  */
 export interface OpenAIConfig extends LLMConfig {
   /** OpenAI 组织 ID */
@@ -47,7 +47,7 @@ export interface OpenAIConfig extends LLMConfig {
 /**
  * OpenAI 提供商
  *
- * @description 实现 LLMProvider 接口，通过 LangChain 调用 OpenAI API。
+ * 实现 LLMProvider 接口，通过 LangChain 调用 OpenAI API。
  *
  * @example
  * ```typescript
@@ -132,7 +132,7 @@ export class OpenAIProvider implements LLMProvider {
   /**
    * @inheritdoc
    *
-   * @description 发送消息到 OpenAI 并返回响应。
+   * 发送消息到 OpenAI 并返回响应。
    * 支持工具调用、自定义模型参数等。
    */
   async chat(options: ChatOptions): Promise<LLMResponse> {
@@ -187,7 +187,7 @@ export class OpenAIProvider implements LLMProvider {
   /**
    * @inheritdoc
    *
-   * @description 以流式方式发送消息并逐块返回响应。
+   * 以流式方式发送消息并逐块返回响应。
    */
   async *chatStream(options: ChatOptions): AsyncIterable<LLMStreamChunk> {
     const { messages, tools, model, temperature, maxTokens } = options;
@@ -272,7 +272,7 @@ export class OpenAIProvider implements LLMProvider {
   /**
    * 检查提供商是否可用
    *
-   * @description 通过发送一个简单请求验证 API 配置。
+   * 通过发送一个简单请求验证 API 配置。
    * @returns 如果配置有效返回 true
    */
   async isAvailable(): Promise<boolean> {
@@ -290,7 +290,7 @@ export class OpenAIProvider implements LLMProvider {
   /**
    * 合并配置
    *
-   * @description 将调用选项与默认配置合并
+   * 将调用选项与默认配置合并
    */
   private _mergeConfig(options: Partial<ChatOptions>): LLMConfig {
     return {
@@ -352,7 +352,7 @@ export class OpenAIProvider implements LLMProvider {
   /**
    * 转换消息格式
    *
-   * @description 将内部消息格式转换为 LangChain 消息格式
+   * 将内部消息格式转换为 LangChain 消息格式
    * @param messages - 内部消息列表
    * @returns LangChain 消息列表
    */
@@ -390,7 +390,7 @@ export class OpenAIProvider implements LLMProvider {
   /**
    * 转换工具定义
    *
-   * @description 将内部工具格式转换为 OpenAI 工具格式
+   * 将内部工具格式转换为 OpenAI 工具格式
    * @param tools - 内部工具定义
    * @returns OpenAI 工具格式
    */
@@ -415,7 +415,7 @@ export class OpenAIProvider implements LLMProvider {
   /**
    * 标准化工具参数
    *
-   * @description 处理 Zod Schema 或 JSON Schema
+   * 处理 Zod Schema 或 JSON Schema
    * @param parameters - 工具参数定义
    * @returns JSON Schema 对象
    */
@@ -531,7 +531,7 @@ export class OpenAIProvider implements LLMProvider {
   /**
    * 处理错误
    *
-   * @description 将各种错误转换为 ProviderError
+   * 将各种错误转换为 ProviderError
    * @param error - 原始错误
    * @returns ProviderError 实例
    */

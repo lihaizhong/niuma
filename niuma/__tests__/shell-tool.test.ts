@@ -6,7 +6,7 @@
 import { tmpdir } from "os";
 
 // ==================== 第三方库 ====================
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, afterEach } from "vitest";
 
 // ==================== 本地模块 ====================
 import {

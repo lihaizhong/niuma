@@ -1,6 +1,6 @@
 /**
  * 飞书渠道实现
- * @description 基于 @larksuiteoapi/node-sdk 的飞书开放平台渠道实现
+ * 基于 @larksuiteoapi/node-sdk 的飞书开放平台渠道实现
  */
 
 import * as lark from "@larksuiteoapi/node-sdk";
@@ -66,7 +66,7 @@ export interface FeishuChannelConfig {
 
 /**
  * 飞书渠道
- * @description 基于 @larksuiteoapi/node-sdk 的飞书开放平台渠道实现
+ * 基于 @larksuiteoapi/node-sdk 的飞书开放平台渠道实现
  */
 export class FeishuChannel extends BaseChannel {
   private config: Required<Omit<FeishuChannelConfig, "encryptKey" | "verificationToken" | "enabled">> & {

@@ -1,7 +1,7 @@
 /**
  * 子智能体管理器 - 后台任务处理
  *
- * @description 管理后台子智能体的生命周期，支持独立执行复杂任务。
+ * 管理后台子智能体的生命周期，支持独立执行复杂任务。
  * 子智能体与主 Agent 隔离运行，完成后通过事件通知主 Agent。
  */
 
@@ -106,7 +106,7 @@ interface TaskResult {
 
 /**
  * 子智能体最大迭代次数
- * @description 设置为 15 的原因：
+ * 设置为 15 的原因：
  * 1. 子智能体通常执行简单、明确的任务，不需要过多迭代
  * 2. 避免后台任务占用过多 LLM 资源和计算成本
  * 3. 超过 15 次迭代通常意味着任务定义不清晰，应返回错误
@@ -117,14 +117,14 @@ const MAX_ITERATIONS = 15;
 
 /**
  * 最大并发子智能体数量
- * @description 限制同时运行的子智能体数量，避免资源耗尽
+ * 限制同时运行的子智能体数量，避免资源耗尽
  * @note 超过此限制时，spawn 方法会拒绝新任务
  */
 const MAX_CONCURRENT_TASKS = 5;
 
 /**
  * 子智能体任务超时时间（毫秒）
- * @description 单个子智能体任务的最大执行时间
+ * 单个子智能体任务的最大执行时间
  * @note 默认 10 分钟，超时后任务将被取消
  */
 const TASK_TIMEOUT = 10 * 60 * 1000;
@@ -166,7 +166,7 @@ const SUBAGENT_SYSTEM_PROMPT = `你是一个专业的后台任务执行助手。
 /**
  * 子智能体管理器
  *
- * @description 管理后台子智能体的创建、执行和清理。
+ * 管理后台子智能体的创建、执行和清理。
  * 支持任务取消、会话关联和结果通知。
  *
  * @example
@@ -243,7 +243,7 @@ export class SubagentManager {
   /**
    * 创建后台子智能体任务
    *
-   * @description 异步启动一个后台任务，立即返回任务 ID。
+   * 异步启动一个后台任务，立即返回任务 ID。
    * 任务完成后会通过事件总线通知主 Agent。
    *
    * @param options - 任务选项
@@ -326,7 +326,7 @@ export class SubagentManager {
   /**
    * 取消指定会话的所有子智能体任务
    *
-   * @description 当会话关闭时，取消该会话关联的所有后台任务。
+   * 当会话关闭时，取消该会话关联的所有后台任务。
    *
    * @param sessionKey - 会话键
    * @returns 取消的任务数量
@@ -458,7 +458,7 @@ export class SubagentManager {
   /**
    * 执行子智能体循环
    *
-   * @description 运行子智能体的核心循环，最多迭代 MAX_ITERATIONS 次。
+   * 运行子智能体的核心循环，最多迭代 MAX_ITERATIONS 次。
    * 子智能体不能使用 message 和 spawn 工具。
    */
   private async _runSubagent(
@@ -619,7 +619,7 @@ export class SubagentManager {
 
   /**
    * 获取隔离工具集
-   * @description 返回排除消息和子智能体创建工具后的工具定义。
+   * 返回排除消息和子智能体创建工具后的工具定义。
    * 子智能体不能发送消息或创建更多子智能体。
    */
   private _getIsolatedTools(): ToolDefinition[] {
@@ -657,7 +657,7 @@ export class SubagentManager {
   /**
    * 通知子智能体执行结果
    *
-   * @description 通过事件总线发送系统消息到原渠道。
+   * 通过事件总线发送系统消息到原渠道。
    */
   private _announceResult(
     taskId: string,

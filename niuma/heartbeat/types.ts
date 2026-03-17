@@ -78,7 +78,7 @@ export interface HeartbeatConfig {
 
 /**
  * Heartbeat 需要的 Agent 接口
- * @description 只包含 HeartbeatService 需要的方法和属性
+ * 只包含 HeartbeatService 需要的方法和属性
  */
 export interface HeartbeatAgent {
   /** 直接处理消息的方法 */

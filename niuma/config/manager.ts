@@ -260,7 +260,7 @@ export class ConfigManager {
 
   /**
    * 初始化 ProviderRegistry
-   * @description 将配置中的提供商信息注册到 ProviderRegistry
+   * 将配置中的提供商信息注册到 ProviderRegistry
    * @param agentId 角色ID（可选），如果不提供则使用全局配置
    */
   initializeProviders(agentId?: string): void {
@@ -381,7 +381,7 @@ export class ConfigManager {
 
   /**
    * 重置 ProviderRegistry
-   * @description 清除所有提供商实例和配置
+   * 清除所有提供商实例和配置
    */
   resetProviders(): void {
     this.registry.reset();

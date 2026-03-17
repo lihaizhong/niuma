@@ -1,10 +1,10 @@
 /**
  * 提供商注册表测试
  *
- * @description 测试 ProviderRegistry 的注册、查询和自动选择功能
+ * 测试 ProviderRegistry 的注册、查询和自动选择功能
  */
 
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 
 import { ProviderRegistry, type ProviderSpec } from "../providers/registry";
 

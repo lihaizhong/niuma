@@ -1,6 +1,6 @@
 /**
  * LLM 提供商抽象接口
- * @description 定义所有 LLM 提供商必须实现的接口
+ * 定义所有 LLM 提供商必须实现的接口
  */
 
 import type {
@@ -12,7 +12,7 @@ import type {
 
 /**
  * LLM 提供商接口
- * @description 所有 LLM 提供商必须实现此接口
+ * 所有 LLM 提供商必须实现此接口
  */
 export interface LLMProvider {
   /**
@@ -28,7 +28,7 @@ export interface LLMProvider {
   /**
    * 同步聊天接口
    *
-   * @description 发送消息并获取完整的响应。
+   * 发送消息并获取完整的响应。
    *
    * @param options - 聊天选项
    * @returns LLM 响应对象
@@ -47,7 +47,7 @@ export interface LLMProvider {
   /**
    * 流式聊天接口（可选）
    *
-   * @description 以流式方式发送消息并逐块返回响应。
+   * 以流式方式发送消息并逐块返回响应。
    * 适用于需要实时显示生成内容的场景。
    *
    * @param options - 聊天选项（同 chat 方法）
@@ -71,7 +71,7 @@ export interface LLMProvider {
   /**
    * 获取默认模型名称
    *
-   * @description 返回此提供商配置的默认模型标识符。
+   * 返回此提供商配置的默认模型标识符。
    * 当调用 chat/chatStream 时未指定 model 参数时使用。
    *
    * @returns 默认模型名称（如 'gpt-4o'、'claude-3-opus'）
@@ -81,7 +81,7 @@ export interface LLMProvider {
   /**
    * 检查提供商是否可用（可选）
    *
-   * @description 验证提供商配置是否正确、API 密钥是否有效。
+   * 验证提供商配置是否正确、API 密钥是否有效。
    * 可用于健康检查或初始化验证。
    *
    * @returns 如果提供商可用返回 true，否则返回 false
@@ -91,7 +91,7 @@ export interface LLMProvider {
 
 /**
  * 提供商错误
- * @description LLM 提供商相关的错误类型
+ * LLM 提供商相关的错误类型
  */
 export class ProviderError extends Error {
   constructor(
@@ -106,7 +106,7 @@ export class ProviderError extends Error {
 
 /**
  * 提供商工厂
- * @description 根据配置创建相应的提供商实例
+ * 根据配置创建相应的提供商实例
  */
 export function createProvider(config: LLMConfig): LLMProvider {
   // 这里可以根据配置类型返回不同的提供商实现

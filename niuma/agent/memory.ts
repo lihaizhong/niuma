@@ -1,7 +1,7 @@
 /**
  * 记忆系统 - 双层记忆架构
  *
- * @description 实现双层记忆结构：
+ * 实现双层记忆结构：
  * - MEMORY.md - 长期结构化知识
  * - HISTORY.md - 时间线日志（grep 可搜索）
  *
@@ -42,7 +42,7 @@ export interface ConsolidateOptions {
 
 /**
  * save_memory 工具定义
- * @description 用于 LLM 调用以保存记忆整合结果
+ * 用于 LLM 调用以保存记忆整合结果
  */
 export const SAVE_MEMORY_TOOL: ToolDefinition = {
   name: "save_memory",
@@ -69,7 +69,7 @@ export const SAVE_MEMORY_TOOL: ToolDefinition = {
 
 /**
  * 记忆存储类
- * @description 实现双层记忆：MEMORY.md（长期记忆）+ HISTORY.md（时间线日志）
+ * 实现双层记忆：MEMORY.md（长期记忆）+ HISTORY.md（时间线日志）
  * 存储位置：workspace/memory/
  */
 export class MemoryStore {
@@ -104,7 +104,7 @@ export class MemoryStore {
 
   /**
    * 追加历史条目
-   * @description 将条目追加到 HISTORY.md
+   * 将条目追加到 HISTORY.md
    * @param entry 历史条目内容
    */
   async appendHistory(entry: string): Promise<void> {
@@ -115,7 +115,7 @@ export class MemoryStore {
 
   /**
    * 获取记忆上下文
-   * @description 格式化长期记忆用于 System Prompt 注入
+   * 格式化长期记忆用于 System Prompt 注入
    * @returns 格式化的记忆上下文，如果记忆为空则返回空字符串
    */
   async getMemoryContext(): Promise<string> {
@@ -132,7 +132,7 @@ export class MemoryStore {
 
   /**
    * 整合记忆
-   * @description 通过 LLM 工具调用将会话历史整合到记忆系统
+   * 通过 LLM 工具调用将会话历史整合到记忆系统
    * @param options 整合选项
    * @returns 整合是否成功
    */
@@ -275,7 +275,7 @@ export class MemoryStore {
 
   /**
    * 读取长期记忆
-   * @description 从 MEMORY.md 读取长期结构化知识
+   * 从 MEMORY.md 读取长期结构化知识
    * @returns 记忆内容，如果文件不存在则返回空字符串
    */
   private async _readLongTerm(): Promise<string> {
@@ -288,7 +288,7 @@ export class MemoryStore {
 
   /**
    * 写入长期记忆
-   * @description 覆盖写入 MEMORY.md（使用原子写入避免竞态条件）
+   * 覆盖写入 MEMORY.md（使用原子写入避免竞态条件）
    * @param content 要写入的内容
    */
   private async _writeLongTerm(content: string): Promise<void> {
@@ -305,7 +305,7 @@ export class MemoryStore {
 
   /**
    * 格式化消息用于整合
-   * @description 将会话消息转换为易读的文本格式
+   * 将会话消息转换为易读的文本格式
    * @param messages 消息列表
    * @returns 格式化后的行数组
    */
@@ -338,7 +338,7 @@ export class MemoryStore {
 
   /**
    * 构建整合提示词
-   * @description 生成发送给 LLM 的整合提示
+   * 生成发送给 LLM 的整合提示
    * @param currentMemory 当前长期记忆
    * @param conversationLines 对话行数组
    * @returns 完整的提示词
@@ -360,7 +360,7 @@ ${conversationLines.join("\n")}`;
 
   /**
    * 解析工具调用参数（安全模式）
-   * @description 处理不同提供商返回的参数格式差异，并进行安全验证
+   * 处理不同提供商返回的参数格式差异，并进行安全验证
    * @param args 原始参数（可能是对象、字符串或数组）
    * @returns 解析后的参数对象，解析失败返回 null
    */
