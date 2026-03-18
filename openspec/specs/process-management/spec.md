@@ -1,4 +1,10 @@
-## ADDED Requirements
+# Process Management Specification
+
+## Purpose
+
+定义 Process Management 的功能规格和行为约束。
+
+## Requirements
 
 ### Requirement: 列出系统进程
 系统 SHALL 提供 `process_list` 工具，用于列出系统进程。

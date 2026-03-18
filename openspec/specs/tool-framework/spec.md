@@ -1,4 +1,10 @@
-## ADDED Requirements
+# Tool Framework Specification
+
+## Purpose
+
+定义 Tool Framework 的功能规格和行为约束。
+
+## Requirements
 
 ### Requirement: 工具抽象基类
 

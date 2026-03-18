@@ -1,4 +1,10 @@
-## ADDED Requirements
+# Llm Provider Specification
+
+## Purpose
+
+定义 Llm Provider 的功能规格和行为约束。
+
+## Requirements
 
 ### Requirement: 聊天接口
 
@@ -178,7 +184,7 @@ interface LLMStreamChunk {
 
 - `niuma/types/llm.ts` - ChatMessage, LLMUsage
 - `niuma/types/tool.ts` - ToolDefinition, ToolCall
-## MODIFIED Requirements
+## Requirements
 
 ### Requirement: OpenAI 实现
 
@@ -206,7 +212,7 @@ OpenAI Provider SHALL 实现 LLMProvider 接口，支持多提供商并存和自
 - **THEN** 未指定提供商时使用 OpenAI
 - **AND** 保持向后兼容
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: 多提供商配置
 

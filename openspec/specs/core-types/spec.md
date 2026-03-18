@@ -1,4 +1,10 @@
-## ADDED Requirements
+# Core Types Specification
+
+## Purpose
+
+定义 Core Types 的功能规格和行为约束。
+
+## Requirements
 
 ### Requirement: 模块化类型定义结构
 

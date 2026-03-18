@@ -1,7 +1,13 @@
-## ADDED Requirements
+# Whatsapp Channel Sdk Specification
+
+## Purpose
+
+定义 Whatsapp Channel Sdk 的功能规格和行为约束。
+
+## Requirements
 
 ### Requirement: WhatsApp SDK 集成
-WhatsApp 渠道必须集成 Baileys SDK，实现 WhatsApp Web 的消息监听和发送功能。
+WhatsApp 渠道SHALL集成 Baileys SDK，实现 WhatsApp Web 的消息监听和发送功能。
 
 #### Scenario: 启动 WhatsApp 渠道
 - **WHEN** 调用 `start()` 方法
@@ -20,7 +26,7 @@ WhatsApp 渠道必须集成 Baileys SDK，实现 WhatsApp Web 的消息监听和
 - **THEN** 系统处理 WhatsApp 特有的消息类型（文本、图片、文档等）
 
 ### Requirement: WhatsApp 消息发送
-WhatsApp 渠道必须支持向 WhatsApp 用户发送消息。
+WhatsApp 渠道SHALL支持向 WhatsApp 用户发送消息。
 
 #### Scenario: 发送文本消息
 - **WHEN** 调用 `send(message)` 方法
@@ -39,7 +45,7 @@ WhatsApp 渠道必须支持向 WhatsApp 用户发送消息。
 - **THEN** 系统发送带媒体的消息
 
 ### Requirement: WhatsApp 资源清理
-WhatsApp 渠道必须在停止时正确清理资源。
+WhatsApp 渠道SHALL在停止时正确清理资源。
 
 #### Scenario: 停止 WhatsApp 渠道
 - **WHEN** 调用 `stop()` 方法
@@ -53,7 +59,7 @@ WhatsApp 渠道必须在停止时正确清理资源。
 - **THEN** 系统断开连接
 
 ### Requirement: WhatsApp 健康检查
-WhatsApp 渠道必须支持健康检查功能。
+WhatsApp 渠道SHALL支持健康检查功能。
 
 #### Scenario: 检查连接状态
 - **WHEN** 调用 `healthCheck()` 方法

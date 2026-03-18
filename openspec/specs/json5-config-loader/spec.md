@@ -1,4 +1,10 @@
-## ADDED Requirements
+# Json5 Config Loader Specification
+
+## Purpose
+
+定义 Json5 Config Loader 的功能规格和行为约束。
+
+## Requirements
 
 ### Requirement: JSON5 配置文件加载
 系统 SHALL 能够加载和解析 JSON5 格式的配置文件，支持注释和尾随逗号。

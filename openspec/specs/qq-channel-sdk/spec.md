@@ -1,7 +1,13 @@
-## ADDED Requirements
+# Qq Channel Sdk Specification
+
+## Purpose
+
+定义 Qq Channel Sdk 的功能规格和行为约束。
+
+## Requirements
 
 ### Requirement: QQ Bot SDK 集成
-QQ 渠道必须集成 oicq SDK，实现 QQ Bot 的消息监听和发送功能。
+QQ 渠道SHALL集成 oicq SDK，实现 QQ Bot 的消息监听和发送功能。
 
 #### Scenario: 启动 QQ 渠道
 - **WHEN** 调用 `start()` 方法
@@ -20,7 +26,7 @@ QQ 渠道必须集成 oicq SDK，实现 QQ Bot 的消息监听和发送功能。
 - **THEN** 系统处理 QQ 特有的消息类型（文本、图片、语音等）
 
 ### Requirement: QQ 消息发送
-QQ 渠道必须支持向 QQ 用户发送消息。
+QQ 渠道SHALL支持向 QQ 用户发送消息。
 
 #### Scenario: 发送文本消息
 - **WHEN** 调用 `send(message)` 方法
@@ -39,7 +45,7 @@ QQ 渠道必须支持向 QQ 用户发送消息。
 - **THEN** 系统发送带媒体的消息
 
 ### Requirement: QQ 资源清理
-QQ 渠道必须在停止时正确清理资源。
+QQ 渠道SHALL在停止时正确清理资源。
 
 #### Scenario: 停止 QQ 渠道
 - **WHEN** 调用 `stop()` 方法
@@ -53,7 +59,7 @@ QQ 渠道必须在停止时正确清理资源。
 - **THEN** 系统断开连接
 
 ### Requirement: QQ 健康检查
-QQ 渠道必须支持健康检查功能。
+QQ 渠道SHALL支持健康检查功能。
 
 #### Scenario: 检查连接状态
 - **WHEN** 调用 `healthCheck()` 方法

@@ -1,7 +1,13 @@
-## ADDED Requirements
+# Dingtalk Channel Sdk Specification
+
+## Purpose
+
+定义 Dingtalk Channel Sdk 的功能规格和行为约束。
+
+## Requirements
 
 ### Requirement: 钉钉 SDK 集成
-钉钉渠道必须集成钉钉官方 SDK，实现钉钉开放平台的消息监听和发送功能。
+钉钉渠道SHALL集成钉钉官方 SDK，实现钉钉开放平台的消息监听和发送功能。
 
 #### Scenario: 启动钉钉渠道
 - **WHEN** 调用 `start()` 方法
@@ -20,7 +26,7 @@
 - **THEN** 系统处理钉钉特有的消息类型（文本、图片、链接等）
 
 ### Requirement: 钉钉消息发送
-钉钉渠道必须支持向钉钉用户发送消息。
+钉钉渠道SHALL支持向钉钉用户发送消息。
 
 #### Scenario: 发送文本消息
 - **WHEN** 调用 `send(message)` 方法
@@ -39,7 +45,7 @@
 - **THEN** 系统发送链接消息
 
 ### Requirement: 钉钉资源清理
-钉钉渠道必须在停止时正确清理资源。
+钉钉渠道SHALL在停止时正确清理资源。
 
 #### Scenario: 停止钉钉渠道
 - **WHEN** 调用 `stop()` 方法
@@ -53,7 +59,7 @@
 - **THEN** 系统断开连接
 
 ### Requirement: 钉钉健康检查
-钉钉渠道必须支持健康检查功能。
+钉钉渠道SHALL支持健康检查功能。
 
 #### Scenario: 检查连接状态
 - **WHEN** 调用 `healthCheck()` 方法

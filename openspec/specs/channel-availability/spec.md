@@ -1,5 +1,9 @@
 # Channel Availability Specification
 
+## Purpose
+
+定义 Channel Availability 的功能规格和行为约束。
+
 This spec defines the requirements for channel availability and the handling of disabled channels.
 
 ## Currently Disabled Channels

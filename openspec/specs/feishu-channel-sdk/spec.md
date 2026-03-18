@@ -1,7 +1,13 @@
-## ADDED Requirements
+# Feishu Channel Sdk Specification
+
+## Purpose
+
+定义 Feishu Channel Sdk 的功能规格和行为约束。
+
+## Requirements
 
 ### Requirement: 飞书 SDK 集成
-飞书渠道必须集成飞书官方 SDK，实现飞书开放平台的消息监听和发送功能。
+飞书渠道SHALL集成飞书官方 SDK，实现飞书开放平台的消息监听和发送功能。
 
 #### Scenario: 启动飞书渠道
 - **WHEN** 调用 `start()` 方法
@@ -20,7 +26,7 @@
 - **THEN** 系统处理飞书特有的消息类型（文本、图片、富文本等）
 
 ### Requirement: 飞书消息发送
-飞书渠道必须支持向飞书用户发送消息。
+飞书渠道SHALL支持向飞书用户发送消息。
 
 #### Scenario: 发送文本消息
 - **WHEN** 调用 `send(message)` 方法
@@ -39,7 +45,7 @@
 - **THEN** 系统发送富文本消息
 
 ### Requirement: 飞书资源清理
-飞书渠道必须在停止时正确清理资源。
+飞书渠道SHALL在停止时正确清理资源。
 
 #### Scenario: 停止飞书渠道
 - **WHEN** 调用 `stop()` 方法
@@ -53,7 +59,7 @@
 - **THEN** 系统断开连接
 
 ### Requirement: 飞书健康检查
-飞书渠道必须支持健康检查功能。
+飞书渠道SHALL支持健康检查功能。
 
 #### Scenario: 检查连接状态
 - **WHEN** 调用 `healthCheck()` 方法

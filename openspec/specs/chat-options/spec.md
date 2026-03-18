@@ -1,6 +1,10 @@
-# Chat Options 规格
+# Chat Options Specification
 
-## MODIFIED Requirements
+## Purpose
+
+定义 Chat Options 的功能规格和行为约束。
+
+## Requirements
 
 ### Requirement: 聊天接口支持完整的 LLM 参数
 

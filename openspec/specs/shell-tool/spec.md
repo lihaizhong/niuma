@@ -1,9 +1,10 @@
-# shell-tool 规格
+# Shell Tool Specification
 
-## 目的
-TBD - 由归档变更 builtin-tools-implementation 创建。归档后更新目的。
+## Purpose
 
-## 需求
+定义 Shell Tool 的功能规格和行为约束。
+
+## Requirements
 ### Requirement: exec 工具执行 Shell 命令
 
 系统 SHALL 提供 exec 工具，能够安全地执行 Shell 命令并返回结果。

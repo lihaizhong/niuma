@@ -1,7 +1,13 @@
-## ADDED Requirements
+# Email Channel Complete Specification
+
+## Purpose
+
+定义 Email Channel Complete 的功能规格和行为约束。
+
+## Requirements
 
 ### Requirement: Email IMAP 监听
-Email 渠道必须实现 IMAP 监听功能，能够接收新邮件。
+Email 渠道SHALL实现 IMAP 监听功能，能够接收新邮件。
 
 #### Scenario: 启动 Email 渠道
 - **WHEN** 调用 `start()` 方法
@@ -21,7 +27,7 @@ Email 渠道必须实现 IMAP 监听功能，能够接收新邮件。
 - **THEN** 系统提取聊天 ID（邮件地址）
 
 ### Requirement: Email SMTP 发送
-Email 渠道必须支持通过 SMTP 发送邮件。
+Email 渠道SHALL支持通过 SMTP 发送邮件。
 
 #### Scenario: 发送邮件
 - **WHEN** 调用 `send(message)` 方法
@@ -40,7 +46,7 @@ Email 渠道必须支持通过 SMTP 发送邮件。
 - **THEN** 系统发送带附件的邮件
 
 ### Requirement: Email 资源清理
-Email 渠道必须在停止时正确清理资源。
+Email 渠道SHALL在停止时正确清理资源。
 
 #### Scenario: 停止 Email 渠道
 - **WHEN** 调用 `stop()` 方法
@@ -54,7 +60,7 @@ Email 渠道必须在停止时正确清理资源。
 - **THEN** 系统关闭连接
 
 ### Requirement: Email 健康检查
-Email 渠道必须支持健康检查功能。
+Email 渠道SHALL支持健康检查功能。
 
 #### Scenario: 检查连接状态
 - **WHEN** 调用 `healthCheck()` 方法

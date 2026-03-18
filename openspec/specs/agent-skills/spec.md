@@ -1,4 +1,10 @@
-## ADDED Requirements
+# Agent Skills Specification
+
+## Purpose
+
+定义 Agent Skills 的功能规格和行为约束。
+
+## Requirements
 
 ### Requirement: 技能发现
 

@@ -4,7 +4,7 @@
 TBD - created by archiving change phase-6-heartbeat-service. Update Purpose after archive.
 ## Requirements
 ### Requirement: 心跳服务启动和停止
-系统必须提供心跳服务，支持启动和停止操作。心跳服务启动后应按照配置的间隔定期检查 HEARTBEAT.md 并执行任务。
+系统SHALL提供心跳服务，支持启动和停止操作。心跳服务启动后应按照配置的间隔定期检查 HEARTBEAT.md 并执行任务。
 
 #### Scenario: 成功启动心跳服务
 - **WHEN** Agent 初始化完成且配置中心跳服务已启用（`heartbeat.enabled: true`）
@@ -26,7 +26,7 @@ TBD - created by archiving change phase-6-heartbeat-service. Update Purpose afte
 ---
 
 ### Requirement: HEARTBEAT.md 文件解析
-系统必须能够解析位于 Agent 工作区根目录的 HEARTBEAT.md 文件，提取任务列表和配置信息。
+系统SHALL能够解析位于 Agent 工作区根目录的 HEARTBEAT.md 文件，提取任务列表和配置信息。
 
 #### Scenario: 成功解析有效的 HEARTBEAT.md
 - **WHEN** HEARTBEAT.md 文件存在且格式正确
@@ -48,7 +48,7 @@ TBD - created by archiving change phase-6-heartbeat-service. Update Purpose afte
 ---
 
 ### Requirement: 周期性检查调度
-系统必须使用 node-cron 库按照 HEARTBEAT.md 中配置的 interval（Cron 表达式）周期性检查任务。
+系统SHALL使用 node-cron 库按照 HEARTBEAT.md 中配置的 interval（Cron 表达式）周期性检查任务。
 
 #### Scenario: 按照配置的间隔执行检查
 - **WHEN** HEARTBEAT.md 中配置了有效的 Cron 表达式（如 `"0 */30 * * * *"` 表示每 30 分钟）
@@ -70,7 +70,7 @@ TBD - created by archiving change phase-6-heartbeat-service. Update Purpose afte
 ---
 
 ### Requirement: 任务执行
-系统必须执行 HEARTBEAT.md 中定义的任务列表。任务应串行执行，避免资源竞争。
+系统SHALL执行 HEARTBEAT.md 中定义的任务列表。任务应串行执行，避免资源竞争。
 
 #### Scenario: 成功执行单个任务
 - **WHEN** HEARTBEAT.md 中包含一个有效的任务
@@ -99,7 +99,7 @@ TBD - created by archiving change phase-6-heartbeat-service. Update Purpose afte
 ---
 
 ### Requirement: 心跳结果发送
-系统必须通过最近活跃的渠道发送心跳执行结果，包括成功和失败的任务统计。
+系统SHALL通过最近活跃的渠道发送心跳执行结果，包括成功和失败的任务统计。
 
 #### Scenario: 成功发送心跳结果到活跃渠道
 - **WHEN** 心跳任务执行完成且存在最近活跃的渠道
@@ -122,7 +122,7 @@ TBD - created by archiving change phase-6-heartbeat-service. Update Purpose afte
 ---
 
 ### Requirement: 配置管理
-系统必须支持通过配置文件管理心跳服务的行为，包括启用/禁用、检查间隔、文件路径等。
+系统SHALL支持通过配置文件管理心跳服务的行为，包括启用/禁用、检查间隔、文件路径等。
 
 #### Scenario: 通过配置启用心跳服务
 - **WHEN** 配置文件中设置 `heartbeat.enabled: true`
@@ -147,7 +147,7 @@ TBD - created by archiving change phase-6-heartbeat-service. Update Purpose afte
 ---
 
 ### Requirement: 错误处理和容错
-系统必须具备完善的错误处理机制，确保单个任务的失败不会影响整个心跳服务的运行。
+系统SHALL具备完善的错误处理机制，确保单个任务的失败不会影响整个心跳服务的运行。
 
 #### Scenario: HEARTBEAT.md 解析失败
 - **WHEN** HEARTBEAT.md 文件解析失败
@@ -176,7 +176,7 @@ TBD - created by archiving change phase-6-heartbeat-service. Update Purpose afte
 ---
 
 ### Requirement: 日志记录
-系统必须记录心跳服务的所有关键事件和操作，便于问题排查和监控。
+系统SHALL记录心跳服务的所有关键事件和操作，便于问题排查和监控。
 
 #### Scenario: 记录心跳服务启动
 - **WHEN** 心跳服务启动
@@ -201,7 +201,7 @@ TBD - created by archiving change phase-6-heartbeat-service. Update Purpose afte
 ---
 
 ### Requirement: 心跳结果格式
-系统必须以结构化的 Markdown 格式发送心跳结果，包含任务执行统计和详细信息。
+系统SHALL以结构化的 Markdown 格式发送心跳结果，包含任务执行统计和详细信息。
 
 #### Scenario: 格式化成功的心跳结果
 - **WHEN** 所有任务都成功执行
@@ -229,7 +229,7 @@ TBD - created by archiving change phase-6-heartbeat-service. Update Purpose afte
 ---
 
 ### Requirement: 心跳服务生命周期管理
-心跳服务必须与 Agent 生命周期紧密绑定，确保在 Agent 启动时自动启动，在 Agent 关闭时自动停止。
+心跳服务SHALL与 Agent 生命周期紧密绑定，确保在 Agent 启动时自动启动，在 Agent 关闭时自动停止。
 
 #### Scenario: Agent 启动时自动启动心跳服务
 - **WHEN** Agent 初始化完成

@@ -1,3 +1,9 @@
+# Agent Memory Specification
+
+## Purpose
+
+定义 Agent Memory 的功能规格和行为约束。
+
 ## Historical Context
 
 ### Code Evolution (Git History)

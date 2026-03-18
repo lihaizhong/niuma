@@ -1,4 +1,10 @@
-## ADDED Requirements
+# Config Manager Specification
+
+## Purpose
+
+定义 Config Manager 的功能规格和行为约束。
+
+## Requirements
 
 ### Requirement: 配置加载和解析
 ConfigManager SHALL 能够加载、解析和验证配置文件。

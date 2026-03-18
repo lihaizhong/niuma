@@ -1,4 +1,10 @@
-## ADDED Requirements
+# Multi Role Config Specification
+
+## Purpose
+
+定义 Multi Role Config 的功能规格和行为约束。
+
+## Requirements
 
 ### Requirement: 多角色配置系统整体功能
 系统 SHALL 提供完整的企业级多角色配置功能，包括多角色配置、独立工作区、环境变量引用和严格验证。

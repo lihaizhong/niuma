@@ -1,6 +1,10 @@
-# CLI Provider Commands 规格
+# Cli Provider Commands Specification
 
-## ADDED Requirements
+## Purpose
+
+定义 Cli Provider Commands 的功能规格和行为约束。
+
+## Requirements
 
 ### Requirement: /provider 命令列出所有 provider
 系统 SHALL 支持 `/provider` 命令列出所有已配置的 provider 及其状态。

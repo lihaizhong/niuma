@@ -1,4 +1,10 @@
-## ADDED Requirements
+# Agent Workspace Specification
+
+## Purpose
+
+定义 Agent Workspace 的功能规格和行为约束。
+
+## Requirements
 
 ### Requirement: 角色工作区隔离
 系统 SHALL 为每个角色创建独立的工作区，确保会话、记忆和日志完全隔离。

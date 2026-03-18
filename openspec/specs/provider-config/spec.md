@@ -1,6 +1,10 @@
-# Provider Config 规格
+# Provider Config Specification
 
-## MODIFIED Requirements
+## Purpose
+
+定义 Provider Config 的功能规格和行为约束。
+
+## Requirements
 
 ### Requirement: Provider config schema validates provider settings
 

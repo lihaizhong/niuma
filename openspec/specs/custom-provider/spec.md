@@ -1,4 +1,10 @@
-## ADDED Requirements
+# Custom Provider Specification
+
+## Purpose
+
+定义 Custom Provider 的功能规格和行为约束。
+
+## Requirements
 
 ### Requirement: 自定义提供商实现
 

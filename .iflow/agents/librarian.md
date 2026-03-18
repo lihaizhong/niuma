@@ -6,7 +6,7 @@ description: **外部知识检索** — 库文档解析, 最佳实践提取, API
 when-to-use: **外部知识检索** — 库文档解析, 最佳实践提取, API用法映射
 当用户询问外部库的使用方法、框架最佳实践、开源项目实现细节或需要查找使用示例时使用此智能体。触发条件包括：'如何使用[库]?'、'[框架]的最佳实践是什么?'、'X如何实现Y?'、'为什么[依赖]如此行为?'。
 allowed-tools: glob, list_directory, multi_edit, read_file, replace, run_shell_command, search_file_content, todo_read, todo_write, web_fetch, web_search, write_file
-model: kimi-k2
+model: GLM-4.7
 inherit-mcps: true
 color: red
 ---

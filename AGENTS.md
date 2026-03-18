@@ -4,7 +4,7 @@
 
 企业级多角色 AI 助手系统，支持独立配置、工作区、会话和记忆。
 
-**技术栈、架构、开发规范详见 `openspec/config.yaml`（仅在 OpenSpec 开发时加载）**
+**技术栈、架构、开发规范详见 `openspec/config.yaml`**
 
 ## 行为指导
 
@@ -51,6 +51,7 @@
 - 必须使用 `openspec` 命令完成相关操作
 - 严禁修改 `.iflow/` 目录（除非用户明确说明）
 - **归档保护：** `openspec/changes/archive/` 不可修改
+- **配置读取：** 创建或修改 OpenSpec artifacts（proposal/spec/design/tasks）时，必须先读取 `openspec/config.yaml` 获取项目上下文和格式规则
 
 ### 3. Subagent 优先使用原则
 

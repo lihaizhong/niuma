@@ -1,4 +1,10 @@
-## ADDED Requirements
+# Openrouter Provider Specification
+
+## Purpose
+
+定义 Openrouter Provider 的功能规格和行为约束。
+
+## Requirements
 
 ### Requirement: OpenRouter 提供商实现
 

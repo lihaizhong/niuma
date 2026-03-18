@@ -1,4 +1,10 @@
-## ADDED Requirements
+# Event Bus Specification
+
+## Purpose
+
+定义 Event Bus 的功能规格和行为约束。
+
+## Requirements
 
 ### Requirement: 类型安全的事件系统
 

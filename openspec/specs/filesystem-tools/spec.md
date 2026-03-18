@@ -1,9 +1,10 @@
-# filesystem-tools 规格
+# Filesystem Tools Specification
 
-## 目的
-TBD - 由归档变更 builtin-tools-implementation 创建。归档后更新目的。
+## Purpose
 
-## 需求
+定义 Filesystem Tools 的功能规格和行为约束。
+
+## Requirements
 ### Requirement: read_file 工具读取文件内容
 
 系统 SHALL 提供 read_file 工具，能够读取文件内容并返回给 Agent。

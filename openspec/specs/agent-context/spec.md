@@ -1,3 +1,9 @@
+# Agent Context Specification
+
+## Purpose
+
+定义 Agent Context 的功能规格和行为约束。
+
 ## Historical Context
 
 ### Code Evolution (Git History)

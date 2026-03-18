@@ -1,4 +1,10 @@
-## ADDED Requirements
+# Agent Loop Specification
+
+## Purpose
+
+定义 Agent Loop 的功能规格和行为约束。
+
+## Requirements
 
 ### Requirement: 消息处理循环
 
