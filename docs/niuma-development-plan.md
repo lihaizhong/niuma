@@ -1,7 +1,7 @@
 # Niuma 项目开发计划
 
 > **当前版本：** v0.2.2
-> **最后更新：** 2026-03-16
+> **最后更新：** 2026-03-18
 > **状态：** 已完成核心基础设施、Agent 核心、多角色配置系统、内置工具、LLM 提供商扩展、定时任务与心跳、多渠道接入
 
 ## 项目概述
@@ -17,26 +17,28 @@
 - 环境变量集成：支持 `${VAR}` 和 `${VAR:default}` 语法
 - 双层记忆系统：MEMORY.md + HISTORY.md
 - 技能系统：支持动态加载和依赖检查
-- MCP 协议支持：完整的 MCP 客户端实现
+- MCP 协议支持：⏸️ 待开发（MCP 客户端对接接口）
 - 定时任务与心跳：周期性任务支持
 
 **架构设计理念：**
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                    Niuma 核心层                          │
-│  (基础工具：文件系统、Shell、加密、进程管理等)          │
-└─────────────────────────────────────────────────────────┘
-                          ↓
-┌─────────────────────────────────────────────────────────┐
-│                   MCP 客户端层                           │
-│  (MCP 协议实现、工具桥接、配置管理)                      │
-└─────────────────────────────────────────────────────────┘
-                          ↓
-┌─────────────────────────────────────────────────────────┐
-│                   MCP Server 生态                        │
-│  (图像处理、媒体处理、专业工具 - 用户自行配置)           │
-└─────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph Core["Niuma 核心层"]
+        A["基础工具：文件系统、Shell、加密、进程管理等"]
+    end
+
+    subgraph MCP["MCP 客户端层"]
+        B["MCP 协议实现、工具桥接、配置管理"]
+    end
+
+    subgraph Servers["MCP Server 生态"]
+        C["图像处理、媒体处理、专业工具"]
+        D["用户自行配置"]
+    end
+
+    Core --> MCP
+    MCP --> Servers
 ```
 
 ---
@@ -62,18 +64,21 @@
 | Phase 6 | 定时任务与心跳 | 2026-03-16 | ✅ 已完成 |
 | 代码补全 | 补全代码 TODO | 2026-03-16 | ✅ 已完成 |
 | Phase 5 | 多渠道接入 | 2026-03-16 | ✅ 已完成 |
+| 重构 | 子智能体模块分离 | 2026-03-17 | ✅ 已完成 |
+| 重构 | 工具模块重构 | 2026-03-17 | ✅ 已完成 |
+| 功能 | CLI 提供商切换 | 2026-03-17 | ✅ 已完成 |
 
 ### 📊 项目统计
 
-- **核心模块：** 40+ 个文件
+- **核心模块：** 67 个 TypeScript 文件（不含测试）
 - **代码行数：** ~18000+ 行 TypeScript
 - **内置工具：** 30 个（文件系统、Shell、Web、消息、Agent、Git、网络、数据处理、加密解密、系统管理）
-- **LLM 提供商：** 5 个（OpenAI、Anthropic、OpenRouter、DeepSeek、Custom）
-- **MCP 支持：** 完整的 MCP 客户端实现
+- **LLM 提供商：** 6 个（OpenAI、Anthropic、OpenRouter、DeepSeek、Ollama、Custom）
+- **MCP 支持：** ⏸️ 待开发
 - **心跳服务：** 完整实现（HEARTBEAT.md 解析、任务执行、结果发送）
 - **多渠道接入：** 9 个渠道（CLI、Telegram、Discord、飞书、钉钉、Slack、WhatsApp、Email、QQ）
 - **测试覆盖：** 100% 通过（89/89 系统工具测试）
-- **文档完善度：** OpenSpec 变更记录完整（17 个归档变更）
+- **文档完善度：** OpenSpec 变更记录完整（23 个归档变更）
 
 ---
 
@@ -104,22 +109,36 @@
 
 ```
 niuma/
-├── src/                      # 应用入口（空，使用 niuma/）
 ├── niuma/                    # 核心模块目录
 │   ├── agent/                # 🧠 智能体核心
 │   │   ├── context.ts        #    上下文构建器（支持媒体、技能、记忆）
 │   │   ├── loop.ts           #    Agent 循环（LLM ↔ 工具执行）
 │   │   ├── memory.ts         #    双层记忆系统
 │   │   ├── skills.ts         #    技能加载器
-│   │   ├── subagent.ts       #    子智能体管理
+│   │   ├── subagent/         #    子智能体管理
+│   │   │   ├── executor.ts   #      子智能体执行器
+│   │   │   ├── manager.ts    #      子智能体管理器
+│   │   │   └── types.ts      #      类型定义
 │   │   └── tools/            #    工具框架
 │   │       ├── base.ts       #      工具基类
-│   │       └── registry.ts   #      工具注册表
+│   │       ├── registry.ts   #      工具注册表
+│   │       ├── context.ts    #      工具上下文
+│   │       ├── spawn.ts      #      子智能体创建工具
+│   │       ├── cron.ts       #      定时任务工具
+│   │       ├── filesystem.ts #      文件系统工具
+│   │       ├── shell.ts      #      Shell 命令工具
+│   │       ├── git.ts        #      Git 操作工具
+│   │       ├── web.ts        #      Web 工具
+│   │       ├── network.ts    #      网络工具
+│   │       ├── data.ts       #      数据处理工具
+│   │       ├── crypto.ts     #      加密解密工具
+│   │       ├── system.ts     #      系统管理工具
+│   │       └── message.ts    #      消息发送工具
 │   ├── bus/                  # 🚌 事件总线
 │   │   ├── events.ts         #    事件定义
 │   │   ├── index.ts          #    统一导出
 │   │   └── queue.ts          #    异步消息队列
-│   ├── channels/             # 📱 多渠道接入（规划中）
+│   ├── channels/             # 📱 多渠道接入
 │   ├── cli/                  # 🖥️ CLI 入口
 │   ├── config/               # ⚙️ 配置管理
 │   │   ├── schema.ts         #    配置 Schema 定义
@@ -128,14 +147,18 @@ niuma/
 │   │   ├── merger.ts         #    配置合并器
 │   │   ├── env-resolver.ts   #    环境变量解析器
 │   │   └── json5-loader.ts   #    JSON5 加载器
-│   ├── cron/                 # ⏰ 定时任务（已通过 cron 工具实现）
-│   ├── heartbeat/            # 💓 主动唤醒（已完成）
+│   ├── heartbeat/            # 💓 主动唤醒
+│   │   ├── service.ts        #    心跳服务
+│   │   └── types.ts          #    类型定义
+│   ├── log/                  # 📝 日志模块
+│   │   └── index.ts          #    日志记录器
 │   ├── providers/            # 🤖 LLM 提供商
 │   │   ├── base.ts           #    提供商抽象基类
 │   │   ├── openai.ts         #    OpenAI 实现
 │   │   ├── anthropic.ts      #    Anthropic Claude 实现
 │   │   ├── openrouter.ts     #    OpenRouter 多模型网关
 │   │   ├── deepseek.ts       #    DeepSeek API 实现
+│   │   ├── ollama.ts         #    Ollama 本地模型
 │   │   ├── custom.ts         #    自定义 OpenAI 兼容端点
 │   │   └── registry.ts       #    提供商注册表
 │   ├── session/              # 💬 会话管理
@@ -147,39 +170,19 @@ niuma/
 │   │   ├── llm.ts            #    LLM 类型
 │   │   ├── events.ts         #    事件类型
 │   │   └── error.ts          #    错误类型
-│   └── utils/                # 🔧 工具函数
-│       └── retry.ts          #    重试工具
+│   ├── utils/                # 🔧 工具函数
+│   │   ├── retry.ts          #    重试工具
+│   │   └── sanitize.ts       #    数据清理工具
+│   └── __tests__/            # 🧪 测试文件
 ├── openspec/                 # 📋 OpenSpec 规范
 │   ├── config.yaml           #    配置文件
 │   ├── changes/              #    变更记录
-│   │   └── archive/          #    已归档变更
-│   │       ├── 2026-03-10-core-infrastructure/
-│   │       ├── 2026-03-10-phase2-agent-core/
-│   │       ├── 2026-03-11-enterprise-multi-role-config/
-│   │       ├── 2026-03-11-sync-provider-config-params/
-│   │       ├── 2026-03-12-builtin-tools-implementation/
-│   │       ├── 2026-03-15-migrate-sqlite-to-wasm/
-│   │       ├── 2026-03-15-phase-3-1-advanced-file-operations/
-│   │       ├── 2026-03-15-phase-3-2-git-operations/
-│   │       ├── 2026-03-15-phase-3-6-crypto-tools/
-│   │       ├── 2026-03-15-phase-3-7-environment-and-process-management/
-│   │       ├── 2026-03-15-phase-3-tools-implementation/
-│   │       ├── 2026-03-15-remove-archive-tools/
-│   │       ├── 2026-03-15-sync-specs-visibility/
-│   │       ├── 2026-03-15-phase-4-llm-provider-extension/
-│   │       ├── 2026-03-16-complete-pending-todos/
-│   │       ├── 2026-03-16-phase-5-multi-channel-access/
-│   │       └── 2026-03-16-phase-6-heartbeat-service/
+│   │   └── archive/          #    已归档变更（23 个）
 │   └── specs/                #    规格定义
-├── .iflow/                   # 🤖 iFlow CLI 配置
-│   ├── skills/               #    技能定义
-│   └── commands/             #    自定义命令
 ├── docs/                     # 📄 文档
-│   └── niuma-development-plan.md #    本文档
 ├── public/                   # 📁 静态资源
 ├── dist/                     # 📦 构建输出
 ├── package.json
-├── pnpm-workspace.yaml
 ├── tsconfig.json
 ├── vitest.config.ts
 └── README.md
@@ -494,6 +497,7 @@ flowchart TD
 | Anthropic | `providers/anthropic.ts` | Claude 系列模型 | ✅ 已完成 |
 | OpenRouter | `providers/openrouter.ts` | 多模型网关 | ✅ 已完成 |
 | DeepSeek | `providers/deepseek.ts` | DeepSeek API | ✅ 已完成 |
+| Ollama | `providers/ollama.ts` | 本地模型支持 | ✅ 已完成 |
 | 自定义 | `providers/custom.ts` | OpenAI 兼容端点 | ✅ 已完成 |
 | 注册表 | `providers/registry.ts` | 两步式注册、智能匹配 | ✅ 已完成 |
 
