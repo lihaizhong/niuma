@@ -295,17 +295,6 @@ await agentLoop.run();
 
 支持自定义技能，通过 SKILL.md 定义：
 
-**项目级技能（`.iflow/skills/`）：**
-```
-.iflow/skills/                  # 项目级技能（随项目版本控制）
-├── fullstack/                  # 全栈开发工作流
-│   └── SKILL.md
-├── openexp/                    # 经验管理
-│   └── SKILL.md
-└── openspec-*/                 # OpenSpec 相关技能
-    └── SKILL.md
-```
-
 **用户级技能（`~/.niuma/agents/<id>/skills/`）：**
 ```bash
 ~/.niuma/agents/developer/skills/
@@ -315,6 +304,8 @@ await agentLoop.run();
 │   └── SKILL.md
 └── ...
 ```
+
+每个角色可以拥有独立的技能集，技能通过 `SKILL.md` 文件定义，包含功能描述、使用场景和示例。
 
 ## 📁 目录结构
 
