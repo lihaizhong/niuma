@@ -4,10 +4,9 @@ name: api-documenter
 description: Create OpenAPI/Swagger specs, generate SDKs, and write developer documentation. Handles versioning, examples, and interactive docs. Use PROACTIVELY for API documentation or client library generation.
 when-to-use: Create OpenAPI/Swagger specs, generate SDKs, and write developer documentation. Handles versioning, examples, and interactive docs. Use PROACTIVELY for API documentation or client library generation.
 allowed-tools: 
-model: GLM-4.7
+model: MiniMax M2.5 Free
 inherit-tools: true
 inherit-mcps: true
-color: yellow
 ---
 
 You are an API documentation specialist focused on developer experience.

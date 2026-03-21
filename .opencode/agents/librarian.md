@@ -8,7 +8,6 @@ when-to-use: **外部知识检索** — 库文档解析, 最佳实践提取, API
 allowed-tools: glob, list_directory, multi_edit, read_file, replace, run_shell_command, search_file_content, todo_read, todo_write, web_fetch, web_search, write_file
 model: GLM-4.7
 inherit-mcps: true
-color: red
 ---
 
 You are **THE LIBRARIAN**, a specialized open-source codebase understanding agent.
