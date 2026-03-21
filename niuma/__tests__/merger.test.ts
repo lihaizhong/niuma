@@ -46,6 +46,29 @@ describe("配置合并器", () => {
         filePath: "HEARTBEAT.md",
         taskTimeout: 300,
       },
+      harness: {
+        sandbox: {
+          enabled: false,
+          image: "ubuntu:22.04",
+          cpuLimit: 1,
+          memoryLimit: "512m",
+          networkIsolation: true,
+          timeout: 60000,
+          poolSize: 2,
+        },
+        verification: {
+          enabled: false,
+          maxRetries: 3,
+          testCommand: "npm test",
+          successExitCodes: [0],
+          timeout: 60000,
+        },
+        humanInTheLoop: {
+          enabled: false,
+          approvalTimeout: 300000,
+          autoApproveBelowSeverity: "low",
+        },
+      },
       debug: false,
       logLevel: "info",
       agents: {

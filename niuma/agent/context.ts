@@ -22,6 +22,7 @@ import { createLogger } from "../log";
 
 import { type MemoryStore } from "./memory";
 import { type SkillsLoader } from "./skills";
+import { type AgentsMdRules } from "./rules";
 
 import type { ChatMessage, MessageContentPart } from "../types";
 import type { MediaContent } from "../types/message";
@@ -122,6 +123,8 @@ export class ContextBuilder {
   private readonly memoryStore: MemoryStore;
   /** 技能加载器 */
   private readonly skillsLoader: SkillsLoader;
+  /** AGENTS.md 规则管理器 */
+  private agentsMdRules?: AgentsMdRules;
   /** Bootstrap 文件缓存 */
   private bootstrapCache: Map<string, string> | null = null;
 
@@ -134,15 +137,26 @@ export class ContextBuilder {
    * @param workspace 工作区根目录
    * @param memoryStore 记忆存储实例
    * @param skillsLoader 技能加载器实例
+   * @param agentsMdRules AGENTS.md 规则管理器（可选）
    */
   constructor(
     workspace: string,
     memoryStore: MemoryStore,
     skillsLoader: SkillsLoader,
+    agentsMdRules?: AgentsMdRules,
   ) {
     this.workspace = workspace;
     this.memoryStore = memoryStore;
     this.skillsLoader = skillsLoader;
+    this.agentsMdRules = agentsMdRules;
+  }
+
+  /**
+   * 设置 AGENTS.md 规则管理器
+   * @param rules AGENTS.md 规则管理器
+   */
+  setAgentsMdRules(rules: AgentsMdRules): void {
+    this.agentsMdRules = rules;
   }
 
   // ============================================
@@ -314,19 +328,42 @@ export class ContextBuilder {
       parts.push(bootstrapContent);
     }
 
-    // 3. 长期记忆上下文
+    // 3. AGENTS.md 规则上下文
+    const rulesContext = await this._getRulesContext();
+    if (rulesContext) {
+      parts.push(rulesContext);
+    }
+
+    // 4. 长期记忆上下文
     const memoryContext = await this._getMemoryContext();
     if (memoryContext) {
       parts.push(memoryContext);
     }
 
-    // 4. 技能上下文
+    // 5. 技能上下文
     const skillsContent = this._loadSkillsContext(skillNames);
     if (skillsContent) {
       parts.push(skillsContent);
     }
 
     return parts.join("\n\n");
+  }
+
+  /**
+   * 获取 AGENTS.md 规则上下文（异步）
+   * @returns 格式化的规则上下文
+   */
+  private async _getRulesContext(): Promise<string> {
+    if (!this.agentsMdRules) {
+      return "";
+    }
+
+    try {
+      const rulesContext = await this.agentsMdRules.getRulesForContext();
+      return rulesContext;
+    } catch {
+      return "";
+    }
   }
 
   /**

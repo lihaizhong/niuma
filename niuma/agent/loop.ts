@@ -12,6 +12,7 @@
  */
 
 import RE2 from "re2";
+import { join } from "path";
 
 import { AsyncQueue } from "../bus/queue";
 import { BaseChannel } from "../channels/base";
@@ -23,10 +24,15 @@ import { retryWithBackoff } from "../utils/retry";
 import { ContextBuilder } from "./context";
 import { MemoryStore } from "./memory";
 import { SkillsLoader } from "./skills";
+import { SelfVerification } from "./verification";
+import { HumanInTheLoop } from "./approval";
+import { AgentsMdRules } from "./rules";
+import { RalphLoops } from "./ralph";
+import { ContextCompaction } from "./compaction";
 
 import type { EventBus } from "../bus/events";
 import type { ConfigManager } from "../config/manager";
-import type { ChannelsConfig } from "../config/schema";
+import type { ChannelsConfig, HarnessConfig } from "../config/schema";
 import type { HeartbeatConfig } from "../heartbeat/types";
 import type { LLMProvider } from "../providers/base";
 import type { ProviderRegistry, ProviderSpec } from "../providers/registry";
@@ -80,6 +86,8 @@ export interface AgentLoopOptions {
   providerRegistry?: ProviderRegistry;
   /** 配置管理器（用于获取 provider 列表） */
   configManager?: ConfigManager;
+  /** Harness 配置 */
+  harnessConfig?: HarnessConfig;
 }
 
 /**
@@ -231,6 +239,23 @@ export class AgentLoop {
   private readonly channelsConfig?: ChannelsConfig;
 
   // ============================================
+  // Harness 组件
+  // ============================================
+
+  /** 自验证循环 */
+  private selfVerification?: SelfVerification;
+  /** Human-in-the-Loop 审批 */
+  private humanInTheLoop?: HumanInTheLoop;
+  /** AGENTS.md 规则管理器 */
+  private agentsMdRules?: AgentsMdRules;
+  /** Ralph Loops 长周期任务 */
+  private ralphLoops?: RalphLoops;
+  /** 上下文压缩 */
+  private contextCompaction?: ContextCompaction;
+  /** 当前任务 ID */
+  private currentTaskId?: string;
+
+  // ============================================
   // 缓存属性
   // ============================================
 
@@ -294,6 +319,90 @@ export class AgentLoop {
         workspaceRoot: this.workspace,
       });
     }
+
+    // 初始化 Harness 组件
+    this._initializeHarnessComponents(options.harnessConfig);
+  }
+
+  /**
+   * 初始化 Harness 组件
+   * @param config Harness 配置
+   * @private
+   */
+  private _initializeHarnessComponents(config?: HarnessConfig): void {
+    if (!config) {
+      return;
+    }
+
+    // 初始化自验证循环
+    if (config.verification?.enabled) {
+      this.selfVerification = new SelfVerification({
+        config: config.verification,
+        workspace: this.workspace,
+      });
+      logger.info("自验证循环已启用");
+    }
+
+    // 初始化 Human-in-the-Loop
+    if (config.humanInTheLoop?.enabled) {
+      this.humanInTheLoop = new HumanInTheLoop({
+        config: {
+          enabled: true,
+          approvalTimeout: config.humanInTheLoop.approvalTimeout,
+          autoApproveBelowSeverity: config.humanInTheLoop.autoApproveBelowSeverity,
+        },
+      });
+      this.humanInTheLoop.setApprovalCallback(async (request) => {
+        logger.info({ requestId: request.id }, "等待人工审批");
+        return {
+          requestId: request.id,
+          approved: false,
+          respondedAt: new Date().toISOString(),
+        };
+      });
+      logger.info("Human-in-the-Loop 已启用");
+    }
+
+    // 初始化 AGENTS.md 规则管理器
+    this.agentsMdRules = new AgentsMdRules({ workspace: this.workspace });
+
+    // 初始化 Ralph Loops
+    this.ralphLoops = new RalphLoops({
+      config: {
+        enabled: true,
+        maxIterations: this.maxIterations,
+        checkpointInterval: 10,
+        preserveGoal: true,
+      },
+      checkpointDir: join(this.workspace, ".harness", "checkpoints"),
+    });
+
+    // 初始化上下文压缩
+    this.contextCompaction = new ContextCompaction({
+      workspace: this.workspace,
+      config: {
+        enabled: true,
+        threshold: 0.8,
+        reserveTokens: 1000,
+        maxHistoryRounds: 5,
+      },
+    });
+
+    logger.info("Harness 组件已初始化");
+  }
+
+  /**
+   * 获取 Human-in-the-Loop 实例
+   */
+  getHumanInTheLoop(): HumanInTheLoop | undefined {
+    return this.humanInTheLoop;
+  }
+
+  /**
+   * 获取自验证循环实例
+   */
+  getSelfVerification(): SelfVerification | undefined {
+    return this.selfVerification;
   }
 
   /**
@@ -1052,6 +1161,14 @@ export class AgentLoop {
       });
     }
 
+    // Human-in-the-Loop 审批检测
+    const approvalResult = await this._checkApproval(name, args);
+    if (!approvalResult.approved) {
+      const denialMsg = `工具 ${name} 执行被 Human-in-the-Loop 拒绝: ${approvalResult.reason}`;
+      logger.warn({ toolName: name, reason: approvalResult.reason }, "工具执行被拒绝");
+      return denialMsg;
+    }
+
     // 发射工具调用开始事件
     this.bus.emit("TOOL_CALL_START", {
       toolName: name,
@@ -1100,6 +1217,51 @@ export class AgentLoop {
 
       // 返回错误信息，让 LLM 尝试其他方式
       return `工具 ${name} 执行失败: ${message}\n\n[分析上述错误并尝试其他方式。]`;
+    }
+  }
+
+  /**
+   * 检查工具执行是否需要审批
+   * @param toolName 工具名称
+   * @param args 工具参数
+   * @returns 审批结果
+   */
+  private async _checkApproval(
+    toolName: string,
+    args: Record<string, unknown>,
+  ): Promise<{ approved: boolean; reason?: string }> {
+    if (!this.humanInTheLoop || !this.humanInTheLoop.isEnabled()) {
+      return { approved: true };
+    }
+
+    const detection = this.humanInTheLoop.detectSensitiveOperation(toolName, args);
+
+    if (!detection.shouldBlock) {
+      return { approved: true };
+    }
+
+    const operation = detection.operation!;
+
+    try {
+      const response = await this.humanInTheLoop.requestApproval(
+        operation,
+        `Tool: ${toolName}, Args: ${JSON.stringify(args)}`
+      );
+
+      if (response.approved) {
+        return { approved: true };
+      }
+
+      return {
+        approved: false,
+        reason: response.comment ?? "审批被拒绝",
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      return {
+        approved: false,
+        reason: `审批请求失败: ${message}`,
+      };
     }
   }
 
@@ -1371,7 +1533,12 @@ ${channelCommands}
       const memoryStore = this._getMemoryStore(sessionKey);
       const skillsLoader = this._getSkillsLoader(sessionKey);
 
-      builder = new ContextBuilder(this.workspace, memoryStore, skillsLoader);
+      builder = new ContextBuilder(
+        this.workspace,
+        memoryStore,
+        skillsLoader,
+        this.agentsMdRules
+      );
 
       this._evictIfNeeded();
       this.contextBuilders.set(sessionKey, builder);

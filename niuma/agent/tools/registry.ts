@@ -27,9 +27,16 @@ import {
 } from "./git";
 import { messageTool } from "./message";
 import { pingTool, dnsLookupTool, httpRequestTool } from "./network";
+import { sandboxExecTool } from "./sandbox-exec";
 import { execTool } from "./shell";
 import { spawnTool } from "./spawn";
 import { envGetTool, envSetTool, processListTool, processKillTool } from "./system";
+import {
+  startTaskTool,
+  completeTaskTool,
+  queryTasksTool,
+  getNextTaskTool,
+} from "./task";
 import { webSearchTool, webFetchTool } from "./web";
 
 import type { ITool } from "./base";
@@ -55,6 +62,7 @@ export function registerBuiltinTools(registry: ToolRegistry): void {
 
   // Shell 工具
   registry.register(execTool);
+  registry.register(sandboxExecTool);
 
   // Web 工具
   registry.register(webSearchTool);
@@ -66,6 +74,12 @@ export function registerBuiltinTools(registry: ToolRegistry): void {
   // Agent 工具
   registry.register(cronTool);
   registry.register(spawnTool);
+
+  // 任务追踪工具
+  registry.register(startTaskTool);
+  registry.register(completeTaskTool);
+  registry.register(queryTasksTool);
+  registry.register(getNextTaskTool);
 
   // Git 工具
   registry.register(gitStatusTool);

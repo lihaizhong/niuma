@@ -276,6 +276,120 @@ export const HeartbeatConfigSchema = z.object({
 export type HeartbeatConfig = z.infer<typeof HeartbeatConfigSchema>;
 
 // ============================================
+// Harness 配置 Schema
+// ============================================
+
+/**
+ * 沙箱配置 Schema
+ */
+export const SandboxConfigSchema = z.object({
+  /** 是否启用沙箱 */
+  enabled: z.boolean().default(false),
+  /** Docker 镜像 */
+  image: z.string().default("ubuntu:22.04"),
+  /** CPU 限制 */
+  cpuLimit: z.number().positive().default(1),
+  /** 内存限制 */
+  memoryLimit: z.string().default("512m"),
+  /** 网络隔离 */
+  networkIsolation: z.boolean().default(true),
+  /** 执行超时（毫秒） */
+  timeout: z.number().int().positive().default(60000),
+  /** 连接池大小 */
+  poolSize: z.number().int().positive().default(2),
+  /** Docker Socket 路径 */
+  dockerSocket: z.string().optional(),
+}).default({
+  enabled: false,
+  image: "ubuntu:22.04",
+  cpuLimit: 1,
+  memoryLimit: "512m",
+  networkIsolation: true,
+  timeout: 60000,
+  poolSize: 2,
+});
+
+export type SandboxConfig = z.infer<typeof SandboxConfigSchema>;
+
+/**
+ * 验证配置 Schema
+ */
+export const VerificationConfigSchema = z.object({
+  /** 是否启用验证 */
+  enabled: z.boolean().default(false),
+  /** 最大重试次数 */
+  maxRetries: z.number().int().min(0).default(3),
+  /** 测试命令 */
+  testCommand: z.string().default("npm test"),
+  /** 成功退出码 */
+  successExitCodes: z.array(z.number()).default([0]),
+  /** 超时时间（毫秒） */
+  timeout: z.number().int().positive().default(60000),
+}).default({
+  enabled: false,
+  maxRetries: 3,
+  testCommand: "npm test",
+  successExitCodes: [0],
+  timeout: 60000,
+});
+
+export type VerificationConfig = z.infer<typeof VerificationConfigSchema>;
+
+/**
+ * Human-in-the-Loop 配置 Schema
+ */
+export const HumanInTheLoopConfigSchema = z.object({
+  /** 是否启用 */
+  enabled: z.boolean().default(false),
+  /** 审批超时时间（毫秒） */
+  approvalTimeout: z.number().int().positive().default(300000),
+  /** 自动审批低于此严重性的操作 */
+  autoApproveBelowSeverity: z.enum(["low", "medium", "high", "critical"]).default("low"),
+}).default({
+  enabled: false,
+  approvalTimeout: 300000,
+  autoApproveBelowSeverity: "low",
+});
+
+export type HumanInTheLoopConfig = z.infer<typeof HumanInTheLoopConfigSchema>;
+
+/**
+ * Harness 配置 Schema
+ */
+export const HarnessConfigSchema = z.object({
+  /** 沙箱配置 */
+  sandbox: SandboxConfigSchema,
+  /** 验证配置 */
+  verification: VerificationConfigSchema,
+  /** Human-in-the-Loop 配置 */
+  humanInTheLoop: HumanInTheLoopConfigSchema,
+}).default({
+  sandbox: {
+    enabled: false,
+    image: "ubuntu:22.04",
+    cpuLimit: 1,
+    memoryLimit: "512m",
+    networkIsolation: true,
+    timeout: 60000,
+    poolSize: 2,
+  },
+  verification: {
+    enabled: false,
+    maxRetries: 3,
+    testCommand: "npm test",
+    successExitCodes: [0],
+    timeout: 60000,
+  },
+  humanInTheLoop: {
+    enabled: false,
+    approvalTimeout: 300000,
+    autoApproveBelowSeverity: "low",
+  },
+});
+
+export type HarnessConfig = z.infer<typeof HarnessConfigSchema>;
+
+// ============================================
 // Agent 配置 Schema
 // ============================================
 
@@ -415,6 +529,8 @@ export const NiumaConfigSchema = z.object({
     filePath: "HEARTBEAT.md",
     taskTimeout: 300,
   }),
+  /** Harness 配置 */
+  harness: HarnessConfigSchema,
   /** 调试模式 */
   debug: z.boolean().default(false),
   /** 日志级别 */

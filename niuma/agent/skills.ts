@@ -42,6 +42,8 @@ export interface SkillMetadata {
   name?: string;
   /** 技能描述 */
   description?: string;
+  /** 是否为核心技能（默认加载） */
+  core?: boolean;
   /** 依赖要求 */
   requires?: {
     /** CLI 工具依赖 */
@@ -218,6 +220,51 @@ export class SkillsLoader {
   refresh(): void {
     this.skillsCache = null;
     this._ensureCache();
+  }
+
+  /**
+   * 获取核心技能列表
+   * 核心技能在 Agent 启动时默认加载
+   * @returns 核心技能名称列表
+   */
+  getCoreSkills(): string[] {
+    this._ensureCache();
+
+    const coreSkills: string[] = [];
+    for (const skill of this.skillsCache!.values()) {
+      if (skill.metadata.core === true && skill.available) {
+        coreSkills.push(skill.name);
+      }
+    }
+
+    return coreSkills;
+  }
+
+  /**
+   * 加载核心技能内容
+   * 用于 Agent 启动时的默认技能加载
+   * @returns 核心技能格式化内容
+   */
+  loadCoreSkills(): string {
+    const coreSkillNames = this.getCoreSkills();
+    return this.loadSkillsForContext(coreSkillNames);
+  }
+
+  /**
+   * 检查技能是否已缓存
+   * @param name 技能名称
+   * @returns 是否已缓存
+   */
+  isSkillCached(name: string): boolean {
+    return this.skillsCache?.has(name) ?? false;
+  }
+
+  /**
+   * 获取已缓存的技能数量
+   * @returns 已缓存的技能数量
+   */
+  getCachedCount(): number {
+    return this.skillsCache?.size ?? 0;
   }
 
   // ============================================
