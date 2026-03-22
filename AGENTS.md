@@ -13,13 +13,44 @@
 **积累时机：** 解决问题、学习新知识、发现重要信息时主动提示用户
 
 **利用策略：**
-- 任务启动前：`/openexp [关键词]` 查询相关经验
+- 任务启动前：查询相关经验
 - 遇到问题时：优先使用高影响力解决方案
 - 用户偏好：自动应用已知的工具和编码偏好
-- 反馈机制：`/openexp 这个经验很有效/不管用：[ID]`
-- 维护：每周运行 `python3 scripts/maintain-experience-vault.py`
+- 反馈机制：使用 `feedback` 命令记录效果
+- 维护：定期执行 `snapshot` 创建快照
 
 **查询时机：** 任务启动、问题解决、决策制定、最佳实践询问、代码审查
+
+**OpenExp CLI 使用方式：**
+
+```bash
+# 查找 openexp 脚本
+OPENEXP=$(find . -name "openexp.sh" -path "*/skills/openexp/*" 2>/dev/null | head -1)
+
+# 1. 搜索经验
+$OPENEXP search "关键词"
+
+# 2. 添加经验
+$OPENEXP add preference "用户偏好..."
+$OPENEXP add solution "问题解决方案"
+$OPENEXP add workflow "工作流程"
+
+# 3. 使用后更新
+$OPENEXP bump <经验ID>        # 使用计数 +1
+$OPENEXP feedback <ID> useful  # 标记有用
+$OPENEXP feedback <ID> useless # 标记无用
+
+# 4. 查看状态
+$OPENEXP status
+$OPENEXP list preference        # 列出某类型
+
+# 5. 版本控制
+$OPENEXP snapshot "备份原因"    # 创建快照
+$OPENEXP snapshots             # 列出快照
+$OPENEXP git log               # 查看历史
+
+# 经验库路径：~/Exp Vault（Git 版本控制）
+```
 
 ## 工作流约束
 

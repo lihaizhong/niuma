@@ -15,8 +15,8 @@ license: MIT
 compatibility: iFlow CLI
 metadata:
   author: niuma
-  version: "2.8"
-  tags: [learning, memory, experience, knowledge-base, obsidian]
+  version: "3.0"
+  tags: [learning, memory, experience, knowledge-base]
 ---
 
 # 经验管理技能
@@ -30,7 +30,7 @@ metadata:
 - 表达偏好："我喜欢用 pnpm"、"我习惯使用..."
 - 遇到问题寻求经验："遇到过 CORS 问题吗？有什么经验？"
 - 查找特定经验："搜索关于 TypeScript 的经验"
-- 管理经验："这个经验很有效"、"查看经验索引地图"
+- 管理经验："这个经验很有效"、"查看经验库状态"
 - 显式学习指令："记住这些..."
 
 ## 主动应用经验
@@ -50,20 +50,13 @@ metadata:
 
 **步骤：**
 ```bash
-# 1. 创建经验（OPENEXP_SCRIPTS 已通过自动查找设置）
-$OPENEXP_SCRIPTS/obsidian-cli.sh create Preferences/exp_preference_20260317_001.md '---
-id: exp_preference_20260317_001
-type: preference
-tags: [preference, package-manager]
-created: 2026-03-17T10:00:00+08:00
----
-# 用户偏好：使用 pnpm
+# 1. 查找 openexp CLI
+OPENEXP=$(find . -name "openexp.sh" -path "*/skills/openexp/*" 2>/dev/null | head -1)
 
-用户明确表示喜欢使用 pnpm 而非 npm 作为包管理器。
-在项目中优先使用 pnpm install、pnpm add 等命令。
-'
+# 2. 添加偏好经验
+$OPENEXP add preference "用户明确表示喜欢使用 pnpm 而非 npm 作为包管理器。在项目中优先使用 pnpm install、pnpm add 等命令。"
 
-# 2. 告知用户
+# 3. 告知用户
 "已记录您的偏好到经验库。"
 ```
 
@@ -71,145 +64,168 @@ created: 2026-03-17T10:00:00+08:00
 
 ```bash
 # 搜索相关经验
-$OPENEXP_SCRIPTS/obsidian-cli.sh search "preference"
-$OPENEXP_SCRIPTS/obsidian-cli.sh search "convention"
+$OPENEXP search "preference"
+$OPENEXP search "convention"
 
 # 根据结果应用已知的偏好和约定
 ```
 
 ## 脚本路径自动查找
 
-脚本位置不固定，使用通配符动态查找，支持任意 CLI/IDE 工具：
+脚本位置不固定，使用通配符动态查找：
 
 ```bash
-# 动态查找：匹配所有 */skills/openexp/scripts/obsidian-cli.sh
-OPENEXP_SCRIPTS=$(find . -path "*/skills/openexp/scripts/obsidian-cli.sh" -type f 2>/dev/null | head -1 | xargs dirname 2>/dev/null)
+# 动态查找 openexp.sh
+OPENEXP=$(find . -name "openexp.sh" -path "*/skills/openexp/*" -type f 2>/dev/null | head -1)
 
-# 后续使用 $OPENEXP_SCRIPTS/obsidian-cli.sh 调用
+# 后续使用 $OPENEXP 调用
 ```
 
-**查找范围：**
-- 自动发现所有符合 `*/skills/openexp/scripts/` 结构的目录
-- 支持 `.iflow`、`.claude`、`.cursor`、`.aider`、`.continue`、`.cline`、`.windsurf` 等任意配置目录
-- 无需维护工具列表，新增工具自动兼容
+## 命令参考
 
-## 操作流程
+使用统一的 `openexp` CLI：
 
-1. **查找经验**：执行 `$OPENEXP_SCRIPTS/obsidian-cli.sh search <query>`，返回最相关的经验
-2. **添加经验**：执行 `$OPENEXP_SCRIPTS/obsidian-cli.sh create <path> '<content>'`，告知用户已记录
-3. **更新经验**：执行 `$OPENEXP_SCRIPTS/obsidian-cli.sh update <path> frontmatter-edit usage_count <n>`
-4. **维护经验库**：执行 `python3 $OPENEXP_SCRIPTS/maintain-experience-vault.py`（建议每周）
-
-## 常用命令
-
-| 命令 | 用途 | 示例 |
+| 命令 | 说明 | 示例 |
 |------|------|------|
-| `search <query>` | 搜索经验 | `search CORS` |
-| `create <path> <content>` | 创建经验 | `create Preferences/test.md '内容'` |
-| `update <path> frontmatter-edit <key> <value>` | 更新字段 | `update test.md frontmatter-edit usage_count 10` |
-| `read <path>` | 读取经验 | `read Preferences/test.md` |
-
-> 详细命令参考：见 reference/commands.md
-
-## 文件规范
+| `search <query>` | 搜索经验 | `search pnpm` |
+| `add <type> <content>` | 添加经验 | `add preference "内容"` |
+| `bump <id>` | 使用计数 +1 | `bump exp_preference_xxx` |
+| `feedback <id> <vote>` | 反馈 | `feedback exp_xxx useful` |
+| `get <id>` | 获取详情 | `get exp_xxx` |
+| `update <id> <content>` | 更新内容 | `update exp_xxx "新内容"` |
+| `status` | 查看状态 | `status` |
+| `list [type]` | 列出经验 | `list preference` |
+| `snapshot [msg]` | 创建快照 | `snapshot "备份"` |
+| `snapshots` | 列出快照 | `snapshots` |
 
 ### 经验类型
 
-| 类型 | 说明 | 目录 | 模板 |
-|------|------|------|------|
-| `preference` | 用户偏好、设置和习惯 | Preferences/ | `preference-template.md` |
-| `workflow` | 固定的操作步骤和流程 | Workflows/ | `workflow-template.md` |
-| `solution` | 问题和解决方案 | Solutions/ | `solution-template.md` |
-| `knowledge` | 技术概念、API、工具等知识 | Knowledge/ | `knowledge-template.md` |
-| `experience` | 完整的问题解决过程 | Experience/ | `experience-template.md` |
-| `convention` | 命名、格式、结构等规则 | Conventions/ | `convention-template.md` |
+| 类型 | 说明 |
+|------|------|
+| `preference` | 用户偏好、设置和习惯 |
+| `workflow` | 固定的操作步骤和流程 |
+| `solution` | 问题和解决方案 |
+| `knowledge` | 技术概念、API、工具等知识 |
+| `experience` | 完整的问题解决过程 |
+| `convention` | 命名、格式、结构等规则 |
 
-**创建经验时**：参考 `templates/` 目录下对应的模板文件，确保格式一致。
+### 完整用法
+
+```bash
+# 搜索
+openexp search "关键词"
+
+# 添加经验
+openexp add preference "用户偏好：使用 pnpm"
+openexp add solution "CORS 问题解决方案"
+openexp add workflow "部署流程"
+
+# 使用后更新计数
+openexp bump exp_preference_xxx
+
+# 用户反馈
+openexp feedback exp_solution_xxx useful
+openexp feedback exp_xxx useless
+
+# 获取详情
+openexp get exp_xxx
+
+# 更新内容
+openexp update exp_xxx "更新后的内容"
+
+# 查看状态
+openexp status
+
+# 列出经验
+openexp list                    # 列出所有
+openexp list preference          # 只列出偏好
+
+# Git 版本控制
+openexp snapshot "添加新经验"     # 创建快照
+openexp snapshots                # 列出快照
+openexp git log                 # 查看历史
+
+# 直接 git 操作
+openexp git branch experiment_xxx
+openexp git checkout experiment_xxx
+openexp git merge experiment_xxx
+```
+
+## 操作流程
+
+1. **任务开始**：执行 `openexp search <关键词>`，加载相关经验
+2. **记录新经验**：执行 `openexp add <类型> <内容>`
+3. **使用后**：执行 `openexp bump <id>` 增加使用计数
+4. **用户反馈**：执行 `openexp feedback <id> useful/useless`
+5. **定期维护**：执行 `openexp snapshot "备份"` 创建快照
+
+## 文件规范
 
 ### 文件命名
 
-**格式：** `exp_<type>_<YYYYMMDD_HHMMSS>_<seq>.md`
+**格式：** `exp_<type>_<YYYYMMDD>_<HHMMSS>_<seq>.md`
 
-**示例：**
-- ✅ 正确：`exp_preference_20260311_130245_001.md`
-- ❌ 错误：`my-preference.md`（不符合命名格式）
-
-### Frontmatter 必填字段
+### Frontmatter 结构
 
 ```yaml
 ---
-id: exp_preference_20260311_001
+id: exp_preference_20260322_143052_001
 type: preference
-tags: [preference, package-manager]
-created: 2026-03-11T13:02:45+08:00
+tags: []
+created: 2026-03-22T14:30:52+08:00
+updated: 2026-03-22T14:30:52+08:00
+usage_count: 0
+confidence: 0.8
+impact_score: 0
 ---
 ```
 
-**必填字段：**
-- `id` - 必须与文件名一致
-- `type` - 经验类型
-- `tags` - 标签列表
-- `created` - 创建时间
+### 字段说明
 
-> 其他字段（confidence, usage_count, impact_score 等）由维护脚本自动计算，无需手动填写。
+| 字段 | 说明 | 自动更新 |
+|------|------|----------|
+| `id` | 唯一标识 | 创建时生成 |
+| `type` | 经验类型 | 创建时指定 |
+| `tags` | 标签 | 手动维护 |
+| `usage_count` | 使用次数 | `bump` 命令更新 |
+| `confidence` | 置信度 | `feedback` 命令更新 |
+| `impact_score` | 影响力 | 定期计算 |
 
 ## 核心原则
 
 ### 通过 CLI 操作
-所有经验库操作必须通过 `obsidian-cli.sh` 完成。原因：
-- **可追溯**：操作被正确记录，支持变更历史
-- **格式一致**：自动填充 frontmatter，避免人为错误
-- **简洁高效**：本地应用访问速度快，无需复杂的重试机制
+所有经验库操作必须通过 `openexp` CLI 完成：
+- **可追溯**：操作记录在 Git 历史中
+- **格式一致**：自动填充 frontmatter
+- **确定性**：机器可读的输出格式
+
+### Git 版本控制
+每个经验库都是一个 Git 仓库：
+- `snapshot` 命令创建带标签的快照
+- 支持分支进行实验性操作
+- 可随时回滚到任意快照
 
 ### 敏感信息保护
-不要记录密码、API 密钥、token 等敏感信息。原因：经验库以明文存储，不适合保存机密数据。
+不要记录密码、API 密钥、token 等敏感信息。
 
 ### 质量优先于数量
-只记录与实际任务相关的经验。原因：过度泛化或无实际价值的经验会降低整个经验库的实用性和检索效率。
-
-### 经验捕获时机
-主动捕获经验的时机：
-- 用户明确表达偏好（"我喜欢..."、"不要用..."）
-- 重复出现的模式（相同问题多次出现）
-- 成功或失败的问题解决（失败经验同样有价值）
-- 显式学习指令（"记住这些..."）
-
-## 错误恢复
-
-当 Obsidian CLI 不可用或操作失败时：
-
-1. **告知用户**：说明 CLI 暂不可用及原因
-2. **临时存储**：在内存中记录经验内容，告知用户"将在下次可用时同步"
-3. **检查修复**：
-   ```bash
-   $OPENEXP_SCRIPTS/obsidian-cli.sh check
-   ```
-4. **绕过 CLI**：仅在用户明确要求时，可直接操作 `~/Exp Vault` 目录
-
-## 错误处理
-
-当 CLI 操作失败时：
-
-1. 向用户报告具体错误信息
-2. 检查 obsidian CLI 是否正确安装：
-   ```bash
-   $OPENEXP_SCRIPTS/obsidian-cli.sh check
-   ```
-3. 如果 CLI 不可用，告知用户并建议检查 Obsidian 设置
-4. **不要尝试绕过 CLI 直接操作文件**
-
-## 数据存储
-
-**Vault 路径：** `~/Exp Vault`（包含 Preferences/, Workflows/, Solutions/, Knowledge/, Experience/, Conventions/）
+只记录与实际任务相关的经验。
 
 ## 影响力计算
 
-**公式：** `impact_score = usage_count × 5 + confidence × 50 + backlinks × 10 + referenced_weight`
+**公式：** `impact_score = usage_count × 5 + confidence × 50`
 
 > 详细说明：见 reference/impact-calculation.md
 
 ## 注意事项
 
-1. **运行维护脚本前建议备份 Vault 目录**
-2. **确保已安装 Python 3.9+ 和依赖库（pyyaml）**
-3. **新经验有 30 天保护期，不会被识别为低影响力**
+1. **新经验有 30 天保护期**，不会被识别为低影响力
+2. **定期执行 `openexp snapshot`** 保存快照
+3. **Vault 路径**：可通过 `OPENEXP_VAULT` 环境变量自定义
+
+## 环境变量
+
+| 变量 | 默认值 | 说明 |
+|------|--------|------|
+| `OPENEXP_VAULT` | `~/Exp Vault` | Vault 路径 |
+| `OPENEXP_SILENT` | `false` | 静默模式 |
