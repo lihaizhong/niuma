@@ -21,8 +21,8 @@ import fs from "fs-extra";
 import { createLogger } from "../log";
 
 import { type MemoryStore } from "./memory";
-import { type SkillsLoader } from "./skills";
 import { type AgentsMdRules } from "./rules";
+import { type SkillsLoader } from "./skills";
 
 import type { ChatMessage, MessageContentPart } from "../types";
 import type { MediaContent } from "../types/message";

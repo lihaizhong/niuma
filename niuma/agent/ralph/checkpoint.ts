@@ -5,8 +5,11 @@
  */
 
 import { join } from "path";
+
 import fs from "fs-extra";
+
 import { createLogger } from "../../log";
+
 import type { GoalState, RalphLoopState } from "./types";
 
 const logger = createLogger("ralph-checkpoint");

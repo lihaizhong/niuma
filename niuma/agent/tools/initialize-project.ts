@@ -4,9 +4,10 @@
  * 提供项目初始化功能
  */
 
+import { nanoid } from "nanoid";
+
 import { createLogger } from "../../log";
 import { Initializer } from "../init-exec/initializer";
-import { nanoid } from "nanoid";
 
 const logger = createLogger("tool:initialize-project");
 

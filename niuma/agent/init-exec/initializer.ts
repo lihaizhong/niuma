@@ -5,10 +5,14 @@
  */
 
 import { join } from "path";
+
 import fs from "fs-extra";
+
 import { createLogger } from "../../log";
-import type { InitializerConfig } from "./types";
+
 import { DEFAULT_INITIALIZER_CONFIG } from "./types";
+
+import type { InitializerConfig } from "./types";
 
 const logger = createLogger("initializer");
 

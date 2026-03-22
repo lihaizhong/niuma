@@ -285,6 +285,8 @@ export type HeartbeatConfig = z.infer<typeof HeartbeatConfigSchema>;
 export const SandboxConfigSchema = z.object({
   /** 是否启用沙箱 */
   enabled: z.boolean().default(false),
+  /** Provider 类型 */
+  provider: z.enum(["docker", "noop"]).default("docker"),
   /** Docker 镜像 */
   image: z.string().default("ubuntu:22.04"),
   /** CPU 限制 */
@@ -301,6 +303,7 @@ export const SandboxConfigSchema = z.object({
   dockerSocket: z.string().optional(),
 }).default({
   enabled: false,
+  provider: "docker",
   image: "ubuntu:22.04",
   cpuLimit: 1,
   memoryLimit: "512m",
@@ -366,6 +369,7 @@ export const HarnessConfigSchema = z.object({
 }).default({
   sandbox: {
     enabled: false,
+    provider: "docker",
     image: "ubuntu:22.04",
     cpuLimit: 1,
     memoryLimit: "512m",

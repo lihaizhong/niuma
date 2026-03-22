@@ -8,6 +8,8 @@ export interface SandboxConfig {
   memoryLimit?: string;
   networkIsolation: boolean;
   timeout: number;
+  dockerSocket?: string;
+  poolSize?: number;
 }
 
 export interface ResourceLimits {

@@ -2,6 +2,7 @@
  * 沙箱管理器 - 核心管理类
  *
  * 管理 Docker 容器生命周期，提供沙箱执行能力
+ * 支持 Provider 插件架构
  *
  * @see 参考 Claude Code Harness 设计
  */
@@ -11,13 +12,17 @@ import { nanoid } from "nanoid";
 
 import { createLogger } from "../../log";
 
+
 import { SandboxContainer } from "./container";
 import { ToolInterceptor } from "./interceptor";
+import { DockerSandboxProvider } from "./providers/docker";
+import { NoopSandboxProvider } from "./providers/noop";
 import {
   DEFAULT_RESOURCE_LIMITS,
   DEFAULT_SANDBOX_CONFIG,
 } from "./types";
 
+import type { SandboxProvider } from "./providers/base";
 import type {
   ContainerInfo,
   ExecutionOptions,
@@ -34,6 +39,7 @@ export interface SandboxManagerOptions {
   limits?: Partial<ResourceLimits>;
   poolSize?: number;
   dockerSocket?: string;
+  provider?: "docker" | "noop";
 }
 
 export class SandboxManager {
@@ -46,6 +52,43 @@ export class SandboxManager {
   private workspace: string;
   private interceptor: ToolInterceptor;
   private initialized = false;
+  private provider: SandboxProvider | null = null;
+
+  static async create(
+    workspace: string,
+    options: SandboxManagerOptions = {}
+  ): Promise<SandboxManager> {
+    const manager = new SandboxManager(workspace, options);
+
+    const config = {
+      ...DEFAULT_SANDBOX_CONFIG,
+      ...options.config,
+      dockerSocket: options.dockerSocket,
+      poolSize: options.poolSize,
+    } as SandboxConfig;
+
+    if (options.provider === "noop") {
+      manager.provider = NoopSandboxProvider.create(config);
+    } else if (options.provider === "docker") {
+      manager.provider = DockerSandboxProvider.create(config);
+    } else {
+      manager.provider = DockerSandboxProvider.create(config);
+      if (manager.provider) {
+        const available = await manager.provider.isAvailable();
+        if (!available) {
+          await manager.provider.shutdown();
+          manager.provider = NoopSandboxProvider.create(config);
+        }
+      }
+    }
+
+    if (!manager.provider) {
+      logger.warn("无可用 Provider，使用空实现");
+      manager.provider = NoopSandboxProvider.create(config);
+    }
+
+    return manager;
+  }
 
   constructor(workspace: string, options: SandboxManagerOptions = {}) {
     this.workspace = workspace;
@@ -99,6 +142,10 @@ export class SandboxManager {
   }
 
   async execute(options: ExecutionOptions): Promise<ExecutionResult> {
+    if (this.provider) {
+      return this.provider.execute(options);
+    }
+
     if (!this.initialized) {
       await this.initialize();
     }
@@ -174,6 +221,11 @@ export class SandboxManager {
   async shutdown(): Promise<void> {
     logger.info("开始关闭沙箱管理器");
 
+    if (this.provider) {
+      await this.provider.shutdown();
+      this.provider = null;
+    }
+
     for (const container of this.pool) {
       await container.stop();
       await container.remove();
@@ -196,6 +248,10 @@ export class SandboxManager {
 
   isInitialized(): boolean {
     return this.initialized;
+  }
+
+  getProvider(): SandboxProvider | null {
+    return this.provider;
   }
 
   async healthCheck(): Promise<{ healthy: boolean; message: string }> {

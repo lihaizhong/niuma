@@ -49,6 +49,7 @@ describe("配置合并器", () => {
       harness: {
         sandbox: {
           enabled: false,
+          provider: "docker",
           image: "ubuntu:22.04",
           cpuLimit: 1,
           memoryLimit: "512m",

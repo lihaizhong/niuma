@@ -5,8 +5,10 @@
  */
 
 import { createLogger } from "../../log";
-import { Initializer } from "./initializer";
+
 import { Executor } from "./executor";
+import { Initializer } from "./initializer";
+
 import type { InitializerConfig, ExecutorConfig, ExecutionMode, ExecutionResult } from "./types";
 
 const logger = createLogger("init-exec");

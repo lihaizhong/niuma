@@ -4,9 +4,10 @@
  * 提供任务执行功能
  */
 
+import { nanoid } from "nanoid";
+
 import { createLogger } from "../../log";
 import { TaskTracker } from "../task-tracker";
-import { nanoid } from "nanoid";
 
 const logger = createLogger("tool:execute-task");
 

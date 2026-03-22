@@ -5,17 +5,22 @@
  */
 
 import { join } from "path";
+
 import fs from "fs-extra";
-import { createLogger } from "../../log";
 import { nanoid } from "nanoid";
+
+import { createLogger } from "../../log";
+
+
+import { HistoryCompressor } from "./history";
+import { OutputOffloader } from "./offload";
+import { DEFAULT_COMPACTION_CONFIG } from "./types";
+
 import type {
   CompactionConfig,
   CompactionResult,
   OffloadConfig,
 } from "./types";
-import { DEFAULT_COMPACTION_CONFIG } from "./types";
-import { HistoryCompressor } from "./history";
-import { OutputOffloader } from "./offload";
 
 const logger = createLogger("context-compaction");
 

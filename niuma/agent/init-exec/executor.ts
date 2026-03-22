@@ -5,13 +5,17 @@
  */
 
 import { join } from "path";
+
 import fs from "fs-extra";
+
 import { createLogger } from "../../log";
-import type { ExecutorConfig, TaskContext, ExecutionResult } from "./types";
-import { DEFAULT_EXECUTOR_CONFIG } from "./types";
-import { TaskTracker } from "../task-tracker";
 import { RalphLoops } from "../ralph";
+import { TaskTracker } from "../task-tracker";
 import { SelfVerification } from "../verification";
+
+import { DEFAULT_EXECUTOR_CONFIG } from "./types";
+
+import type { ExecutorConfig, TaskContext, ExecutionResult } from "./types";
 
 const logger = createLogger("executor");
 

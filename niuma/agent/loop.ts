@@ -11,8 +11,9 @@
  * @see 参考 nanobot: https://github.com/HKUDS/nanobot/blob/main/nanobot/agent/loop.py
  */
 
-import RE2 from "re2";
 import { join } from "path";
+
+import RE2 from "re2";
 
 import { AsyncQueue } from "../bus/queue";
 import { BaseChannel } from "../channels/base";
@@ -21,14 +22,14 @@ import { HeartbeatService } from "../heartbeat/service";
 import { createLogger } from "../log";
 import { retryWithBackoff } from "../utils/retry";
 
+import { HumanInTheLoop } from "./approval";
+import { ContextCompaction } from "./compaction";
 import { ContextBuilder } from "./context";
 import { MemoryStore } from "./memory";
+import { RalphLoops } from "./ralph";
+import { AgentsMdRules } from "./rules";
 import { SkillsLoader } from "./skills";
 import { SelfVerification } from "./verification";
-import { HumanInTheLoop } from "./approval";
-import { AgentsMdRules } from "./rules";
-import { RalphLoops } from "./ralph";
-import { ContextCompaction } from "./compaction";
 
 import type { EventBus } from "../bus/events";
 import type { ConfigManager } from "../config/manager";

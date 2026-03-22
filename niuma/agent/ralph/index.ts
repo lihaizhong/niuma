@@ -5,9 +5,11 @@
  */
 
 import { createLogger } from "../../log";
-import type { RalphLoopConfig, GoalState, RalphLoopState } from "./types";
-import { DEFAULT_RALPH_CONFIG } from "./types";
+
 import { CheckpointManager } from "./checkpoint";
+import { DEFAULT_RALPH_CONFIG } from "./types";
+
+import type { RalphLoopConfig, GoalState, RalphLoopState } from "./types";
 
 const logger = createLogger("ralph-loop");
 
