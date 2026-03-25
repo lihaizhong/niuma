@@ -1,5 +1,7 @@
 import { readFileSync, existsSync } from "fs";
+
 import { DeepAgentConfigSchema } from "./schema";
+
 import type { DeepAgentConfig } from "./schema";
 
 export class ConfigManager {

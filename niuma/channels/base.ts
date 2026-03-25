@@ -1,5 +1,6 @@
-import type { Channel } from "./types";
 import EventEmitter from "events";
+
+import type { Channel } from "./types";
 
 export abstract class BaseChannel extends EventEmitter implements Channel {
   abstract name: string;

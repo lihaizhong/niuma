@@ -1,7 +1,8 @@
 import { describe, it, expect, vi } from "vitest";
+
 import { createAgent } from "../core/agent";
-import { ToolRegistry } from "../tools/registry";
 import { ProviderRegistry } from "../providers/registry";
+import { ToolRegistry } from "../tools/registry";
 
 describe("E2E: Agent 完整功能测试", () => {
   describe("多 Provider 支持", () => {

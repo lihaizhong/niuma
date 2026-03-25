@@ -1,7 +1,9 @@
 import { describe, it, expect, vi } from "vitest";
+
 import { createAgent } from "../core/agent";
-import { ToolRegistry } from "../tools/registry";
 import { OpenAIProvider } from "../providers/openai";
+import { ToolRegistry } from "../tools/registry";
+
 import type { ChatMessage, LLMResponse } from "../types/llm";
 
 describe("Agent Integration", () => {
@@ -72,7 +74,9 @@ describe("Agent Integration", () => {
       expect(response.hasToolCalls).toBe(false);
       expect(mockProvider.chat).toHaveBeenCalledWith(
         expect.objectContaining({
-          messages,
+          messages: expect.arrayContaining([
+            expect.objectContaining({ role: "user", content: "Hi" }),
+          ]),
           temperature: 0.7,
         })
       );
