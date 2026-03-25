@@ -1,6 +1,8 @@
-import { z } from "zod";
-import type { ToolSpec } from "./types";
 import { spawn } from "child_process";
+
+import { z } from "zod";
+
+import type { ToolSpec } from "./types";
 
 export const shellTool: ToolSpec<{ command: string; timeout?: number }> = {
   name: "shell",

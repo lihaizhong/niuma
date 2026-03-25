@@ -1,4 +1,5 @@
 import type { ToolSpec, ToolContext } from "./types";
+import type { ToolDefinition } from "../types/tool";
 
 export class ToolRegistry {
   private tools = new Map<string, ToolSpec<unknown>>();
@@ -18,5 +19,13 @@ export class ToolRegistry {
 
   list(): string[] {
     return Array.from(this.tools.keys());
+  }
+
+  getDefinitions(): ToolDefinition[] {
+    return Array.from(this.tools.values()).map((tool) => ({
+      name: tool.name,
+      description: tool.description,
+      parameters: tool.parameters,
+    }));
   }
 }

@@ -1,5 +1,3 @@
-import type { ToolSpec } from "./types";
-
 export { readFileTool, writeFileTool, listDirectoryTool } from "./filesystem";
 export { shellTool } from "./shell";
 export { webSearchTool, webFetchTool } from "./web";

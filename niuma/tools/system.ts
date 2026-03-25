@@ -1,4 +1,5 @@
 import { z } from "zod";
+
 import type { ToolSpec } from "./types";
 
 export const getEnvTool: ToolSpec<{ name: string }> = {
