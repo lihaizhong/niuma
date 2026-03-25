@@ -1,6 +1,30 @@
 # Niuma（牛马）- 智能生活助手
 
 > 🐄 打造属于你的企业级 AI 团队，每个角色独立工作，完全隔离
+> 
+> 🎉 **V3.0 重大更新**：使用 DeepAgent 模式重写，代码量减少 94%！
+
+## 🆕 V3.0 DeepAgent 架构
+
+```typescript
+// 简洁的新 API
+import { createAgent, OpenAIProvider, ToolRegistry } from "niuma";
+
+const agent = createAgent({
+  provider: new OpenAIProvider({ model: "gpt-4o" }),
+  tools: new ToolRegistry(),
+  maxIterations: 40,
+});
+
+const response = await agent.chat(messages);
+```
+
+**架构改进：**
+- ✅ 代码量减少 94%（34,036 → 2,069 行）
+- ✅ 纯函数设计，更易测试
+- ✅ 依赖注入，无全局状态
+- ✅ 组合优于继承
+- ✅ 单文件最大 97 行（原 1,605 行）
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9.3-blue.svg)](https://www.typescriptlang.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-%3E%3D22.0.0-green.svg)](https://nodejs.org/)

@@ -3,6 +3,7 @@
  */
 
 import type { ToolCall, ToolDefinition } from "./tool";
+export type { ToolCall, ToolDefinition };
 
 /**
  * LLM 使用统计

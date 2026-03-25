@@ -60,6 +60,7 @@
     "deepmerge": "^4.3.1",
     "dingtalk-sdk": "^0.1.4",
     "discord.js": "^14.18.0",
+    "dockerode": "^4.0.10",
     "dotenv": "^17.3.1",
     "fast-clean": "^1.5.3",
     "fast-glob": "^3.3.3",
@@ -89,6 +90,7 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/deepmerge": "^2.2.3",
+    "@types/dockerode": "^3.3.47",
     "@types/fs-extra": "^11.0.4",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^25.5.0",

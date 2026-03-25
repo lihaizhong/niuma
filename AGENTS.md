@@ -1,145 +1,155 @@
 # Niuma（牛马）- AI 助手行为指南
 
-## 项目概述
+**Generated:** 2026-03-24T08:02:05Z  
+**Commit:** e8ed60c  
+**Branch:** refactor-of-deepagent
 
-企业级多角色 AI 助手系统，支持独立配置、工作区、会话和记忆。
+## OVERVIEW
 
-**技术栈、架构、开发规范详见 `openspec/config.yaml`**
+Niuma（牛马）- 企业级多角色 AI 助手 CLI 工具，TypeScript + Node.js 构建。支持创建多个完全独立的 AI 角色，每个角色拥有独立的配置、工作区、会话和记忆。
 
-## 行为指导
+**Inspiration:** [nanobot](https://github.com/HKUDS/nanobot)  
+**Tech Stack:** TypeScript 5.9+, Node.js >=22, LangChain, Zod, Vitest
 
-### 经验管理
+## STRUCTURE
 
-**积累时机：** 解决问题、学习新知识、发现重要信息时主动提示用户
-
-**利用策略：**
-- 任务启动前：`/openexp [关键词]` 查询相关经验
-- 遇到问题时：优先使用高影响力解决方案
-- 用户偏好：自动应用已知的工具和编码偏好
-- 反馈机制：`/openexp 这个经验很有效/不管用：[ID]`
-- 维护：每周运行 `python3 scripts/maintain-experience-vault.py`
-
-**查询时机：** 任务启动、问题解决、决策制定、最佳实践询问、代码审查
-
-## 工作流约束
-
-### 1. fullstack skill 使用策略
-
-**适用场景（复杂任务）：**
-- API 设计和文档生成（5+ 端点）
-- 复杂架构设计（多模块、微服务）
-- 多组件集成（前后端协作）
-- 需要标准化输出
-
-**触发方式：** `/opsx:apply` 或 `/opsx:propose`
-
-**不适用场景（简单任务）：**
-- 简单代码审查（< 100 行）
-- 小型功能开发（< 200 行）
-- 快速原型验证
-- 简单 Bug 修复（< 50 行或单文件修改）
-
-**复杂 Bug 修复（> 50 行或多文件）仍适合使用此技能，但可跳过 Red 阶段。**
-
-**直接使用 subagent：**
-- 代码审查 → `code-reviewer`
-- 简单开发 → `general-purpose`
-
-### 2. OpenSpec CLI 强制要求
-
-- 禁止手动文件操作 `openspec/` 目录
-- 必须使用 `openspec` 命令完成相关操作
-- 严禁修改 `.iflow/` 目录（除非用户明确说明）
-- **归档保护：** `openspec/changes/archive/` 不可修改
-- **配置读取：** 创建或修改 OpenSpec artifacts（proposal/spec/design/tasks）时，必须先读取 `openspec/config.yaml` 获取项目上下文和格式规则
-
-### 3. Subagent 优先使用原则
-
-**强制要求：** 在执行任何任务前，必须先查找并使用适配的 subagent
-
-**查找流程：**
-1. 分析任务类型和需求
-2. 查找 `Subagent 优先级` 表中的匹配项
-3. 如果找到匹配的 subagent，优先使用 `task` 工具调用
-4. 如果没有匹配项，使用 `general-purpose` 或自行处理
-
-**适用场景：**
-- 所有开发任务（代码编写、重构、优化）
-- 代码审查和质量检查
-- 测试和验证
-- 文档生成
-- 搜索和研究
-
-**例外情况：**
-- 简单的文件读写操作（使用 `read_file`、`write_file` 工具）
-- 命令执行（使用 `run_shell_command` 工具）
-- 纯信息查询（使用 `read_file`、`glob`、`search_file_content` 工具）
-
-### 4. Subagent 优先级
-
-| 任务类型 | Subagent | 说明 |
-|---------|----------|------|
-| **TDD 规格** | `spec-writer` | 编写测试规格（Red 阶段） |
-| **TDD 测试** | `tester` | 实现测试用例（Red 阶段） |
-| 规划分析 | `plan-agent` | 详细规划实现步骤 |
-| 代码探索 | `explore-agent` | 理解代码库结构 |
-| 代码审查 | `code-reviewer` | 质量和安全检查 |
-| 前端测试 | `frontend-tester` | UI/UX 验证 |
-| 深度研究 | `search-specialist` | 信息搜集和分析 |
-| 复杂任务 | `general-purpose` | 多步骤任务 |
-| 翻译任务 | `translate` | 多语言翻译 |
-| 教程生成 | `tutorial-engineer` | 教程和文档 |
-| 代码解释 | `code-explainer` | 代码分析解释 |
-| 知识检索 | `librarian` | 外部知识查找 |
-
-### 5. TDD 工作流
-
-**核心原则：** 测试先行，Red → Green → Refactor 循环
-
-**角色协作：**
 ```
-spec-writer (测试规格) → tester (测试用例) → developer (实现) → code-reviewer (审查)
+.
+├── niuma/                    # 主源代码（~88k LOC）
+│   ├── agent/               #   Agent 核心模块（loop, context, memory, skills, tools, subagent）
+│   ├── bus/                 #   事件总线
+│   ├── channels/            #   多渠道集成（CLI, Discord, 飞书, Email, QQ）
+│   ├── cli/                 #   CLI 入口
+│   ├── config/              #   配置管理
+│   ├── heartbeat/           #   心跳服务
+│   ├── providers/           #   LLM 提供商抽象
+│   ├── session/             #   会话管理
+│   ├── types/               #   类型定义
+│   └── utils/               #   工具函数
+├── openspec/                # OpenSpec 规格驱动开发
+├── docs/                    # 文档
+├── dist/                    # 构建输出
+├── __tests__/              # 测试（Vitest）
+└── AGENTS.md               # 本项目上下文
 ```
 
-**三阶段验证：**
-| 阶段 | 角色 | 状态 | 验证 |
-|------|------|------|------|
-| Red | spec-writer → tester | 测试失败 | ✗ 功能未实现 |
-| Green | developer | 测试通过 | ✓ 最小实现 |
-| Refactor | developer | 测试通过 | ✓ 代码优化 |
+## WHERE TO LOOK
 
-**强制约束：**
-- 禁止跳过 Red 阶段（新功能开发）
-- 测试任务必须在实现任务之前
-- 重构后测试必须仍然通过
+| Task | Location | Notes |
+|------|----------|-------|
+| Agent Loop | `niuma/agent/loop.ts` | LLM ↔ Tool 循环 |
+| Context | `niuma/agent/context.ts` | 上下文构建器 |
+| Memory | `niuma/agent/memory.ts` | 双层记忆系统 |
+| Tools | `niuma/agent/tools/*.ts` | 30+ 内置工具 |
+| Subagent | `niuma/agent/subagent/` | 子 Agent 管理 |
+| Channels | `niuma/channels/` | 多渠道接入 |
+| Providers | `niuma/providers/` | OpenAI, Anthropic, DeepSeek 等 |
+| Config | `niuma/config/` | JSON5 + 环境变量 |
+| Skills | `niuma/agent/skills.ts` | 动态 SKILL.md 加载 |
 
-**灵活应用：**
-- 复杂 Bug 修复：可跳过 Red，直接修复后写回归测试
-- 简单 Bug 修复（< 50 行）：直接修复即可
+## CODE MAP
 
-### 6. OpenSpec Command 与 Skill 对应关系
+| Symbol | Type | Location | Role |
+|--------|------|----------|------|
+| AgentLoop | class | `agent/loop.ts` | 核心循环 |
+| ContextBuilder | class | `agent/context.ts` | 上下文构建 |
+| MemoryManager | class | `agent/memory.ts` | 记忆管理 |
+| ToolRegistry | class | `agent/tools/*.ts` | 工具注册表 |
+| SubagentManager | class | `agent/subagent/` | 子 Agent |
+| ChannelRegistry | class | `channels/registry.ts` | 渠道注册 |
+| ConfigManager | class | `config/` | 配置管理 |
 
-| Command | Skill | 用途 |
-|---------|-------|------|
-| `/opsx:explore` | openspec-explore | 探索需求、澄清问题 |
-| `/opsx:propose` | openspec-propose | 创建变更提案（proposal + design + specs + tasks） |
-| `/opsx:apply` | openspec-apply-change | 实施变更任务 |
-| `/opsx:archive` | openspec-archive-change | 归档已完成的变更 |
-| `/openexp` | openexp | 经验管理（查询/保存/反馈） |
+## CONVENTIONS
 
-**工作流顺序：** `/opsx:explore` → `/opsx:propose` → `/opsx:apply` → `/opsx:archive`
+### Code Style
+- **ES Modules** only (`"type": "module"`)
+- **TypeScript** strict mode, ES2022
+- **Comments:** Chinese | **Identifiers:** English
+- **Async/await** over Promise chains
+- Prefer **composition** over inheritance
 
-**使用建议：**
-- 新功能开发：先 explore 再 propose
-- 快速提案：直接使用 `/opsx:propose`
-- 经验积累：任务完成后使用 `/openexp` 保存关键经验
+### Tool Pattern (from nanobot)
+- Abstract `BaseTool` class
+- `ToolRegistry` for registration
+- Two-step: spec registration → config field
 
-## 相关资源
+### Configuration
+- **JSON5** format with `${VAR}` interpolation
+- Support `${VAR:default}` syntax
+- Priority: CLI > agent > global > env > default
 
-- [变更日志](CHANGELOG.md)
-- [开发计划](docs/niuma-development-plan.md)
-- [nanobot 参考](https://github.com/HKUDS/nanobot)
+### Commit Style
+```
+feat: new feature
+fix: bug fix
+refactor: restructuring
+docs: documentation
+test: tests
+chore: maintenance
+```
+
+## ANTI-PATTERNS
+
+| Pattern | Status | Rule |
+|---------|--------|------|
+| 手动操作 openspec/ 目录 | 🚫 FORBIDDEN | 必须使用 `openspec` CLI 命令 |
+| 修改 .iflow/ 目录 | 🚫 FORBIDDEN | 除非用户明确要求 |
+| 跳过 Red 阶段（新功能） | 🚫 FORBIDDEN | TDD 强制要求 |
+| 单文件/简单任务使用 fullstack skill | ⚠️ WARNING | 适合 <50 行的直接修复 |
+| 遗漏子 Agent 检查 | ⚠️ WARNING | 必须检查 Subagent 优先级表 |
+
+## UNIQUE STYLES
+
+### OpenSpec Workflow
+- `/opsx:explore` → `/opsx:propose` → `/opsx:apply` → `/opsx:archive`
+- 禁止手动 mv/cp openspec 文件
+
+### Multi-role Isolation
+每个 Agent 完全隔离：`~/.niuma/agents/<id>/`
+- workspace/memory/ - MEMORY.md + HISTORY.md
+- skills/ - 自定义 SKILL.md
+
+### Skill System
+动态加载：`SKILL.md` 定义功能、场景、示例
+位置：`~/.niuma/agents/<id>/skills/<name>/SKILL.md`
+
+### TDD Roles
+- **spec-writer** - 编写测试规格（Red 阶段）
+- **tester** - 实现测试用例（Red 阶段）
+- **developer** - 实现代码（Green 阶段）
+- **code-reviewer** - 代码审查（Refactor 阶段）
+
+## COMMANDS
+
+```bash
+# Development
+pnpm dev                # tsx 运行
+pnpm build              # tsc + esbuild bundle
+pnpm start              # 运行生产版本
+
+# Quality
+pnpm test               # vitest
+pnpm lint               # eslint
+pnpm type-check         # tsc --noEmit
+
+# OpenSpec
+openspec list           # 查看变更
+openspec status <name>  # 查看状态
+openspec apply <name>   # 实施变更
+openspec archive <name> # 归档变更
+```
+
+## NOTES
+
+- **语言要求:** openspec/specs 中 Requirements 必须用 "SHALL"/"MUST" 关键词（英文）
+- **图表要求:** 必须使用 mermaid 语法
+- **经验管理:** 使用 `OPENEXP=$(find . -name "openexp.sh" -path "*/skills/openexp/*" | head -1)` 查找 CLI
+
+## SUBDIRECTORY KNOWLEDGE BASES
+
+- [agent/](niuma/agent/AGENTS.md) - Agent 核心模块
+- [channels/](niuma/channels/AGENTS.md) - 多渠道集成
 
 ---
 
-> 本文件由 iFlow CLI 维护，用于为 AI 助手提供项目上下文。
+> 完整技术规范详见 `openspec/config.yaml`
