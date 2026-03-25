@@ -1,12 +1,12 @@
 # Niuma（牛马）- AI 助手行为指南
 
-**Generated:** 2026-03-24T08:02:05Z  
-**Commit:** e8ed60c  
-**Branch:** refactor-of-deepagent
+**Generated:** 2026-03-25T03:45:00Z  
+**Commit:** a4411c0  
+**Branch:** main
 
 ## OVERVIEW
 
-Niuma（牛马）- 企业级多角色 AI 助手 CLI 工具，TypeScript + Node.js 构建。支持创建多个完全独立的 AI 角色，每个角色拥有独立的配置、工作区、会话和记忆。
+Niuma（牛马）- 企业级多角色 AI 助手 CLI 工具，TypeScript + Node.js 构建。基于 DeepAgent 模式重写，代码量减少 93%（34,036 → 2,518 行）。
 
 **Inspiration:** [nanobot](https://github.com/HKUDS/nanobot)  
 **Tech Stack:** TypeScript 5.9+, Node.js >=22, LangChain, Zod, Vitest
@@ -14,50 +14,42 @@ Niuma（牛马）- 企业级多角色 AI 助手 CLI 工具，TypeScript + Node.j
 ## STRUCTURE
 
 ```
-.
-├── niuma/                    # 主源代码（~88k LOC）
-│   ├── agent/               #   Agent 核心模块（loop, context, memory, skills, tools, subagent）
-│   ├── bus/                 #   事件总线
-│   ├── channels/            #   多渠道集成（CLI, Discord, 飞书, Email, QQ）
-│   ├── cli/                 #   CLI 入口
-│   ├── config/              #   配置管理
-│   ├── heartbeat/           #   心跳服务
-│   ├── providers/           #   LLM 提供商抽象
-│   ├── session/             #   会话管理
-│   ├── types/               #   类型定义
-│   └── utils/               #   工具函数
-├── openspec/                # OpenSpec 规格驱动开发
-├── docs/                    # 文档
-├── dist/                    # 构建输出
-├── __tests__/              # 测试（Vitest）
-└── AGENTS.md               # 本项目上下文
+niuma/                          # 新 DeepAgent 架构（~2.5k LOC）
+├── index.ts                    # 主入口 - Barrel 导出
+├── core/                       # Agent 核心（loop, types）
+├── providers/                  # LLM 提供商（8 个）
+├── tools/                      # 内置工具（11 个）
+├── types/                      # 统一类型定义
+├── channels/                   # 多渠道接入
+├── config/                     # 配置管理
+└── __tests__/                  # 测试（Vitest）
+
+niuma-backup/                   # 旧架构备份（~88k LOC）
+└── [已归档，不再维护]
 ```
 
 ## WHERE TO LOOK
 
 | Task | Location | Notes |
 |------|----------|-------|
-| Agent Loop | `niuma/agent/loop.ts` | LLM ↔ Tool 循环 |
-| Context | `niuma/agent/context.ts` | 上下文构建器 |
-| Memory | `niuma/agent/memory.ts` | 双层记忆系统 |
-| Tools | `niuma/agent/tools/*.ts` | 30+ 内置工具 |
-| Subagent | `niuma/agent/subagent/` | 子 Agent 管理 |
-| Channels | `niuma/channels/` | 多渠道接入 |
-| Providers | `niuma/providers/` | OpenAI, Anthropic, DeepSeek 等 |
-| Config | `niuma/config/` | JSON5 + 环境变量 |
-| Skills | `niuma/agent/skills.ts` | 动态 SKILL.md 加载 |
+| Agent 创建 | `niuma/core/agent.ts` | `createAgent()` 工厂函数 |
+| Agent 循环 | `niuma/core/loop.ts` | `runLoop()` 核心循环，84 行 |
+| 工具注册 | `niuma/tools/registry.ts` | `ToolRegistry` 类 |
+| 提供商注册 | `niuma/providers/registry.ts` | `ProviderRegistry` 类 |
+| 类型定义 | `niuma/types/*.ts` | 统一导出 |
+| 配置文件 | `niuma/config/manager.ts` | `ConfigManager` 类 |
+| 测试 | `niuma/__tests__/*.ts` | 集成测试 |
 
 ## CODE MAP
 
 | Symbol | Type | Location | Role |
 |--------|------|----------|------|
-| AgentLoop | class | `agent/loop.ts` | 核心循环 |
-| ContextBuilder | class | `agent/context.ts` | 上下文构建 |
-| MemoryManager | class | `agent/memory.ts` | 记忆管理 |
-| ToolRegistry | class | `agent/tools/*.ts` | 工具注册表 |
-| SubagentManager | class | `agent/subagent/` | 子 Agent |
-| ChannelRegistry | class | `channels/registry.ts` | 渠道注册 |
-| ConfigManager | class | `config/` | 配置管理 |
+| createAgent | function | `core/agent.ts` | Agent 工厂 |
+| runLoop | function | `core/loop.ts` | LLM ↔ Tool 循环 |
+| ToolRegistry | class | `tools/registry.ts` | 工具注册表 |
+| ProviderRegistry | class | `providers/registry.ts` | 提供商注册表 |
+| LLMProvider | interface | `providers/base.ts` | 提供商抽象 |
+| ConfigManager | class | `config/manager.ts` | 配置管理 |
 
 ## CONVENTIONS
 
@@ -67,16 +59,22 @@ Niuma（牛马）- 企业级多角色 AI 助手 CLI 工具，TypeScript + Node.j
 - **Comments:** Chinese | **Identifiers:** English
 - **Async/await** over Promise chains
 - Prefer **composition** over inheritance
+- **Type imports** must use `import type` syntax
 
-### Tool Pattern (from nanobot)
-- Abstract `BaseTool` class
-- `ToolRegistry` for registration
-- Two-step: spec registration → config field
+### Import Order
+```typescript
+// 1. Node.js 内置
+import { readFile } from "fs";
 
-### Configuration
-- **JSON5** format with `${VAR}` interpolation
-- Support `${VAR:default}` syntax
-- Priority: CLI > agent > global > env > default
+// 2. 第三方库
+import { z } from "zod";
+
+// 3. 父级相对导入
+import type { LLMProvider } from "../providers/base";
+
+// 4. 同级相对导入
+import { runLoop } from "./loop";
+```
 
 ### Commit Style
 ```
@@ -93,31 +91,32 @@ chore: maintenance
 | Pattern | Status | Rule |
 |---------|--------|------|
 | 手动操作 openspec/ 目录 | 🚫 FORBIDDEN | 必须使用 `openspec` CLI 命令 |
-| 修改 .iflow/ 目录 | 🚫 FORBIDDEN | 除非用户明确要求 |
 | 跳过 Red 阶段（新功能） | 🚫 FORBIDDEN | TDD 强制要求 |
-| 单文件/简单任务使用 fullstack skill | ⚠️ WARNING | 适合 <50 行的直接修复 |
-| 遗漏子 Agent 检查 | ⚠️ WARNING | 必须检查 Subagent 优先级表 |
+| 使用 `as any` | ⚠️ WARNING | 必须添加注释说明原因 |
+| 未使用下划线前缀 | ⚠️ WARNING | 未使用参数必须以 `_` 开头 |
 
 ## UNIQUE STYLES
+
+### DeepAgent 架构
+- **纯函数设计** - `createAgent()`, `runLoop()` 无类继承
+- **依赖注入** - 通过 `AgentContext` 注入依赖
+- **函数式组合** - 无全局状态，易于测试
+
+### Tool Pattern
+```typescript
+export const myTool: ToolSpec<{ param: string }> = {
+  name: "my_tool",
+  description: "Tool description",
+  parameters: z.object({ param: z.string() }),
+  async execute({ param }) {
+    return result;
+  },
+};
+```
 
 ### OpenSpec Workflow
 - `/opsx:explore` → `/opsx:propose` → `/opsx:apply` → `/opsx:archive`
 - 禁止手动 mv/cp openspec 文件
-
-### Multi-role Isolation
-每个 Agent 完全隔离：`~/.niuma/agents/<id>/`
-- workspace/memory/ - MEMORY.md + HISTORY.md
-- skills/ - 自定义 SKILL.md
-
-### Skill System
-动态加载：`SKILL.md` 定义功能、场景、示例
-位置：`~/.niuma/agents/<id>/skills/<name>/SKILL.md`
-
-### TDD Roles
-- **spec-writer** - 编写测试规格（Red 阶段）
-- **tester** - 实现测试用例（Red 阶段）
-- **developer** - 实现代码（Green 阶段）
-- **code-reviewer** - 代码审查（Refactor 阶段）
 
 ## COMMANDS
 
@@ -139,16 +138,18 @@ openspec apply <name>   # 实施变更
 openspec archive <name> # 归档变更
 ```
 
-## NOTES
-
-- **语言要求:** openspec/specs 中 Requirements 必须用 "SHALL"/"MUST" 关键词（英文）
-- **图表要求:** 必须使用 mermaid 语法
-- **经验管理:** 使用 `OPENEXP=$(find . -name "openexp.sh" -path "*/skills/openexp/*" | head -1)` 查找 CLI
-
 ## SUBDIRECTORY KNOWLEDGE BASES
 
-- [agent/](niuma/agent/AGENTS.md) - Agent 核心模块
-- [channels/](niuma/channels/AGENTS.md) - 多渠道集成
+- [core/](niuma/core/AGENTS.md) - Agent 核心模块（DeepAgent 架构）
+- [providers/](niuma/providers/AGENTS.md) - LLM 提供商（8 个实现）
+- [tools/](niuma/tools/AGENTS.md) - 内置工具系统（11 个工具）
+
+## NOTES
+
+- **新架构特点:** 单文件最大 258 行（原 1,605 行），更易维护
+- **测试覆盖:** 32 个测试通过（Vitest）
+- **类型安全:** 0 TypeScript 错误
+- **代码风格:** 0 ESLint 错误（16 个 any 警告在测试中）
 
 ---
 
