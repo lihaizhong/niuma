@@ -2,6 +2,8 @@ import type { LLMProvider, LLMConfig, LLMResponse, ChatOptions, LLMStreamChunk }
 import type { ChatMessage, ToolDefinition, ToolCall, LLMUsage } from "../types/llm";
 
 interface AnthropicConfig extends LLMConfig {
+  model?: string;
+  apiKey?: string;
   apiBase?: string;
 }
 
