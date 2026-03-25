@@ -36,9 +36,17 @@ export default [
       "import-x": importX,
     },
     rules: {
-      // 禁用未使用变量检查（接口定义会有误报）
+      // 未使用变量检查 - 忽略下划线前缀的参数（用于接口/回调）
       "no-unused-vars": "off",
-      "@typescript-eslint/no-unused-vars": "off",
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          "argsIgnorePattern": "^_",
+          "varsIgnorePattern": "^_",
+          "caughtErrorsIgnorePattern": "^_",
+          "destructuredArrayIgnorePattern": "^_"
+        }
+      ],
       "@typescript-eslint/no-explicit-any": "warn",
       "@typescript-eslint/no-floating-promises": "error",
       "@typescript-eslint/no-misused-promises": "warn",
