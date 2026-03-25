@@ -2,13 +2,7 @@
  * Provider 类型定义
  */
 
-import type {
-  LLMConfig,
-  LLMResponse,
-  ChatOptions,
-  LLMStreamChunk,
-  LLMUsage,
-} from "./base";
+
 
 export interface ProviderInfo {
   name: string;

@@ -1,8 +1,7 @@
-import type { LLMProvider, LLMConfig, LLMResponse, ChatOptions, LLMStreamChunk } from "./base";
-import type { ChatMessage, ToolDefinition, ToolCall, LLMUsage } from "../types/llm";
+import type { LLMProvider, LLMConfig, LLMResponse, ChatOptions } from "./base";
+import type { ChatMessage, ToolDefinition } from "../types/llm";
 
 interface AnthropicConfig extends LLMConfig {
-  model?: string;
   apiKey?: string;
   apiBase?: string;
 }
@@ -38,7 +37,11 @@ export class AnthropicProvider implements LLMProvider {
       throw new Error(`Anthropic API error: ${response.status} ${response.statusText}`);
     }
 
-    const data = await response.json();
+    const data = (await response.json()) as {
+      content?: Array<{ type: string; text?: string }>;
+      stop_reason?: string;
+      usage?: { input_tokens?: number; output_tokens?: number };
+    };
     return this.parseResponse(data);
   }
 

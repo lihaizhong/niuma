@@ -33,7 +33,16 @@ export abstract class OpenAICompatibleProvider implements LLMProvider {
       throw new Error(`API error: ${response.status} ${response.statusText}`);
     }
 
-    const data = await response.json();
+    const data = (await response.json()) as {
+      choices?: Array<{
+        message?: {
+          content?: string;
+          tool_calls?: ToolCall[];
+        };
+        finish_reason?: string;
+      }>;
+      usage?: { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number };
+    };
     return this.parseResponse(data);
   }
 
@@ -82,16 +91,9 @@ export abstract class OpenAICompatibleProvider implements LLMProvider {
       function: {
         name: tool.name,
         description: tool.description,
-        parameters:
-          typeof tool.parameters === "object" && "_def" in tool.parameters
-            ? this.zodToJsonSchema(tool.parameters as { _def: { shape: () => Record<string, unknown> } })
-            : tool.parameters,
+        parameters: tool.parameters,
       },
     };
-  }
-
-  protected zodToJsonSchema(zodType: { _def: { shape: () => Record<string, unknown> } }): unknown {
-    return { type: "object", properties: {} };
   }
 
   protected parseResponse(data: {

@@ -1,9 +1,14 @@
-import type {
+export type {
   LLMConfig,
   LLMResponse,
   ChatOptions,
   LLMStreamChunk,
+  LLMUsage,
+  ToolDefinition,
+  ToolCall,
 } from "../types/llm";
+
+import type { LLMConfig, ChatOptions, LLMResponse, LLMStreamChunk } from "../types/llm";
 
 export interface LLMProvider {
   readonly name: string;

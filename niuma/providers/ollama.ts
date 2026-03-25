@@ -1,4 +1,5 @@
 import { OpenAICompatibleProvider } from "./openai-compatible";
+
 import type { LLMConfig } from "../types/llm";
 
 export class OllamaProvider extends OpenAICompatibleProvider {
