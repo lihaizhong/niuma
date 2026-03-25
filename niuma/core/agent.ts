@@ -1,3 +1,5 @@
+import { runLoop } from "./loop";
+
 import type {
   AgentState,
   CreateAgentOptions,
@@ -5,7 +7,6 @@ import type {
   LLMStreamChunk,
   ChatMessage,
 } from "./types";
-import { runLoop } from "./loop";
 
 export interface Agent {
   chat(messages: ChatMessage[]): Promise<LLMResponse>;
@@ -54,7 +55,8 @@ export function createAgent(options: CreateAgentOptions): Agent {
       };
     },
 
-    async *chatStream(messages: ChatMessage[]): AsyncIterable<LLMStreamChunk> {
+    // eslint-disable-next-line require-yield
+    async *chatStream(_messages: ChatMessage[]): AsyncIterable<LLMStreamChunk> {
       throw new Error("Stream not implemented yet");
     },
 

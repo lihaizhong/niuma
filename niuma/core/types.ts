@@ -3,7 +3,8 @@
  */
 
 import type { LLMUsage, ChatMessage, ToolCall, ToolDefinition } from "../types/llm";
-export type { ChatMessage };
+import type { ZodType } from "zod";
+export type { ChatMessage, ToolDefinition };
 
 /**
  * Agent 状态（不可变）
@@ -205,6 +206,7 @@ export interface ToolRegistry {
   register<T>(spec: ToolSpec<T>): this;
   execute(name: string, args: unknown, context?: ToolContext): Promise<string>;
   list(): string[];
+  getDefinitions(): ToolDefinition[];
 }
 
 /**
@@ -222,7 +224,7 @@ export interface ToolContext {
 export interface ToolSpec<T = unknown> {
   name: string;
   description: string;
-  parameters: import("zod").ZodType<T>;
+  parameters: ZodType<T>;
   execute: (args: T, context?: ToolContext) => Promise<string>;
 }
 

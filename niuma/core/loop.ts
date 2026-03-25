@@ -1,8 +1,6 @@
 import type {
   AgentContext,
   AgentState,
-  LLMResponse,
-  ProgressEvent,
 } from "./types";
 
 export async function runLoop(
@@ -27,7 +25,7 @@ export async function runLoop(
 
     const response = await provider.chat({
       messages: state.messages,
-      tools: tools ? tools.list().map((name) => ({ name })) : undefined,
+      tools: tools ? tools.getDefinitions() : undefined,
       temperature: ctx.temperature,
     });
 
@@ -54,29 +52,31 @@ export async function runLoop(
       return state;
     }
 
-    for (const toolCall of response.toolCalls) {
-      onProgress?.({
-        type: "tool_start",
-        iteration: state.iteration,
-        toolName: toolCall.name,
-      });
+    if (tools) {
+      for (const toolCall of response.toolCalls) {
+        onProgress?.({
+          type: "tool_start",
+          iteration: state.iteration,
+          toolName: toolCall.name,
+        });
 
-      const result = await tools.execute(toolCall.name, toolCall.arguments);
-      state.toolResults.push(result);
+        const result = await tools.execute(toolCall.name, toolCall.arguments);
+        state.toolResults.push(result);
 
-      state.messages.push({
-        role: "tool",
-        content: result,
-        toolCallId: toolCall.id,
-        name: toolCall.name,
-      });
+        state.messages.push({
+          role: "tool",
+          content: result,
+          toolCallId: toolCall.id,
+          name: toolCall.name,
+        });
 
-      onProgress?.({
-        type: "tool_result",
-        iteration: state.iteration,
-        toolName: toolCall.name,
-        toolResult: result,
-      });
+        onProgress?.({
+          type: "tool_result",
+          iteration: state.iteration,
+          toolName: toolCall.name,
+          toolResult: result,
+        });
+      }
     }
   }
 
