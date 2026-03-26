@@ -8,7 +8,7 @@ version: 1.0
 
 ## Context
 
-Niuma (牛马) - Enterprise multi-agent AI assistant system. TypeScript + Node.js + Next.js.
+Niuma (牛马) - Multi-agent AI assistant system. TypeScript + Node.js + Next.js.
 
 ## Roles
 
@@ -18,10 +18,10 @@ Create OpenSpec artifacts for new features.
 
 Artifacts to create:
 
-- `openspec/changes/<name>/proposal.md`
-- `openspec/changes/<name>/specs/*/spec.md`
-- `openspec/changes/<name>/specs/*/test.md`
-- `openspec/changes/<name>/tasks.md`
+- `openspec/changes/<name>/proposal.md` — why we're doing this, what's changing
+- `openspec/changes/<name>/design.md` — technical approach
+- `openspec/changes/<name>/specs/*.md` — requirements and scenarios
+- `openspec/changes/<name>/tasks.md` — implementation checklist
 
 Requirements:
 
@@ -35,7 +35,7 @@ Implement tests before code exists.
 
 Workflow:
 
-1. Read spec.md and test.md
+1. Read specs from `openspec/changes/<name>/specs/*.md`
 2. Create tests in `niuma/tests/` or `src/tests/`
 3. Run `pnpm test:unit` to confirm tests fail (Red)
 4. Commit tests
@@ -99,31 +99,32 @@ Phases:
 - **Green**: Write minimal code to pass
 - **Refactor**: Improve without changing behavior
 
+## OpenSpec + TDD Integration
+
+### Workflow
+
+```
+OpenSpec Phase          TDD Cycle
+────────────────        ─────────
+specs/*.md              → Red: from scenarios write tests
+  └─ WHEN/THEN          → Green: implement code
+tasks.md                → Refactor: refactor code
+  └─ [Red] Write tests       ← each scenario maps to one test
+  └─ [Green] Implement       ← make tests pass
+  └─ [Refactor] Refactor    ← refactor
+```
+
+See detailed specs in [openspec/config.yaml](./openspec/config.yaml)
+
 ## Directory Structure
 
 ```
-niuma/                    # Agent core
-├── core/                # agent.ts, tool.ts, memory.ts, types.ts
-├── tools/               # Tool implementations
-├── agents/              # Agent definitions
-├── skills/              # Skill definitions
-├── memory/              # Memory storage
-└── tests/               # Unit tests
-
-src/                     # Web service
-├── app/                 # Next.js app router
-├── components/          # React components
-├── lib/                 # Utilities
-└── tests/               # Integration tests
-
-openspec/                # OpenSpec workflow
-├── config.yaml          # Workflow config
-└── changes/<name>/      # Active changes
-    ├── proposal.md
-    ├── design.md
-    ├── specs/
-    └── tasks.md
+niuma/         # Agent core (TypeScript)
+src/           # Web service (Next.js)
+openspec/      # Workflow config and active changes
 ```
+
+See [README](./README.md) for full structure.
 
 ## Pre-Commit Gates
 
