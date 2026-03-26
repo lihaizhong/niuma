@@ -1,31 +1,6 @@
 {
+  "extends": "./tsconfig.web.json",
   "compilerOptions": {
-    "target": "ES2022",
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "lib": [
-      "ES2022"
-    ],
-    "outDir": "./dist",
-    "rootDirs": [
-      "./niuma"
-    ],
-    "strict": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true,
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
-    "allowSyntheticDefaultImports": true,
-    "noEmit": false
-  },
-  "include": [
-    "niuma/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist"
-  ]
+    "noEmit": true
+  }
 }

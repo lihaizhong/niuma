@@ -5,14 +5,14 @@ export default defineConfig({
   test: {
     globals: true,
     environment: "node",
-    exclude: ["node_modules/", "dist/", "**/node_modules/**"],
-    setupFiles: ["./vitest.setup.ts"],
+    exclude: ["node_modules/", "dist/", ".next/", "**/node_modules/**"],
     coverage: {
       provider: "v8",
       reporter: ["text", "json", "html"],
       exclude: [
         "node_modules/",
         "dist/",
+        ".next/",
         "**/*.test.ts",
         "**/*.spec.ts",
         "**/*.config.ts",
@@ -21,7 +21,8 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./niuma"),
+      "@": path.resolve(__dirname, "./src"),
+      "@niuma": path.resolve(__dirname, "./niuma"),
     },
   },
 });

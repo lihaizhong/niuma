@@ -3,13 +3,11 @@ schema: spec-driven
 # ============================================================
 # Project Context
 # ============================================================
-# This context is shown to AI when creating artifacts.
-# It defines the tech stack, conventions, and domain knowledge.
 
 context: |
   ## Project Overview
 
-  **Niuma (牛马)** - Enterprise-grade multi-agent AI assistant system built with TypeScript + Node.js. Supports creating multiple fully independent AI roles, each with isolated configuration, workspace, session, memory, and logs.
+  **Niuma (牛马)** - Enterprise-grade multi-agent AI assistant system built with TypeScript.
 
   ## Tech Stack
 
@@ -17,135 +15,76 @@ context: |
   - **Runtime**: Node.js >=22.0.0
   - **Package Manager**: pnpm
   - **Test Framework**: vitest
-  - **LLM Framework**: langchain
-  - **Database**: @sqliteai/sqlite-wasm + sqlite-vec
-
-  ### Main Dependencies
-  - langchain - AI/LLM application framework
-  - @langchain/openai - OpenAI integration
-  - zod - Runtime type validation
-  - json5 - JSON5 configuration file format
-  - @sqliteai/sqlite-wasm - SQLite WASM database
-  - cac - Command-line argument parser
-  - pino - Logging
-
-  ### Dev Dependencies
-  - tsx - TypeScript executor
-  - vitest - Unit testing framework
-  - eslint - Code style checking
+  - **Web Framework**: Next.js 15
+  - **UI**: React 19 + Tailwind CSS
 
   ## Architecture
 
   ```
-  niuma/
-  ├── niuma/
-  │   ├── agent/          # Agent core module
-  │   ├── bus/            # Event bus
-  │   ├── channels/       # Multi-channel integration
-  │   ├── cli/            # CLI entry point
-  │   ├── config/         # Configuration management
-  │   ├── cron/           # Scheduled tasks
-  │   ├── heartbeat/      # Active wake-up
-  │   ├── providers/      # LLM providers
-  │   ├── session/        # Session management
-  │   ├── types/          # Type definitions
-  │   └── utils/          # Utility functions
-  ├── openspec/           # OpenSpec specification
-  ├── .iflow/             # iFlow CLI configuration
-  └── docs/               # Documentation
+  project-root/
+  ├── niuma/                  # Agent 核心实现
+  │   ├── core/              # 核心模块
+  │   │   ├── agent.ts       # Agent 基类
+  │   │   ├── tool.ts        # Tool 基类
+  │   │   ├── memory.ts      # 记忆管理
+  │   │   └── types.ts       # 类型定义
+  │   ├── tools/             # 工具实现
+  │   ├── agents/            # Agent 定义
+  │   ├── skills/            # Skill 定义
+  │   ├── memory/            # 记忆存储实现
+  │   └── tests/             # 单元测试
+  ├── src/                   # Next.js Web 服务
+  │   ├── app/               # App Router
+  │   │   ├── api/           # API 路由
+  │   │   ├── page.tsx       # 首页
+  │   │   └── layout.tsx     # 根布局
+  │   ├── components/        # React 组件
+  │   ├── lib/               # 工具函数
+  │   └── tests/             # 集成测试
+  ├── openspec/              # OpenSpec 变更管理
+  │   ├── config.yaml        # 配置文件
+  │   └── changes/           # 变更记录
+  ├── docs/                  # 文档
+  ├── .opencode/             # AI 助手配置
+  │   └── skills/            # 自定义 skills
+  └── .github/               # CI/CD 配置
+      └── workflows/
   ```
 
-  ### Core Modules
-  - **Agent** - Agent core, handles conversation loop, memory management, skill invocation, tool execution
-  - **Tools** - Tool collection including file system, shell commands, web requests, MCP protocol, etc.
-  - **Bus** - Event bus for async inter-module communication
-  - **Channels** - Multi-channel integration (Telegram, Discord, Feishu, DingTalk, Slack, etc.)
-  - **Providers** - LLM provider abstraction layer (OpenAI, Anthropic, custom endpoints)
-  - **Session** - Session management, history and state persistence
-  - **Skills** - Extensible skill system, dynamic SKILL.md loading
-  - **Cron** - Scheduled task service
-  - **Memory** - Two-layer memory system, automatic long-term memory consolidation
+  ## Development Workflow
+
+  1. **OpenSpec**: Use spec-driven development
+  2. **TDD**: Write tests before implementation
+  3. **Lint**: ESLint + Prettier for code quality
+  4. **Test**: Unit tests + Integration tests
+  5. **Docs**: Auto-generate API docs
+  6. **CI/CD**: GitHub Actions
 
   ## Coding Conventions
 
-  - ES Module syntax (no CommonJS)
-  - Strict TypeScript enabled
-  - Async/await over Promise chains
-  - Prefer composition over inheritance
-  - Tools follow nanobot's Tool abstract class pattern
-  - Use ESLint for code style checking
-  - **Comments must be in Chinese**, code identifiers in English
-  - **Diagrams must use mermaid syntax**
-  - **OpenSpec specs**: Requirement descriptions MUST use English "SHALL" or "MUST" keywords; other content (scenarios, explanations) can be in Chinese
-
-  ## Commit Style
-
-  Conventional Commits:
-  - `feat:` new features
-  - `fix:` bug fixes
-  - `refactor:` code restructuring
-  - `docs:` documentation
-  - `test:` test changes
-  - `chore:` maintenance
-
-  ## Version Management
-
-  - Update `package.json` and `CHANGELOG.md` when changing version
-  - Follow Semantic Versioning (semver) specification
-
-  ## Branch Strategy
-
-  - `main` - main branch
-  - `feat/*` - feature branches
+  - ES Module syntax
+  - Strict TypeScript
+  - Async/await
+  - ESLint for code style
+  - **Identifiers in English**, comments can be Chinese
 
   ## Build & Test Commands
 
   ```bash
-  pnpm install       # Install dependencies
-  pnpm dev           # Development mode
-  pnpm build         # Build
-  pnpm start         # Run
-  pnpm test          # Test
-  pnpm lint          # Code check
-  pnpm type-check    # Type check
+  pnpm install           # Install dependencies
+  pnpm dev               # Start web dev server
+  pnpm dev:agent         # Start agent dev mode
+  pnpm build             # Build all
+  pnpm build:agent       # Build agent only
+  pnpm build:web         # Build web only
+  pnpm test              # Run all tests
+  pnpm test:unit         # Run unit tests
+  pnpm test:integration  # Run integration tests
+  pnpm lint              # Lint code
+  pnpm type-check        # Type check all
+  pnpm type-check:agent  # Type check agent
+  pnpm type-check:web    # Type check web
   ```
-
-  ## Key Patterns (from nanobot)
-
-  1. **Tool System**: Abstract base class + Registry pattern
-  2. **Provider Registry**: Two-step registration (spec + config field)
-  3. **Memory System**: Two-layer (MEMORY.md + HISTORY.md)
-  4. **Agent Loop**: LLM call ↔ Tool execution cycle
-
-  ## TDD Roles
-
-  OpenSpec development supports TDD workflow with two key roles:
-
-  ### spec-writer
-  - **Responsibility**: Define feature specs and test specs before implementation
-  - **Output**: `specs/<capability>/spec.md` + `specs/<capability>/test.md`
-  - **When**: After proposal creation, before implementation
-
-  ### tester
-  - **Responsibility**: Implement test cases based on test.md, ensure tests fail before implementation
-  - **Output**: `tests/**/*.test.ts`
-  - **When**: After specs completion, before implementation
-
-  ### TDD Directory Structure
-  ```
-  openspec/changes/<change-name>/
-  ├── proposal.md          # Proposal
-  ├── design.md            # Design
-  ├── specs/               # Specs (TDD)
-  │   └── <capability>/
-  │       ├── spec.md      # Feature spec
-  │       └── test.md      # Test spec
-  └── tasks.md             # Tasks (Red → Green → Refactor)
-  ```
-
-  ---
-
-  **Note**: For detailed behavior guidelines and workflow constraints, please refer to AGENTS.md.
 
 # ============================================================
 # Per-Artifact Rules
@@ -156,30 +95,18 @@ rules:
     - Keep proposals under 500 words
     - Always include a "Non-goals" section
     - Define clear acceptance criteria
-    - Reference existing nanobot code when applicable
 
   specs:
-    - "**Format**: Must include `## Purpose` and `## Requirements` sections"
-    - "**Requirements**: Each requirement MUST use 'SHALL' or 'MUST' keyword in description"
-    - "**Scenarios**: Each requirement MUST have at least one scenario with WHEN/THEN structure"
-    - Define inputs, outputs, and edge cases
-    - Include TypeScript interface definitions
-    - List dependencies on other specs
-    - "[TDD] spec-writer must create test.md for each capability"
-    - "[TDD] test.md must include normal, boundary, and error test cases"
-    - "[TDD] test.md must define acceptance criteria and coverage target"
+    - Must include `## Purpose` and `## Requirements` sections
+    - Requirements MUST use 'SHALL' or 'MUST' keyword
+    - Each requirement MUST have at least one scenario
 
   design:
     - Include ASCII architecture diagrams
     - Explain key design decisions
     - List trade-offs considered
-    - Reference nanobot source files as examples
 
   tasks:
     - Break tasks into 30-minute chunks
     - Each task should be independently verifiable
-    - Number tasks for clear ordering
-    - Mark dependencies between tasks
-    - "[TDD] Organize tasks in Red → Green → Refactor phases"
-    - "[TDD] Test tasks must precede implementation tasks"
-    - "[TDD] Each implementation task must have corresponding test verification"
+    - Organize tasks in Red → Green → Refactor phases

@@ -3,7 +3,8 @@ import { defineConfig } from "vite";
 export default defineConfig({
   resolve: {
     alias: {
-      "@": "/niuma",
+      "@engine": "/niuma",
+      "@app": "/src"
     },
   },
   optimizeDeps: {

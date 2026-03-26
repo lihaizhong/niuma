@@ -1,4 +1,6 @@
 onlyBuiltDependencies:
+  - cpu-features
   - esbuild
   - re2
+  - ssh2
   - unrs-resolver
