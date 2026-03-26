@@ -1,112 +1,111 @@
 schema: spec-driven
 
-# ============================================================
-# Project Context
-# ============================================================
+context:
+  project:
+    name: Niuma
+    description: Enterprise multi-agent AI assistant system
+    language: TypeScript
+    runtime: Node.js >=22.0.0
+    package_manager: pnpm
 
-context: |
-  ## Project Overview
+  tech_stack:
+    language: TypeScript 5.9+
+    test_framework: vitest
+    web_framework: Next.js 15
+    ui: React 19 + Tailwind CSS
+    runtime: Node.js >=22.0.0
 
-  **Niuma (牛马)** - Enterprise-grade multi-agent AI assistant system built with TypeScript.
+  modules:
+    niuma:
+      purpose: Agent core implementation
+      scope: Agent base classes, tools, memory, types
+      tests: niuma/tests/
+    src:
+      purpose: Next.js web service
+      scope: Web UI, API routes, components
+      tests: src/tests/
+    openspec:
+      purpose: Change management
+      scope: Workflow config, active changes, archived changes
+    .opencode:
+      purpose: AI assistant configuration
+      scope: Commands, skills, plugins
 
-  ## Tech Stack
+  conventions:
+    - ES Module syntax
+    - Strict TypeScript
+    - Async/await
+    - Identifiers in English
+    - Comments can be Chinese
 
-  - **Language**: TypeScript 5.9+
-  - **Runtime**: Node.js >=22.0.0
-  - **Package Manager**: pnpm
-  - **Test Framework**: vitest
-  - **Web Framework**: Next.js 15
-  - **UI**: React 19 + Tailwind CSS
+  commands:
+    install: pnpm install
+    dev: pnpm dev
+    dev_agent: pnpm dev:agent
+    build: pnpm build
+    test: pnpm test
+    test_unit: pnpm test:unit
+    test_integration: pnpm test:integration
+    lint: pnpm lint
+    type_check: pnpm type-check
 
-  ## Architecture
+workflow:
+  name: spec-driven-development
+  phases:
+    - id: explore
+      name: Explore
+      trigger: manual
+      command: /opsx-explore
 
-  ```
-  project-root/
-  ├── niuma/                  # Agent 核心实现
-  │   ├── core/              # 核心模块
-  │   │   ├── agent.ts       # Agent 基类
-  │   │   ├── tool.ts        # Tool 基类
-  │   │   ├── memory.ts      # 记忆管理
-  │   │   └── types.ts       # 类型定义
-  │   ├── tools/             # 工具实现
-  │   ├── agents/            # Agent 定义
-  │   ├── skills/            # Skill 定义
-  │   ├── memory/            # 记忆存储实现
-  │   └── tests/             # 单元测试
-  ├── src/                   # Next.js Web 服务
-  │   ├── app/               # App Router
-  │   │   ├── api/           # API 路由
-  │   │   ├── page.tsx       # 首页
-  │   │   └── layout.tsx     # 根布局
-  │   ├── components/        # React 组件
-  │   ├── lib/               # 工具函数
-  │   └── tests/             # 集成测试
-  ├── openspec/              # OpenSpec 变更管理
-  │   ├── config.yaml        # 配置文件
-  │   └── changes/           # 变更记录
-  ├── docs/                  # 文档
-  ├── .opencode/             # AI 助手配置
-  │   └── skills/            # 自定义 skills
-  └── .github/               # CI/CD 配置
-      └── workflows/
-  ```
+    - id: propose
+      name: Propose
+      trigger: manual
+      command: /opsx-propose
+      produces: [proposal.md, design.md, specs/, tasks.md]
+      internal_commands:
+        - openspec new change <name>
+        - openspec status --change <name>
+        - openspec instructions <artifact> --change <name>
 
-  ## Development Workflow
+    - id: apply
+      name: Apply
+      trigger: manual
+      command: /opsx-apply
+      gates: [test:unit, lint, type-check]
 
-  1. **OpenSpec**: Use spec-driven development
-  2. **TDD**: Write tests before implementation
-  3. **Lint**: ESLint + Prettier for code quality
-  4. **Test**: Unit tests + Integration tests
-  5. **Docs**: Auto-generate API docs
-  6. **CI/CD**: GitHub Actions
+    - id: validate
+      name: Validate
+      trigger: pre-commit
+      blocking: true
+      gates: [openspec validate, test:all, type-check, lint, format-check]
+      internal_commands:
+        - openspec validate --change <name>
+        - openspec validate --all
 
-  ## Coding Conventions
-
-  - ES Module syntax
-  - Strict TypeScript
-  - Async/await
-  - ESLint for code style
-  - **Identifiers in English**, comments can be Chinese
-
-  ## Build & Test Commands
-
-  ```bash
-  pnpm install           # Install dependencies
-  pnpm dev               # Start web dev server
-  pnpm dev:agent         # Start agent dev mode
-  pnpm build             # Build all
-  pnpm build:agent       # Build agent only
-  pnpm build:web         # Build web only
-  pnpm test              # Run all tests
-  pnpm test:unit         # Run unit tests
-  pnpm test:integration  # Run integration tests
-  pnpm lint              # Lint code
-  pnpm type-check        # Type check all
-  pnpm type-check:agent  # Type check agent
-  pnpm type-check:web    # Type check web
-  ```
-
-# ============================================================
-# Per-Artifact Rules
-# ============================================================
+    - id: archive
+      name: Archive
+      trigger: post-merge
+      branch: main
+      action: auto-archive-with-sync
+      internal_commands:
+        - openspec archive <name>
+        - openspec list --specs
 
 rules:
   proposal:
-    - Keep proposals under 500 words
-    - Always include a "Non-goals" section
-    - Define clear acceptance criteria
+    max_words: 500
+    required_sections: [Non-goals, Acceptance Criteria]
 
   specs:
-    - Must include `## Purpose` and `## Requirements` sections
-    - Requirements MUST use 'SHALL' or 'MUST' keyword
-    - Each requirement MUST have at least one scenario
+    required_sections: [Purpose, Requirements]
+    keywords: [SHALL, MUST]
+    scenarios: required
 
   design:
-    - Include ASCII architecture diagrams
-    - Explain key design decisions
-    - List trade-offs considered
+    diagrams: ASCII
+    content: [design decisions, trade-offs]
 
   tasks:
-    - Break tasks into 30-minute chunks
-    - Each task should be independently verifiable
-    - Organize tasks in Red → Green → Refactor phases
+    chunk_size: 30min
+    verifiable: true
+    organization: [Red, Green, Refactor]

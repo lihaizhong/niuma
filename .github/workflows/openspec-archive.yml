@@ -1,0 +1,85 @@
+name: OpenSpec Archive
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  archive:
+    name: Auto Archive Changes
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Find completed changes
+        id: find-changes
+        run: |
+          COMPLETED_CHANGES=""
+          if command -v openspec >/dev/null 2>&1; then
+            # Get list of active changes
+            ACTIVE_CHANGES=$(openspec list --json 2>/dev/null | jq -r '.changes[] | select(.status == "active") | .name' 2>/dev/null || true)
+            
+            for change in $ACTIVE_CHANGES; do
+              # Check if all tasks are completed
+              TASKS_FILE="openspec/changes/$change/tasks.md"
+              if [ -f "$TASKS_FILE" ]; then
+                INCOMPLETE=$(grep -c "\[ \]" "$TASKS_FILE" || echo "0")
+                if [ "$INCOMPLETE" -eq "0" ]; then
+                  COMPLETED_CHANGES="$COMPLETED_CHANGES $change"
+                fi
+              fi
+            done
+          fi
+
+          echo "completed_changes=$COMPLETED_CHANGES" >> $GITHUB_OUTPUT
+          echo "Found completed changes:$COMPLETED_CHANGES"
+
+      - name: Archive completed changes
+        if: steps.find-changes.outputs.completed_changes != ''
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          for change in ${{ steps.find-changes.outputs.completed_changes }}; do
+            echo "📦 Archiving change: $change"
+            openspec archive "$change" --sync-specs
+          done
+
+      - name: Commit archive changes
+        if: steps.find-changes.outputs.completed_changes != ''
+        run: |
+          git add openspec/
+          git commit -m "chore(openspec): auto-archive completed changes
+
+          Archived changes:${{ steps.find-changes.outputs.completed_changes }}
+
+          [skip ci]"
+          git push
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "## OpenSpec Archive Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -n "${{ steps.find-changes.outputs.completed_changes }}" ]; then
+            echo "✅ Archived changes:${{ steps.find-changes.outputs.completed_changes }}" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "ℹ️ No completed changes to archive" >> $GITHUB_STEP_SUMMARY
+          fi

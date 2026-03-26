@@ -1,0 +1,85 @@
+name: OpenSpec Validate
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  openspec-validate:
+    name: OpenSpec Machine Acceptance
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check for active OpenSpec changes
+        id: check-changes
+        run: |
+          if command -v openspec >/dev/null 2>&1; then
+            ACTIVE_COUNT=$(openspec list --json 2>/dev/null | grep -c '"status": "active"' || echo "0")
+            echo "active_changes=$ACTIVE_COUNT" >> $GITHUB_OUTPUT
+            echo "Found $ACTIVE_COUNT active change(s)"
+          else
+            echo "openspec CLI not found, skipping validation"
+            echo "active_changes=0" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Validate OpenSpec changes
+        if: steps.check-changes.outputs.active_changes > 0
+        run: |
+          echo "🔍 Running OpenSpec validation..."
+          openspec validate --all
+
+      - name: Type Check (Agent)
+        run: pnpm type-check:agent
+
+      - name: Type Check (Web)
+        run: pnpm type-check:web
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Format Check
+        run: pnpm format:check
+
+      - name: Run all tests
+        run: pnpm test
+
+      - name: Check for incomplete tasks
+        if: steps.check-changes.outputs.active_changes > 0
+        run: |
+          # Find any tasks.md with unchecked items
+          INCOMPLETE=$(find openspec/changes -name "tasks.md" -not -path "*/archive/*" -exec grep -l "\[ \]" {} \; || true)
+          if [ -n "$INCOMPLETE" ]; then
+            echo "❌ Found incomplete tasks in:"
+            echo "$INCOMPLETE"
+            exit 1
+          fi
+          echo "✅ All tasks completed"
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "## OpenSpec Machine Acceptance Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.check-changes.outputs.active_changes }}" -gt "0" ]; then
+            echo "✅ Active changes validated: ${{ steps.check-changes.outputs.active_changes }}" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "ℹ️ No active OpenSpec changes found" >> $GITHUB_STEP_SUMMARY
+          fi

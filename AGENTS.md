@@ -1,234 +1,211 @@
-# AI Agent 行为规范
+---
+target: AI Assistant
+purpose: Operational guidelines for Niuma project
+version: 1.0
+---
 
-本文档定义了 AI 助手在 Niuma 项目中的角色、工作流程和行为准则。
+# AI Agent Guidelines - Niuma Project
 
-## 角色定义
+## Context
 
-### 1. Spec Writer (规范撰写者)
+Niuma (牛马) - Enterprise multi-agent AI assistant system. TypeScript + Node.js + Next.js.
 
-**职责：**
+## Roles
 
-- 根据需求创建 OpenSpec 变更提案
-- 编写详细的功能规范和测试规范
-- 确保规范符合 TDD 要求
+### SpecWriter
 
-**工作流程：**
+Create OpenSpec artifacts for new features.
 
-1. 创建 `openspec/changes/<change-name>/proposal.md`
-2. 编写 `openspec/changes/<change-name>/specs/*/spec.md`
-3. 编写 `openspec/changes/<change-name>/specs/*/test.md`
-4. 创建 `openspec/changes/<change-name>/tasks.md`
+Artifacts to create:
 
-**输出标准：**
+- `openspec/changes/<name>/proposal.md`
+- `openspec/changes/<name>/specs/*/spec.md`
+- `openspec/changes/<name>/specs/*/test.md`
+- `openspec/changes/<name>/tasks.md`
 
-- 使用英文关键词 SHALL/MUST 描述需求
-- 每个需求必须包含 WHEN/THEN 场景
-- 定义明确的验收标准
+Requirements:
 
-### 2. Tester (测试编写者)
+- Use SHALL/MUST keywords in specs
+- Include WHEN/THEN scenarios
+- Define acceptance criteria
 
-**职责：**
+### Tester
 
-- 根据 test.md 实现测试用例
-- 确保测试在实现前失败 (Red 阶段)
-- 验证测试覆盖所有场景
+Implement tests before code exists.
 
-**工作流程：**
+Workflow:
 
-1. 阅读 spec.md 和 test.md
-2. 在 `niuma/tests/` 或 `src/tests/` 创建测试文件
-3. 运行 `pnpm test:unit` 或 `pnpm test:integration` 验证测试失败
-4. 提交测试代码
+1. Read spec.md and test.md
+2. Create tests in `niuma/tests/` or `src/tests/`
+3. Run `pnpm test:unit` to confirm tests fail (Red)
+4. Commit tests
 
-**测试标准：**
+Test coverage:
 
-- 正常场景测试
-- 边界条件测试
-- 错误处理测试
+- Normal cases
+- Edge cases
+- Error handling
 
-### 3. Developer (实现者)
+### Developer
 
-**职责：**
+Implement code to pass tests.
 
-- 根据规范和测试实现功能
-- 确保代码通过所有测试 (Green 阶段)
-- 重构代码提高质量 (Refactor 阶段)
+Workflow:
 
-**工作流程：**
+1. Read spec.md and existing tests
+2. Implement in `niuma/` or `src/`
+3. Run tests until pass (Green)
+4. Refactor (Refactor)
 
-1. 阅读 spec.md 和对应的测试
-2. 在 `niuma/` 或 `src/` 实现功能
-3. 运行测试直到通过
-4. 重构优化代码
+Standards:
 
-**代码标准：**
+- Pass `pnpm lint`
+- Pass `pnpm type-check`
+- Maintain coverage
 
-- 通过 `pnpm lint` 检查
-- 通过 `pnpm type-check` 检查
-- 测试覆盖率达标
+### Reviewer
 
-### 4. Reviewer (审查者)
+Validate code quality.
 
-**职责：**
+Checklist:
 
-- 审查代码质量和规范符合度
-- 验证测试覆盖
-- 提出改进建议
+- [ ] TypeScript strict mode
+- [ ] All tests pass
+- [ ] No ESLint warnings
+- [ ] Formatted code
+- [ ] Updated docs
 
-**检查清单：**
+## Workflow Commands
 
-- [ ] 代码符合 TypeScript 严格模式
-- [ ] 所有测试通过
-- [ ] 无 ESLint 警告
-- [ ] 代码已格式化
-- [ ] 文档已更新
+| Phase    | Command                | Purpose              |
+| -------- | ---------------------- | -------------------- |
+| Explore  | `/opsx-explore`        | Clarify requirements |
+| Propose  | `/opsx-propose <name>` | Create specification |
+| Apply    | `/opsx-apply`          | TDD implementation   |
+| Validate | pre-commit hook        | Machine acceptance   |
+| Archive  | post-merge             | Archive change       |
 
-## 开发流程
+Full workflow config: [openspec/config.yaml](./openspec/config.yaml)
 
-### TDD 循环
+## TDD Cycle
 
 ```
-┌─────────────┐
-│   Write     │  编写测试 (Spec Writer + Tester)
-│    Test     │
-└──────┬──────┘
-       │
-       ▼
-┌─────────────┐
-│    Red      │  运行测试失败
-│   (Fail)    │
-└──────┬──────┘
-       │
-       ▼
-┌─────────────┐
-│  Implement  │  实现功能 (Developer)
-│             │
-└──────┬──────┘
-       │
-       ▼
-┌─────────────┐
-│   Green     │  运行测试通过
-│   (Pass)    │
-└──────┬──────┘
-       │
-       ▼
-┌─────────────┐
-│  Refactor   │  重构优化
-│             │
-└──────┬──────┘
-       │
-       ▼
-    (Repeat)
+Write Test → Red (Fail) → Implement → Green (Pass) → Refactor → Repeat
 ```
 
-### 目录约定
+Phases:
 
-**Agent 核心代码：** `niuma/`
+- **Red**: Write tests that fail
+- **Green**: Write minimal code to pass
+- **Refactor**: Improve without changing behavior
 
-- 所有 Agent 相关实现
-- 单元测试在 `niuma/tests/`
-- 使用 `tsconfig.agent.json`
+## Directory Structure
 
-**Web 服务代码：** `src/`
+```
+niuma/                    # Agent core
+├── core/                # agent.ts, tool.ts, memory.ts, types.ts
+├── tools/               # Tool implementations
+├── agents/              # Agent definitions
+├── skills/              # Skill definitions
+├── memory/              # Memory storage
+└── tests/               # Unit tests
 
-- Next.js 应用代码
-- 集成测试在 `src/tests/`
-- 使用 `tsconfig.web.json`
+src/                     # Web service
+├── app/                 # Next.js app router
+├── components/          # React components
+├── lib/                 # Utilities
+└── tests/               # Integration tests
 
-**OpenSpec 变更：** `openspec/changes/<change-name>/`
+openspec/                # OpenSpec workflow
+├── config.yaml          # Workflow config
+└── changes/<name>/      # Active changes
+    ├── proposal.md
+    ├── design.md
+    ├── specs/
+    └── tasks.md
+```
 
-- `proposal.md` - 提案
-- `design.md` - 设计
-- `specs/*/spec.md` - 功能规范
-- `specs/*/test.md` - 测试规范
-- `tasks.md` - 任务列表
+## Pre-Commit Gates
 
-## 代码规范
+Commands that MUST pass before commit:
 
-### 语言规范
+```bash
+pnpm lint              # ESLint
+pnpm type-check        # TypeScript
+pnpm test:unit         # Unit tests
+pnpm test:integration  # Integration tests
+pnpm format:check      # Formatting
+openspec validate      # If active changes exist
+```
 
-- **标识符：** 使用英文
-- **注释：** 中文或英文均可
-- **文档：** 重要模块需有 JSDoc
+Failure blocks commit.
 
-### 提交规范
+## Commit Format
 
-使用 Conventional Commits：
+Conventional Commits:
 
 ```
 <type>(<scope>): <subject>
 
-[optional body]
+<body>
 
-[optional footer]
+<footer>
 ```
 
-**类型：**
+Types:
 
-- `feat:` 新功能
-- `fix:` Bug 修复
-- `test:` 测试相关
-- `docs:` 文档更新
-- `refactor:` 重构
-- `chore:` 维护工作
+- `feat:` - New feature
+- `fix:` - Bug fix
+- `test:` - Tests
+- `docs:` - Documentation
+- `refactor:` - Code change
+- `chore:` - Maintenance
 
-**示例：**
+Example:
 
 ```
 feat(agent): add memory management
 
 - Implement short-term memory
-- Add long-term memory consolidation
-- Write unit tests
+- Add long-term consolidation
 
 Closes #123
 ```
 
-## 质量门禁
+## Constraints
 
-### 提交前检查
+SHALL:
 
-```bash
-pnpm lint          # ESLint 检查
-pnpm type-check    # TypeScript 类型检查
-pnpm test:unit     # 单元测试
-pnpm test:integration  # 集成测试
-pnpm format:check  # 格式检查
-```
+- Use TDD (Red→Green→Refactor)
+- Write tests before implementation
+- Follow directory conventions
+- Use English identifiers
+- Run all gates before commit
 
-### CI/CD 流程
+SHALL NOT:
 
-1. **Lint & Type Check** - 代码风格和类型检查
-2. **Test** - 运行所有测试
-3. **Build** - 构建 Agent 和 Web
-4. **Deploy** - 部署到生产环境
+- Skip tests
+- Commit failing checks
+- Push to main directly
+- Ignore type errors
+- Leave TODOs unresolved
 
-## 沟通准则
+## Communication
 
-### 用户交互
+With users:
 
-1. **明确需求** - 在开始工作前确保理解需求
-2. **及时反馈** - 定期汇报进度
-3. **提出方案** - 遇到问题时提供可行方案
-4. **记录决策** - 重要决策记录到文档
+- Clarify requirements first
+- Report progress regularly
+- Propose options for problems
+- Document decisions
 
-### 协作规范
+In commits:
 
-1. **原子提交** - 每次提交只做一件事
-2. **清晰描述** - 提交信息描述清楚做了什么
-3. **测试优先** - 新功能必须先有测试
-4. **文档同步** - 代码变更同步更新文档
+- One logical change per commit
+- Clear commit messages
+- Reference issues when applicable
 
-## 禁止事项
+## Resources
 
-- ❌ 跳过测试直接实现
-- ❌ 提交未通过检查的代码
-- ❌ 直接修改 main 分支
-- ❌ 忽视类型错误
-- ❌ 遗留 TODO 不处理
-
-## 资源
-
-- [OpenSpec 配置](./openspec/config.yaml)
-- [项目 README](./README.md)
-- [API 文档](./docs/)
+- [OpenSpec Config](./openspec/config.yaml)
+- [README](./README.md)

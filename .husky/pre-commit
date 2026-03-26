@@ -1,4 +1,26 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
+# Run lint-staged first
 pnpm lint-staged
+
+# OpenSpec Validate: Machine acceptance gate
+# If there are active changes, validate them before allowing commit
+if command -v openspec >/dev/null 2>&1; then
+  # Check if there are any active changes
+  ACTIVE_CHANGES=$(openspec list --json 2>/dev/null | grep -c '"status": "active"' || echo "0")
+  
+  if [ "$ACTIVE_CHANGES" -gt "0" ]; then
+    echo "🔍 OpenSpec validation: Found $ACTIVE_CHANGES active change(s)"
+    
+    # Validate all active changes
+    openspec validate --all || {
+      echo "❌ OpenSpec validation FAILED"
+      echo "   Fix issues before committing."
+      echo "   Run: openspec status --change <name>"
+      exit 1
+    }
+    
+    echo "✅ OpenSpec validation PASSED"
+  fi
+fi
