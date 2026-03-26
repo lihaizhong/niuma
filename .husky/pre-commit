@@ -6,7 +6,9 @@ pnpm lint-staged
 if command -v openspec >/dev/null 2>&1; then
   # Check if there are any active changes
   ACTIVE_CHANGES=$(openspec list --json 2>/dev/null | grep -c '"status": "active"' || echo "0")
-  
+  ACTIVE_CHANGES=$(echo "$ACTIVE_CHANGES" | head -1 | tr -d '[:space:]')
+  ACTIVE_CHANGES=${ACTIVE_CHANGES:-0}
+
   if [ "$ACTIVE_CHANGES" -gt "0" ]; then
     echo "🔍 OpenSpec validation: Found $ACTIVE_CHANGES active change(s)"
     
