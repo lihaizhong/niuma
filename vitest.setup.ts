@@ -19,7 +19,6 @@ global.window = {
 
 // dingtalk-sdk 需要的 env 对象
 declare global {
-  // eslint-disable-next-line no-var
   var env: {
     platform: string;
     userAgent: string;

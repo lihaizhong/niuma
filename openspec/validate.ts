@@ -264,7 +264,7 @@ function main(): void {
   console.log("🔍 OpenSpec Validation");
   console.log("=".repeat(50));
 
-  let changesToValidate: string[] = [];
+  let changesToValidate: string[];
 
   if (specificChange) {
     changesToValidate = [specificChange];

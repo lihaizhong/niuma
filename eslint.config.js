@@ -52,6 +52,19 @@ const baseRules = {
   ],
 };
 
+const noTypeRules = {
+  "no-unused-vars": "off",
+  "@typescript-eslint/no-unused-vars": "off",
+  "@typescript-eslint/no-explicit-any": "off",
+  "@typescript-eslint/no-floating-promises": "off",
+  "@typescript-eslint/no-misused-promises": "off",
+  "@typescript-eslint/consistent-type-imports": "off",
+  "no-console": "off",
+  "no-throw-literal": "off",
+  "import-x/order": "off",
+  "no-undef": "off",
+};
+
 const baseGlobals = {
   console: "readonly",
   process: "readonly",
@@ -106,6 +119,23 @@ export default [
       "import-x": importX,
     },
     rules: baseRules,
+  },
+  // OpenSpec and utility files
+  {
+    files: ["openspec/**/*.ts", "vitest.setup.ts"],
+    languageOptions: {
+      parser: tsParser,
+      parserOptions: {
+        ecmaVersion: 2022,
+        sourceType: "module",
+      },
+      globals: baseGlobals,
+    },
+    plugins: {
+      "@typescript-eslint": tseslint,
+      "import-x": importX,
+    },
+    rules: noTypeRules,
   },
   // Ignore patterns
   {
