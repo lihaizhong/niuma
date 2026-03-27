@@ -3,23 +3,9 @@
   "version": "0.2.2",
   "type": "module",
   "description": "Niuma (牛马) - 智能生活助手，提供陪伴感和情绪价值的智能精灵",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    }
-  },
-  "bin": {
-    "niuma": "./dist/cli/index.js"
-  },
   "scripts": {
-    "build": "pnpm build:agent && pnpm build:web",
-    "build:agent": "tsc --project tsconfig.agent.json",
-    "build:web": "next build",
+    "build": "next build",
     "dev": "next dev",
-    "dev:agent": "tsx --watch niuma/index.ts",
     "lint": "eslint . --ext .ts,.tsx",
     "lint:fix": "eslint . --ext .ts,.tsx --fix",
     "format": "prettier --write \"**/*.{ts,tsx,json,md}\"",
@@ -30,15 +16,12 @@
     "test:unit": "vitest run --config vitest.unit.config.ts",
     "test:integration": "vitest run --config vitest.integration.config.ts",
     "type-check": "tsc --noEmit",
-    "type-check:agent": "tsc --project tsconfig.agent.json --noEmit",
-    "type-check:web": "tsc --project tsconfig.web.json --noEmit",
     "prepare": "husky",
     "precommit": "lint-staged"
   },
   "keywords": [
     "ai",
     "assistant",
-    "cli",
     "llm",
     "langchain",
     "mcp"

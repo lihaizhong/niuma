@@ -16,10 +16,10 @@ context:
     runtime: Node.js >=22.0.0
 
   modules:
-    niuma:
+    niuma-engine:
       purpose: Agent core implementation
       scope: Agent base classes, tools, memory, types
-      tests: niuma/tests/
+      tests: src/niuma-engine/tests/
     src:
       purpose: Next.js web service
       scope: Web UI, API routes, components

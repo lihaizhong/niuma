@@ -11,7 +11,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-      "@niuma": path.resolve(__dirname, "./niuma"),
+      "@niuma-engine": path.resolve(__dirname, "./src/niuma-engine"),
     },
   },
 });

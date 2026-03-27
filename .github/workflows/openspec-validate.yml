@@ -46,11 +46,8 @@ jobs:
           echo "🔍 Running OpenSpec validation..."
           openspec validate --all
 
-      - name: Type Check (Agent)
-        run: pnpm type-check:agent
-
-      - name: Type Check (Web)
-        run: pnpm type-check:web
+      - name: Type Check
+        run: pnpm type-check
 
       - name: Lint
         run: pnpm lint

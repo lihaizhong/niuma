@@ -5,12 +5,12 @@ export default defineConfig({
   test: {
     globals: true,
     environment: "node",
-    include: ["niuma/**/*.test.ts"],
+    include: ["src/niuma-engine/**/*.test.ts"],
     exclude: ["node_modules/", "dist/"],
   },
   resolve: {
     alias: {
-      "@niuma": path.resolve(__dirname, "./niuma"),
+      "@niuma-engine": path.resolve(__dirname, "./src/niuma-engine"),
     },
   },
 });

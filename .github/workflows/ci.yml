@@ -28,11 +28,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Type check (Agent)
-        run: pnpm type-check:agent
-
-      - name: Type check (Web)
-        run: pnpm type-check:web
+      - name: Type check
+        run: pnpm type-check
 
       - name: Lint
         run: pnpm lint

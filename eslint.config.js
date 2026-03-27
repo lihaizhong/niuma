@@ -30,7 +30,7 @@ const baseRules = {
           position: "before",
         },
         {
-          pattern: "@niuma/**",
+          pattern: "@niuma-engine/**",
           group: "parent",
           position: "before",
         },
@@ -84,25 +84,7 @@ const baseGlobals = {
 
 export default [
   js.configs.recommended,
-  // Agent module configuration
-  {
-    files: ["niuma/**/*.ts"],
-    languageOptions: {
-      parser: tsParser,
-      parserOptions: {
-        ecmaVersion: 2022,
-        sourceType: "module",
-        project: "./tsconfig.agent.json",
-      },
-      globals: baseGlobals,
-    },
-    plugins: {
-      "@typescript-eslint": tseslint,
-      "import-x": importX,
-    },
-    rules: baseRules,
-  },
-  // Web module configuration
+  // TypeScript configuration
   {
     files: ["src/**/*.ts", "src/**/*.tsx"],
     languageOptions: {
@@ -110,7 +92,7 @@ export default [
       parserOptions: {
         ecmaVersion: 2022,
         sourceType: "module",
-        project: "./tsconfig.web.json",
+        project: "./tsconfig.json",
       },
       globals: baseGlobals,
     },

@@ -38,7 +38,7 @@ Implement tests before code exists.
 Workflow:
 
 1. Read specs from `openspec/changes/<name>/specs/*.md`
-2. Create tests in `niuma/tests/` or `src/tests/`
+2. Create tests in `src/niuma-engine/tests/` or `src/tests/`
 3. Run `pnpm test:unit` to confirm tests fail (Red)
 4. Commit tests
 
@@ -55,7 +55,7 @@ Implement code to pass tests.
 Workflow:
 
 1. Read spec.md and existing tests
-2. Implement in `niuma/` or `src/`
+2. Implement in `src/niuma-engine/` or `src/`
 3. Run tests until pass (Green)
 4. Refactor (Refactor)
 
