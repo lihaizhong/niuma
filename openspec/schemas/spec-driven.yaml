@@ -1,0 +1,89 @@
+schema:
+  name: spec-driven
+  version: "1.0"
+  description: Specification-driven development workflow with TDD integration
+
+workflow:
+  name: spec-driven-development
+  phases:
+    - id: explore
+      name: Explore
+      trigger: manual
+      command: /opsx-explore
+
+    - id: propose
+      name: Propose
+      trigger: manual
+      command: /opsx-propose
+      produces: [proposal.md, design.md, specs/, tasks.md]
+      internal_commands:
+        - openspec new change <name>
+        - openspec status --change <name>
+        - openspec instructions <artifact> --change <name>
+
+    - id: apply
+      name: Apply
+      trigger: manual
+      command: /opsx-apply
+      gates: [test:unit, lint, type-check]
+
+    - id: validate
+      name: Validate
+      trigger: pre-commit
+      blocking: true
+      gates: [openspec validate, test:all, type-check, lint, format-check]
+      internal_commands:
+        - openspec validate --change <name>
+        - openspec validate --all
+
+    - id: archive
+      name: Archive
+      trigger: post-merge
+      branch: main
+      action: auto-archive-with-sync
+      internal_commands:
+        - openspec archive <name>
+        - openspec list --specs
+
+artifacts:
+  proposal:
+    max_words: 500
+    required_sections: [Non-goals, Acceptance Criteria]
+
+  specs:
+    required_sections: [Purpose, Requirements]
+    keywords: [SHALL, MUST]
+    scenarios: required
+
+  design:
+    diagrams: ASCII
+    content: [design decisions, trade-offs]
+
+  tasks:
+    chunk_size: 30min
+    verifiable: true
+    organization: [Red, Green, Refactor]
+
+tdd:
+  mapping:
+    spec_to_test: "<module>/tests/<feature>.test.ts"
+    test_to_impl: "<module>/<feature>.ts"
+
+  spec_format:
+    required_sections: [Purpose, Requirements, Scenarios]
+    keywords: [SHALL, MUST]
+    scenario_structure: [WHEN, THEN]
+
+  tasks_structure:
+    red_phase:
+      prefix: "1."
+      action: "Write test for"
+      verifiable_by: "test fails"
+    green_phase:
+      prefix: "2."
+      action: "Implement to pass"
+      verifiable_by: "test passes"
+    refactor_phase:
+      prefix: "3."
+      action: "Optimize"
+      verifiable_by: "tests still pass, code improved"

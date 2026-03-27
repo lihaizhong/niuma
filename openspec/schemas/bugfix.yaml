@@ -1,0 +1,148 @@
+schema:
+  name: bugfix
+  version: "1.0"
+  description: Streamlined workflow for bug fixes with minimal overhead
+
+workflow:
+  name: bugfix-workflow
+  phases:
+    - id: triage
+      name: Triage
+      trigger: manual
+      command: /opsx-bugfix
+      description: Assess bug severity and assign owner
+      gates: [severity-assigned, owner-assigned]
+
+    - id: reproduce
+      name: Reproduce
+      trigger: manual
+      description: Create minimal reproduction case
+      produces: [bug-report.md]
+      gates: [reproducible]
+      internal_commands:
+        - openspec new bugfix <id>
+        - openspec status --bugfix <id>
+
+    - id: fix
+      name: Fix
+      trigger: manual
+      description: Implement fix with regression test
+      gates: [fix-implemented, test-passes]
+      internal_commands:
+        - openspec instructions fix --bugfix <id>
+
+    - id: validate
+      name: Validate
+      trigger: pre-commit
+      blocking: true
+      gates: [test:all, lint, type-check, regression-test]
+      internal_commands:
+        - openspec validate --bugfix <id>
+
+    - id: close
+      name: Close
+      trigger: post-merge
+      branch: main
+      action: auto-close-with-report
+      internal_commands:
+        - openspec close <id>
+
+artifacts:
+  bug_report:
+    required_sections:
+      - Symptom
+      - Steps_to_Reproduce
+      - Expected_Behavior
+      - Actual_Behavior
+      - Environment
+    optional_sections:
+      - Root_Cause_Analysis
+      - Workaround
+    max_words: 300
+
+  fix:
+    required_sections:
+      - Root_Cause
+      - Fix_Description
+      - Files_Changed
+      - Testing_Strategy
+    optional_sections:
+      - Risks
+      - Follow_Up
+
+  regression_test:
+    required_sections:
+      - Test_Case
+      - Coverage
+
+severity:
+  p0_critical:
+    description: System down, data loss, security breach
+    response_time: "immediate"
+    workflow: hotfix
+
+  p1_high:
+    description: Core feature broken, blocking workflow
+    response_time: "same day"
+    gates: [skip-design-review]
+
+  p2_medium:
+    description: Feature impaired, workaround exists
+    response_time: "this sprint"
+
+  p3_low:
+    description: Cosmetic, edge case, nice-to-have
+    response_time: "backlog"
+
+rules:
+  minimal_change:
+    principle: "Minimal change"
+    description: Only fix the bug, don't refactor surrounding code
+    exception: If surrounding code is clearly problematic, submit refactor separately
+
+  regression_test_required:
+    principle: "Regression test required"
+    description: |
+      Every bugfix must include a test case that:
+      1. Fails before the fix
+      2. Passes after the fix
+      3. Catches similar regressions
+
+  no_bypass_without_reason:
+    principle: "No bypass without reason"
+    description: |
+      Even for urgent fixes, document in bug_report:
+      - Why immediate fix was needed
+      - Why normal process wasn't followed
+      - Whether follow-up is needed
+
+  root_cause_tracking:
+    principle: "Track root cause"
+    description: |
+      Record the root cause of bugs for:
+      - Identifying systemic issues
+      - Improving development process
+      - Training and education
+
+integration:
+  git:
+    branch_naming: "fix/<bug-id>-<short-description>"
+    commit_prefix: "fix:"
+
+  issues:
+    link_required: true
+    auto_close: true
+
+  tests:
+    pattern: "src/tests/regression/<bug-id>.test.ts"
+    naming: "should not regress: <symptom>"
+
+hotfix_override:
+  allowed: true
+  conditions:
+    - severity: p0_critical
+    - approval: tech-lead
+  simplified_flow:
+    - reproduce (verbal/mental only)
+    - fix (direct commit to main)
+    - post-mortem (within 24h)
