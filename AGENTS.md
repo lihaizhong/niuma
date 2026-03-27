@@ -10,6 +10,8 @@ version: 1.0
 
 Niuma (牛马) - Multi-agent AI assistant system. TypeScript + Node.js + Next.js.
 
+See [openspec/config.yaml](./openspec/config.yaml) for detailed project configuration.
+
 ## Roles
 
 ### SpecWriter
@@ -114,65 +116,6 @@ tasks.md                → Refactor: refactor code
   └─ [Refactor] Refactor    ← refactor
 ```
 
-See detailed specs in [openspec/config.yaml](./openspec/config.yaml)
-
-## Directory Structure
-
-```
-niuma/         # Agent core (TypeScript)
-src/           # Web service (Next.js)
-openspec/      # Workflow config and active changes
-```
-
-See [README](./README.md) for full structure.
-
-## Pre-Commit Gates
-
-Commands that MUST pass before commit:
-
-```bash
-pnpm lint              # ESLint
-pnpm type-check        # TypeScript
-pnpm test:unit         # Unit tests
-pnpm test:integration  # Integration tests
-pnpm format:check      # Formatting
-openspec validate      # If active changes exist
-```
-
-Failure blocks commit.
-
-## Commit Format
-
-Conventional Commits:
-
-```
-<type>(<scope>): <subject>
-
-<body>
-
-<footer>
-```
-
-Types:
-
-- `feat:` - New feature
-- `fix:` - Bug fix
-- `test:` - Tests
-- `docs:` - Documentation
-- `refactor:` - Code change
-- `chore:` - Maintenance
-
-Example:
-
-```
-feat(agent): add memory management
-
-- Implement short-term memory
-- Add long-term consolidation
-
-Closes #123
-```
-
 ## Constraints
 
 SHALL:
@@ -182,6 +125,8 @@ SHALL:
 - Follow directory conventions
 - Use English identifiers
 - Run all gates before commit
+- Use `spec-driven` schema for new features and enhancements
+- Use `bugfix` schema for bug fixes and hotfixes
 
 SHALL NOT:
 
@@ -190,6 +135,7 @@ SHALL NOT:
 - Push to main directly
 - Ignore type errors
 - Leave TODOs unresolved
+- Mix feature work with bugfix in the same change
 
 ## Communication
 
