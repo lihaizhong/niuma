@@ -1,11 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: "standalone",
-  distDir: ".next",
-  experimental: {
-    typedRoutes: true,
+  output: "export",
+  distDir: "dist",
+  images: {
+    unoptimized: true,
   },
+  trailingSlash: true,
 };
 
 export default nextConfig;

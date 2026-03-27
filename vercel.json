@@ -1,0 +1,16 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "nextjs",
+  "regions": ["hkg1"],
+  "buildCommand": "pnpm build:web",
+  "installCommand": "pnpm install",
+  "env": {
+    "NEXT_TELEMETRY_DISABLED": "1"
+  },
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/next"
+    }
+  ]
+}
