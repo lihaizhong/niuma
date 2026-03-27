@@ -65,11 +65,32 @@ Archive a completed change in the experimental workflow.
 
    If user chooses sync, use Task tool (subagent_type: "general-purpose", prompt: "Use Skill tool to invoke openspec-sync-specs for change '<name>'. Delta spec analysis: <include the analyzed delta spec summary>"). Proceed to archive regardless of choice.
 
-5. **Perform the archive**
+5. **Check for spec impact from bugfixes**
+
+   **For bugfix schema changes:**
+   - Read `openspec/bugs/<name>/fix.md` to check for `Spec_Impact` section
+   - If `Spec_Impact` exists with `Affected_Spec`, `Change_Type`, and `Description`:
+     - Display summary of proposed spec changes
+     - Use **AskUserQuestion tool** to confirm:
+       > "This bugfix includes a spec impact. Apply changes to `<affected_spec_path>`?"
+       > Options: ["Apply spec changes", "Skip spec update", "Cancel archive"]
+   - If user chooses to apply:
+     - Read the target spec file
+     - Apply the described changes
+     - Save the updated spec
+     - Note: This is a manual edit, not a formal delta spec sync
+
+6. **Perform the archive**
+
+   Determine source directory based on schema:
+   - **spec-driven**: `openspec/changes/<name>/`
+   - **bugfix**: `openspec/bugs/<name>/`
 
    Create the archive directory if it doesn't exist:
+
    ```bash
    mkdir -p openspec/changes/archive
+   mkdir -p openspec/bugs/archive
    ```
 
    Generate target name using current date: `YYYY-MM-DD-<change-name>`
@@ -79,16 +100,21 @@ Archive a completed change in the experimental workflow.
    - If no: Move the change directory to archive
 
    ```bash
+   # For spec-driven
    mv openspec/changes/<name> openspec/changes/archive/YYYY-MM-DD-<name>
+
+   # For bugfix
+   mv openspec/bugs/<name> openspec/bugs/archive/YYYY-MM-DD-<name>
    ```
 
-6. **Display summary**
+7. **Display summary**
 
    Show archive completion summary including:
    - Change name
    - Schema that was used
    - Archive location
    - Whether specs were synced (if applicable)
+   - Whether spec impact was applied (for bugfixes with Spec_Impact)
    - Note about any warnings (incomplete artifacts/tasks)
 
 **Output On Success**
@@ -98,13 +124,14 @@ Archive a completed change in the experimental workflow.
 
 **Change:** <change-name>
 **Schema:** <schema-name>
-**Archived to:** openspec/changes/archive/YYYY-MM-DD-<name>/
-**Specs:** ✓ Synced to main specs (or "No delta specs" or "Sync skipped")
+**Archived to:** openspec/changes/archive/YYYY-MM-DD-<name>/ (or openspec/bugs/archive/)
+**Specs:** ✓ Synced to main specs (or "No delta specs" or "Sync skipped" or "Spec impact applied")
 
 All artifacts complete. All tasks complete.
 ```
 
 **Guardrails**
+
 - Always prompt for change selection if not provided
 - Use artifact graph (openspec status --json) for completion checking
 - Don't block archive on warnings - just inform and confirm
@@ -112,3 +139,5 @@ All artifacts complete. All tasks complete.
 - Show clear summary of what happened
 - If sync is requested, use openspec-sync-specs approach (agent-driven)
 - If delta specs exist, always run the sync assessment and show the combined summary before prompting
+- For bugfixes with Spec_Impact, always prompt before applying spec changes
+- Support both spec-driven (changes/) and bugfix (bugs/) directory structures

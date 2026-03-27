@@ -67,6 +67,7 @@ artifacts:
       - Files_Changed
       - Testing_Strategy
     optional_sections:
+      - Spec_Impact
       - Risks
       - Follow_Up
 

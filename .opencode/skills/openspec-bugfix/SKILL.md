@@ -71,6 +71,11 @@ Implement bug fixes using the bugfix schema workflow.
    - **Fix_Description**: What was changed and why
    - **Files_Changed**: List of modified files
    - **Testing_Strategy**: How the fix was tested
+   - **Spec_Impact** (optional): If this bug reveals a spec error, document:
+     - **Affected_Spec**: Path to the spec file (e.g., `openspec/specs/auth/spec.md`)
+     - **Change_Type**: Type of change (update / add / remove)
+     - **Description**: What needs to change in the spec
+     - **Justification**: Why the spec needs updating
    - **Risks** (optional): Any risks introduced
    - **Follow_Up** (optional): Related improvements needed
 
