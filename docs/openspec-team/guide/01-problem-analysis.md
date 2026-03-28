@@ -158,4 +158,16 @@ AI 读取 specs/auth/user.md          AI 读取 specs/auth/user.md
 
 ---
 
+## 检查清单
+
+完成本章后，确认以下问题：
+
+- [ ] 你的团队是否遇到上述三大挑战？
+- [ ] 哪个挑战是最紧迫的？
+- [ ] 团队规模是否适合这套方案（建议 >10 人）？
+- [ ] 是否有 GitLab 管理权限配置 Labels 和 Board？
+- [ ] 是否有 CI/CD 配置权限？
+
+---
+
 _继续阅读: [02 - GitLab 配置](02-gitlab-setup.md)_

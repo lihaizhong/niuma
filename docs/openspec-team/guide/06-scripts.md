@@ -603,4 +603,18 @@ glab mr create --label="openspec::change"
 
 ---
 
-**遇到问题？** 查看 [05 - 实施路线图](05-roadmap.md) 了解如何逐步推广。
+## 检查清单
+
+完成本章后，确认以下配置：
+
+- [ ] `scripts/openspec-check.sh` 已创建并可执行
+- [ ] `.gitlab-ci.yml` 包含 `openspec-conflict-check` job
+- [ ] `.gitlab/merge_request_templates/openspec_change.md` 已创建
+- [ ] GitLab Labels 已创建（7 个）
+- [ ] Board 视图已创建
+- [ ] 本地运行 `./scripts/openspec-check.sh` 成功
+- [ ] CI 流水线正常触发
+
+---
+
+**遇到问题？** 查看 [08 - 常见问题 FAQ](08-faq.md) 或 [05 - 实施路线图](05-roadmap.md) 了解如何逐步推广。
