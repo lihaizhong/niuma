@@ -27,6 +27,7 @@
 | [06 - 工具脚本](guide/06-scripts.md)                 | 可直接使用的脚本            | 1 小时   |
 | [07 - 团队守则](guide/07-guidelines.md)              | 使用规范和最佳实践          | 20 分钟  |
 | [08 - 常见问题](guide/08-faq.md)                     | FAQ 和问题解决              | 30 分钟  |
+| [09 - 跨系统协作](guide/09-cross-system.md)          | 多系统 PRD 拆分与协作       | 20 分钟  |
 
 **新团队建议**: 按顺序阅读 01 → 02 → 05，快速启动试点。
 
@@ -114,7 +115,11 @@ docs/openspec-team/
 │   ├── 04-swagger-integration.md      # Swagger 集成
 │   ├── 05-roadmap.md                  # 实施路线图
 │   ├── 06-scripts.md                  # 工具脚本
-│   └── 07-guidelines.md               # 团队守则
+│   ├── 07-guidelines.md               # 团队守则
+│   ├── 08-faq.md                      # 常见问题
+│   └── 09-cross-system.md             # 跨系统协作
+├── examples/                           # 完整示例
+│   └── team-collaboration.md          # 团队协作案例
 └── solutions/                          # 方案对比
     ├── README.md                       # 方案总览
     ├── solution-1-gitlab.md           # 方案一：GitLab 原生
