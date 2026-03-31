@@ -434,22 +434,6 @@ Skill for proposing changes.
 - Follow schema rules
 ```
 
-## docs/ 目录
-
-项目文档。
-
-```
-docs/
-├── openspec/                   # OpenSpec 文档
-│   ├── README.md               # 导航页
-│   ├── 01-overview.md          # 系统概览
-│   ├── 02-config-system.md     # 配置体系
-│   ├── 03-workflows.md         # 工作流详解
-│   ├── 04-commands.md          # 命令参考
-│   ├── 05-directory-structure.md # 本文档
-│   └── 06-best-practices.md    # 最佳实践
-```
-
 ## src/ 目录
 
 源代码（根据项目类型不同而异）。
