@@ -692,8 +692,9 @@ ls openspec/changes/archive/
 
 通常不需要手动运行，因为：
 
-- **Spec-Driven**：合并到 main 后自动归档
-- **Bugfix**：合并到 main 后自动归档
+- **Spec-Driven**：Release 发布或部署成功后自动归档
+- **Bugfix**：Release 发布或部署成功后自动归档
+- **Spike**：Release 发布或部署成功后自动归档
 
 手动归档只在特殊情况下使用：
 

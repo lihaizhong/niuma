@@ -276,20 +276,21 @@ flowchart TB
 
 #### Phase 5: Archive（归档）
 
-**触发条件**：post-merge 到 main 分支
+**触发条件**：Release 发布或部署成功后（通过 GitHub Actions 自动触发）
 
 **目标**：保存历史，清理工作区
 
 **操作**：
 
 ```bash
-# 自动执行
+# 自动执行（GitHub Actions 触发）
 openspec archive <change-name>
 
 # 效果：
 # 1. 将 openspec/changes/<name>/ 移动到 openspec/changes/archive/
-# 2. 生成归档报告
-# 3. 清理工作区
+# 2. 同步 delta specs 到主规格
+# 3. 生成归档报告
+# 4. 清理工作区
 ```
 
 **归档后结构**：
