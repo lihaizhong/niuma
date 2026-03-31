@@ -79,13 +79,15 @@ Checklist:
 
 ## Workflow Commands
 
-| Phase    | Command                | Purpose              |
-| -------- | ---------------------- | -------------------- |
-| Explore  | `/opsx-explore`        | Clarify requirements |
-| Propose  | `/opsx-propose <name>` | Create specification |
-| Apply    | `/opsx-apply`          | TDD implementation   |
-| Validate | pre-commit hook        | Machine acceptance   |
-| Archive  | post-merge             | Archive change       |
+| Phase    | Command                | Purpose                  | Trigger                  |
+| -------- | ---------------------- | ------------------------ | ------------------------ |
+| Explore  | `/opsx-explore`        | Clarify requirements     | Manual                   |
+| Propose  | `/opsx-propose <name>` | Create specification     | Manual                   |
+| Spike    | `/opsx-spike <name>`   | Technical research       | Manual                   |
+| Bugfix   | `/opsx-bugfix <id>`    | Fix bugs                 | Manual                   |
+| Apply    | `/opsx-apply`          | TDD implementation       | Manual                   |
+| Validate | pre-commit hook        | Machine acceptance       | Auto (git hook)          |
+| Archive  | GitHub Actions         | Archive completed change | Auto (on release/deploy) |
 
 Full workflow config: [openspec/config.yaml](./openspec/config.yaml)
 
@@ -116,6 +118,14 @@ tasks.md                → Refactor: refactor code
   └─ [Refactor] Refactor    ← refactor
 ```
 
+### Schema-Specific Workflows
+
+| Schema      | Input Artifacts                              | Output Artifacts                    | No Code Production |
+| ----------- | -------------------------------------------- | ----------------------------------- | ------------------ |
+| spec-driven | proposal, design, specs, tasks               | Implementation + tests              | No                 |
+| bugfix      | bug-report, fix                              | Fix + regression tests              | No                 |
+| spike       | research-question, exploration-log, decision | Research findings + decision record | Yes (throwaway)    |
+
 ## Constraints
 
 SHALL:
@@ -127,6 +137,7 @@ SHALL:
 - Run all gates before commit
 - Use `spec-driven` schema for new features and enhancements
 - Use `bugfix` schema for bug fixes and hotfixes
+- Use `spike` schema for technical research and feasibility studies
 
 SHALL NOT:
 
@@ -136,6 +147,7 @@ SHALL NOT:
 - Ignore type errors
 - Leave TODOs unresolved
 - Mix feature work with bugfix in the same change
+- Mix research/spike work with implementation in the same change
 
 ## Communication
 

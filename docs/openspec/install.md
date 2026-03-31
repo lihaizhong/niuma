@@ -64,7 +64,7 @@ B) 已有项目，想引入 Harness
 | `AGENTS.md`               | AI 行为指南     | ✓        |
 | `.opencode/`              | AI 助手配置目录 | ✓        |
 | `.opencode/commands/`     | 斜杠命令        | ✓        |
-| `.opencode/skills/`       | 技能定义        | 可选     |
+| `.opencode/skills/`       | 技能定义        | ✓        |
 | `.opencode/opencode.json` | OpenCode 配置   | 可选     |
 
 ### 2.2 创建 openspec/config.yaml
@@ -142,9 +142,11 @@ context:
 ## Workflow
 
 1. **探索** (`/opsx-explore`) - 自由讨论，澄清需求
-2. **提案** (`/opsx-propose`) - 创建完整设计方案
-3. **实施** (`/opsx-apply`) - TDD 循环实现
-4. **归档** - 完成后归档变更
+2. **调研** (`/opsx-spike`) - 技术选型，时间盒研究
+3. **提案** (`/opsx-propose`) - 创建完整设计方案
+4. **修复** (`/opsx-bugfix`) - Bug 修复流程
+5. **实施** (`/opsx-apply`) - TDD 循环实现
+6. **归档** (`/opsx-archive`) - 完成后归档变更
 
 ## TDD Cycle
 
@@ -152,11 +154,14 @@ Red → Green → Refactor
 
 ## Commands
 
-| Phase | Command              |
-| ----- | -------------------- |
-| 探索  | /opsx-explore        |
-| 提案  | /opsx-propose <name> |
-| 实施  | /opsx-apply          |
+| Phase | Command              | 用途                 |
+| ----- | -------------------- | -------------------- |
+| 探索  | /opsx-explore        | 自由讨论，澄清需求   |
+| 调研  | /opsx-spike <name>   | 技术选型，可行性研究 |
+| 提案  | /opsx-propose <name> | 新功能、架构改动     |
+| 修复  | /opsx-bugfix <id>    | Bug 修复             |
+| 实施  | /opsx-apply          | TDD 实现             |
+| 归档  | /opsx-archive        | 手动归档（通常自动） |
 ```
 
 ---
@@ -183,11 +188,20 @@ E) 其他
 
 ```json
 {
-  "skills": ["openspec-propose", "openspec-apply", "openspec-explore"],
+  "skills": [
+    "openspec-propose",
+    "openspec-apply",
+    "openspec-explore",
+    "openspec-spike",
+    "openspec-bugfix"
+  ],
   "commands": {
+    "opsx-explore": "自由探索，澄清需求",
+    "opsx-spike": "技术调研，时间盒研究",
     "opsx-propose": "创建新功能提案",
-    "opsx-apply": "开始实施当前提案",
-    "opsx-explore": "探索需求和技术方案"
+    "opsx-bugfix": "Bug 修复流程",
+    "opsx-apply": "开始实施当前变更",
+    "opsx-archive": "归档已完成变更"
   }
 }
 ```
@@ -198,9 +212,12 @@ E) 其他
 
 | 命令文件          | 对应操作 | 参考文档                            |
 | ----------------- | -------- | ----------------------------------- |
-| `opsx-propose.md` | 创建提案 | `docs/openspec/03-workflows.md`     |
-| `opsx-apply.md`   | 开始实施 | `docs/openspec/03-workflows.md`     |
 | `opsx-explore.md` | 自由探索 | `docs/openspec/spike-vs-explore.md` |
+| `opsx-spike.md`   | 技术调研 | `docs/openspec/03-workflows.md`     |
+| `opsx-propose.md` | 创建提案 | `docs/openspec/03-workflows.md`     |
+| `opsx-bugfix.md`  | Bug 修复 | `docs/openspec/03-workflows.md`     |
+| `opsx-apply.md`   | 开始实施 | `docs/openspec/03-workflows.md`     |
+| `opsx-archive.md` | 归档变更 | `docs/openspec/04-commands.md`      |
 
 ### 3.4 其他工具的配置提示
 
@@ -504,7 +521,7 @@ AI 在引导过程中应参考以下文档：
 │   │   ├── opsx-propose.md
 │   │   ├── opsx-apply.md
 │   │   └── opsx-explore.md
-│   ├── skills/              # 技能定义 (可选)
+│   ├── skills/              # 技能定义 (必须)
 │   └── opencode.json        # OpenCode 配置 (可选)
 │
 ├── .github/
