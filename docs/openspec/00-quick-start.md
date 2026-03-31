@@ -4,6 +4,8 @@
 
 ## 前置条件
 
+> **还没有 Harness 环境？** 让 AI 帮你从零搭建 → [install.md](install.md)
+
 确保你已经安装：
 
 - **Node.js** >= 22.0.0
