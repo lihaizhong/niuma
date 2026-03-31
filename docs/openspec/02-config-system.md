@@ -218,6 +218,49 @@ workflow:
       action: auto-archive
 ```
 
+#### spike.yaml
+
+```yaml
+# openspec/schemas/spike.yaml
+
+schema:
+  name: spike
+  version: "1.0"
+  description: Technical research and exploratory investigation workflow
+
+workflow:
+  name: spike-workflow
+  phases:
+    - id: define
+      name: Define
+      trigger: manual
+      command: /opsx-spike
+      produces: [research-question.md]
+
+    - id: explore
+      name: Explore
+      trigger: manual
+      produces: [exploration-log.md, findings/]
+      gates: [timebox-respected, findings-documented]
+
+    - id: conclude
+      name: Conclude
+      trigger: manual
+      produces: [decision.md]
+      gates: [decision-recorded, next-steps-defined]
+
+    - id: archive
+      name: Archive
+      trigger: post-merge
+      action: auto-archive-spike
+
+timebox:
+  default: 4h
+  max: 2d
+  warning_threshold: 80%
+  enforce: soft
+```
+
 ### 关键点
 
 - **目标读者是工作流引擎**：定义机器可解析的流程

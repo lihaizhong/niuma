@@ -113,7 +113,7 @@ sequenceDiagram
 
 **变更**是 Harness 的基本工作单元，代表一个完整的开发任务。
 
-两种类型的变更：
+三种类型的变更：
 
 ```mermaid
 flowchart TB
@@ -151,8 +151,28 @@ flowchart TB
         BF1 --> BF6
     end
 
+    subgraph Spike["技术调研 (spike)"]
+        SP1[openspec/changes/]
+        SP2["<spike-name>/"]
+        SP3[".openspec.yaml"]
+        SP4["research-question.md"]
+        SP5["exploration-log.md"]
+        SP6["decision.md"]
+        SP7["findings/"]
+        SP8["archive/"]
+
+        SP1 --> SP2
+        SP2 --> SP3
+        SP2 --> SP4
+        SP2 --> SP5
+        SP2 --> SP6
+        SP2 --> SP7
+        SP1 --> SP8
+    end
+
     style SpecDriven fill:#e1f5e1
     style Bugfix fill:#ffe1e1
+    style Spike fill:#fff2cc
 ```
 
 ### 2. 阶段（Phase）
@@ -290,6 +310,43 @@ flowchart LR
 - bug-report.md（问题描述）
 - fix.md（修复方案）
 - regression test（回归测试）
+
+### Spike（技术调研）
+
+**适用场景**：技术选型、可行性验证、性能调查、新技术预研
+
+**核心理念**：时间盒限制的探索性研究，必须产出明确决策
+
+```mermaid
+flowchart LR
+    A[定义问题] --> B[探索研究]
+    B --> C[形成决策]
+    C --> D[归档]
+
+    A1[research-question<br/>研究问题] --> A
+    B1[exploration-log<br/>探索日志] --> B
+    C1[decision<br/>决策文档] --> C
+    D1[知识沉淀] --> D
+
+    style A fill:#fff2cc
+    style B fill:#fff2cc
+    style C fill:#fff2cc
+    style D fill:#e1f5e1
+```
+
+**产物**：
+
+- research-question.md（研究问题定义）
+- exploration-log.md（探索日志）
+- decision.md（决策文档）
+- findings/（研究发现）
+
+**关键特性**：
+
+- **时间盒限制**：默认 4 小时，最长 2 天
+- **必须下结论**：即使是不完整的结论也要记录
+- **可丢弃代码**：Spike 代码不需要测试，标记为实验性质
+- **转为实施**：调研完成后通常转为 Spec-Driven 实施
 
 ### Explore（自由探索）
 
