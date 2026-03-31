@@ -169,11 +169,12 @@ flowchart TD
 
 根据你的需求选择：
 
-| 如果你...    | 使用命令                | 阅读文档                     |
-| ------------ | ----------------------- | ---------------------------- |
-| 加新功能     | `/opsx-propose <name>`  | [03-工作流](03-workflows.md) |
-| 修 Bug       | `/opsx-bugfix <bug-id>` | [03-工作流](03-workflows.md) |
-| 不确定怎么做 | `/opsx-explore`         | [03-工作流](03-workflows.md) |
+| 如果你...     | 使用命令                | 阅读文档                                |
+| ------------- | ----------------------- | --------------------------------------- |
+| 加新功能      | `/opsx-propose <name>`  | [03-工作流](03-workflows.md)            |
+| 修 Bug        | `/opsx-bugfix <bug-id>` | [03-工作流](03-workflows.md)            |
+| 技术调研/选型 | `/opsx-spike <name>`    | [Spike vs Explore](spike-vs-explore.md) |
+| 不确定怎么做  | `/opsx-explore`         | [03-工作流](03-workflows.md)            |
 
 ### 深入学习
 

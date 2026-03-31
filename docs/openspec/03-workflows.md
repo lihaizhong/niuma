@@ -1,6 +1,6 @@
 # 03 - 工作流详解
 
-> 深入理解 spec-driven、bugfix、explore 三种工作流
+> 深入理解 spec-driven、bugfix、spike、explore 四种工作流
 
 ## 工作流选择决策树
 
