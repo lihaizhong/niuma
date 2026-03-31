@@ -4,35 +4,34 @@
 
 ## 工作流选择决策树
 
-```
-                    开始
-                     │
-         ┌───────────┴───────────┐
-         │                       │
-    发现 Bug?               新功能/改动?
-         │                       │
-    ┌────┴────┐             ┌────┴────┐
-    │         │             │         │
-   是         否           是         否
-    │         │             │         │
-    ▼         ▼             ▼         ▼
- Bugfix    不确定        Spec-     Explore
- 工作流     做什么?      Driven     工作流
-              │          工作流
-              ▼
-         Explore
-         工作流
+```mermaid
+flowchart TD
+    Start([开始]) --> Q1{发现 Bug?}
+    Q1 -->|是| Bugfix[Bugfix 工作流]
+    Q1 -->|否| Q2{技术调研?}
+
+    Q2 -->|是| Spike[Spike 工作流]
+    Q2 -->|否| Q3{新功能/改动?}
+
+    Q3 -->|是| SpecDriven[Spec-Driven 工作流]
+    Q3 -->|否| Explore[Explore 工作流]
+
+    style Start fill:#e1f5e1
+    style Bugfix fill:#ffe1e1
+    style Spike fill:#fff2cc
+    style SpecDriven fill:#e1f5e1
+    style Explore fill:#e1e5ff
 ```
 
 ## 工作流对比
 
-| 维度         | Spec-Driven      | Bugfix        | Explore            |
-| ------------ | ---------------- | ------------- | ------------------ |
-| **适用场景** | 新功能、架构改动 | Bug 修复      | 需求澄清、技术调研 |
-| **核心目标** | 设计先行         | 快速修复      | 明确方向           |
-| **产物数量** | 多（4+文档）     | 少（2-3文档） | 无固定             |
-| **时间投入** | 前期设计多       | 快速定位      | 灵活               |
-| **检查点**   | 完整             | 核心检查      | 无                 |
+| 维度         | Spec-Driven      | Bugfix        | Spike          | Explore        |
+| ------------ | ---------------- | ------------- | -------------- | -------------- |
+| **适用场景** | 新功能、架构改动 | Bug 修复      | 技术调研、选型 | 需求澄清、讨论 |
+| **核心目标** | 设计先行         | 快速修复      | 探索并决策     | 明确方向       |
+| **产物数量** | 多（4+文档）     | 少（2-3文档） | 中等（3文档）  | 无固定         |
+| **时间投入** | 前期设计多       | 快速定位      | 时间盒限制     | 灵活           |
+| **检查点**   | 完整             | 核心检查      | 无             | 无             |
 
 ## Spec-Driven 工作流
 
@@ -186,20 +185,29 @@ THEN 监听 matchMedia 并自动切换
 
 **TDD 循环**：
 
-```
-          ┌─────────────────────────────────────┐
-          │                                     │
-          ▼                                     │
-┌─────────────────┐     ┌─────────────────┐    │
-│  Red            │────▶│  Green          │    │
-│  写测试（失败）  │     │  写实现（通过）  │    │
-└─────────────────┘     └─────────────────┘    │
-          ▲                     │              │
-          │                     ▼              │
-          │           ┌─────────────────┐      │
-          └───────────│  Refactor       │◀─────┘
-                      │  重构（保持通过）│
-                      └─────────────────┘
+```mermaid
+flowchart LR
+    subgraph RED["🔴 Red Phase"]
+        R["写测试<br/>(失败)"]
+    end
+
+    subgraph GREEN["🟢 Green Phase"]
+        G["写实现<br/>(通过)"]
+    end
+
+    subgraph REFACTOR["🔵 Refactor Phase"]
+        Ref["重构<br/>(保持通过)"]
+    end
+
+    RED -->|"最小实现"| GREEN
+    GREEN -->|"优化代码"| REFACTOR
+    REFACTOR -->|"继续改进"| RED
+    REFACTOR -->|"完成"| DONE{{"任务完成"}}
+
+    style RED fill:#ffe1e1
+    style GREEN fill:#e1ffe1
+    style REFACTOR fill:#e1e5ff
+    style DONE fill:#fff2cc
 ```
 
 **实施步骤**：
@@ -244,27 +252,21 @@ pnpm test:unit ThemeProvider
 
 **检查点**：
 
-```
-┌─────────────────────────────────────────┐
-│  Pre-commit Validation                  │
-├─────────────────────────────────────────┤
-│                                         │
-│  [✓] openspec validate                  │
-│      检查规格完整性                      │
-│                                         │
-│  [✓] test:all                           │
-│      运行所有测试（单元+集成）            │
-│                                         │
-│  [✓] type-check                         │
-│      TypeScript 类型检查                 │
-│                                         │
-│  [✓] lint                               │
-│      ESLint 代码风格检查                 │
-│                                         │
-│  [✓] format-check                       │
-│      代码格式化检查                      │
-│                                         │
-└─────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph PreCommit["Pre-commit Validation"]
+        V["✓ openspec validate<br/>检查规格完整性"]
+        T["✓ test:all<br/>运行所有测试（单元+集成）"]
+        TC["✓ type-check<br/>TypeScript 类型检查"]
+        L["✓ lint<br/>ESLint 代码风格检查"]
+        FC["✓ format-check<br/>代码格式化检查"]
+    end
+
+    V --> T --> TC --> L --> FC
+    FC --> Pass{{"全部通过 → 提交成功"}}
+
+    style PreCommit fill:#f5f5f5,stroke:#333
+    style Pass fill:#e1ffe1
 ```
 
 **失败处理**：
@@ -522,6 +524,279 @@ git commit -m "fix: login button click handler"
 # Step 6: 自动归档
 ````
 
+## Spike 工作流
+
+### 概述
+
+**核心理念**：时间盒限制的探索性研究
+
+当你需要：
+
+- 评估技术选型（Redux vs Zustand？）
+- 验证技术可行性（能否集成某 API？）
+- 探索未知领域（新框架、新协议）
+- 调查性能问题（为什么慢？如何优化？）
+
+就用 Spike 工作流。
+
+### 与 Explore 的区别
+
+| 维度       | Spike                   | Explore                     |
+| ---------- | ----------------------- | --------------------------- |
+| **目标**   | 得出明确决策            | 澄清需求或方案              |
+| **产物**   | 必须产出决策文档        | 无固定产物                  |
+| **时间**   | 有时间盒限制            | 灵活                        |
+| **下一步** | 转为 Spec-Driven 或放弃 | 可能转为 Spec-Driven/Bugfix |
+
+### 阶段详解
+
+#### Phase 1: Define（定义）
+
+**触发条件**：开始技术调研
+
+**目标**：明确研究问题和范围
+
+**产物**：
+
+```
+openspec/changes/<spike-name>/
+├── .openspec.yaml              # 调研配置
+└── research-question.md        # 研究问题定义
+```
+
+**research-question.md 结构**：
+
+```markdown
+# Research Question: 技术选型调研
+
+## Problem_Statement
+
+需要选择一个状态管理方案，要求：
+
+- 支持 TypeScript
+- 轻量级
+- 易于测试
+
+## Research_Goals
+
+1. 评估 Redux Toolkit vs Zustand vs Context API
+2. 测试在我们场景下的性能
+3. 评估学习曲线
+
+## Scope
+
+**In Scope**:
+
+- 三个方案的对比分析
+- 简单原型验证
+- 团队技能评估
+
+**Out of Scope**:
+
+- 完整实现
+- 性能基准测试
+- 长期维护成本分析
+
+## Timebox
+
+4 小时
+```
+
+#### Phase 2: Explore（探索）
+
+**目标**：进行研究、实验、收集发现
+
+**活动**：
+
+```
+1. 文档阅读
+   - 阅读官方文档
+   - 查看社区评价
+   - 搜索最佳实践
+
+2. 代码实验
+   - 编写原型代码
+   - 测试关键场景
+   - 验证可行性
+
+3. 记录发现
+   - 实时记录发现
+   - 包括失败的尝试
+   - 记录假设和验证
+```
+
+**产物**：
+
+```
+openspec/changes/<spike-name>/
+├── .openspec.yaml
+├── research-question.md
+└── exploration-log.md          # 新增：探索日志
+```
+
+**exploration-log.md 结构**：
+
+```markdown
+# Exploration Log: 状态管理调研
+
+## Approach
+
+按以下维度对比三个方案：
+
+1. 包大小
+2. API 复杂度
+3. TypeScript 支持
+4. 测试友好度
+
+## Findings
+
+### Redux Toolkit
+
+- **大小**: ~11KB gzipped
+- **优点**: 生态丰富，工具链完善
+- **缺点**: 学习曲线陡峭，样板代码多
+
+### Zustand
+
+- **大小**: ~1KB gzipped
+- **优点**: 极简 API，TypeScript 友好
+- **缺点**: 社区较小，插件较少
+
+### Context API
+
+- **大小**: 0KB (built-in)
+- **优点**: 无需额外依赖
+- **缺点**: 频繁更新时性能问题
+
+## Experiments_Conducted
+
+### 实验 1: 性能测试
+
+创建 1000 个组件，测试渲染性能：
+
+- Redux: ~45ms
+- Zustand: ~30ms
+- Context: ~120ms (有闪烁)
+
+### 实验 2: 代码复杂度
+
+实现相同功能所需代码行数：
+
+- Redux: ~80 行
+- Zustand: ~25 行
+- Context: ~40 行
+```
+
+#### Phase 3: Conclude（结论）
+
+**目标**：综合发现，形成决策
+
+**产物**：
+
+```
+openspec/changes/<spike-name>/
+├── .openspec.yaml
+├── research-question.md
+├── exploration-log.md
+└── decision.md                 # 新增：决策文档
+```
+
+**decision.md 结构**：
+
+```markdown
+# Decision: 状态管理方案选择
+
+## Summary
+
+经过 4 小时调研，评估了 Redux Toolkit、Zustand 和 Context API 三个方案。
+
+## Recommendation
+
+**采用 Zustand 作为状态管理方案**
+
+## Rationale
+
+1. **包大小**: Zustand 仅 1KB，对首屏加载影响最小
+2. **开发效率**: API 极简，减少样板代码
+3. **TypeScript**: 原生支持，无需额外配置
+4. **性能**: 在实验中表现最佳
+
+## Alternatives_Considered
+
+### Redux Toolkit
+
+**为什么不选**:
+
+- 对我们当前复杂度来说是过度设计
+- 学习成本较高
+- 样板代码增加维护负担
+
+### Context API
+
+**为什么不选**:
+
+- 性能测试中出现渲染问题
+- 随着功能增长，Provider 嵌套可能变得复杂
+
+## Risks
+
+1. **社区规模**: Zustand 社区比 Redux 小，第三方资源较少
+2. **长期维护**: 项目相对年轻，长期支持不确定
+
+**缓解措施**:
+
+- 保持状态逻辑简单，便于未来迁移
+- 封装状态层，隐藏实现细节
+
+## Next_Steps
+
+1. 创建实现变更: `/opsx-propose add-zustand-store`
+2. 迁移现有全局状态
+3. 编写团队使用指南
+```
+
+#### Phase 4: Archive（归档）
+
+**触发条件**：post-merge 到 main 分支
+
+**目标**：保存调研历史
+
+Spike 完成后，决策文档成为重要的历史记录。即使决定不采用某方案，调研过程也有价值。
+
+### 完整示例
+
+```bash
+# 场景：调研实时协作方案
+
+# Step 1: 启动 Spike
+/opsx-spike webrtc-vs-socketio
+
+# Step 2: 定义问题
+> AI 引导填写 research-question.md
+> "需要选择实时同步技术"
+
+# Step 3: 进行探索
+> 阅读 WebSocket 文档
+> 测试 Socket.io 示例
+> 验证 WebRTC 可行性
+> 记录发现
+
+# Step 4: 形成决策
+> AI 协助撰写 decision.md
+> 明确推荐和理由
+
+# Step 5: 后续行动
+# 根据决策创建 Spec-Driven 变更实施
+/opsx-propose implement-realtime-collab
+```
+
+### Spike 最佳实践
+
+1. **严格遵守时间盒**: 到期后必须下结论，即使是不完整的结论
+2. **记录失败**: 失败的实验同样有价值
+3. **可丢弃代码**: Spike 代码不需要测试，标记为实验性质
+4. **明确下一步**: 每个 Spike 必须有清晰的后续行动
+
 ## Explore 工作流
 
 ### 概述
@@ -590,57 +865,81 @@ AI 分析：
 
 ### 与 Spec-Driven 的关系
 
-```
-Explore           Spec-Driven
-   │                   │
-   │ 明确需求/方案      │
-   └─────────┬─────────┘
-             ▼
-    ┌─────────────────┐
-    │  决策点          │
-    │  继续？/放弃？   │
-    └────────┬────────┘
-             │
-    ┌────────┴────────┐
-    │                 │
-    ▼                 ▼
-进入 Propose       结束探索
-阶段              （无产出）
+```mermaid
+flowchart LR
+    E["Explore<br/>探索"] -->|"明确需求/方案"| DP["决策点"]
+    S["Spec-Driven<br/>提案"] -->|"继续？/放弃？"| DP
+
+    DP -->|"继续"| P["进入 Propose<br/>阶段"]
+    DP -->|"放弃"| X["结束探索<br/>(无产出)"]
+
+    style E fill:#e1e5ff
+    style S fill:#e1f5e1
+    style DP fill:#fff2cc
+    style P fill:#e1ffe1
+    style X fill:#ffe1e1
 ```
 
 ## 工作流选择指南
 
 ### 决策树
 
-```
-发现 Bug？
-├── 是 → Bugfix 工作流
-│        └── 快速修复 + 回归测试
-│
-└── 否 → 新功能/改动？
-         ├── 是 → 需求明确？
-         │        ├── 是 → Spec-Driven
-n         │        │        └── 完整设计 + TDD
-         │        │
-         │        └── 否 → Explore
-         │                 └── 讨论澄清
-         │
-         └── 否 → 其他
-                  └── 使用 Explore
+```mermaid
+flowchart TD
+    Start([开始]) --> Q1{发现 Bug?}
+
+    Q1 -->|是| Bugfix["Bugfix 工作流<br/>快速修复 + 回归测试"]
+    Q1 -->|否| Q2{技术调研?}
+
+    Q2 -->|是| Spike["Spike 工作流<br/>研究 → 决策 → 实施"]
+    Q2 -->|否| Q3{新功能/改动?}
+
+    Q3 -->|是| Q4{需求明确?}
+
+    Q4 -->|是| SpecDriven["Spec-Driven<br/>完整设计 + TDD"]
+    Q4 -->|否| Explore1["Explore<br/>讨论澄清"]
+
+    Q3 -->|否| Explore2["Explore<br/>其他情况"]
+
+    Start2([开始]) --> Q1B{发现 Bug?}
+    Q1B -->|是| Bugfix2["Bugfix 工作流"]
+    Q1B -->|否| Q3B{新功能/改动?}
+    Q3B -->|是| Q4B{需求明确?}
+    Q3B -->|否| ExploreB["Explore"]
+    Q4B -->|是| SpecDrivenB["Spec-Driven"]
+    Q4B -->|否| ExploreC["Explore"]
+
+    style Start fill:#e1f5e1
+    style Bugfix fill:#ffe1e1
+    style Spike fill:#fff2cc
+    style SpecDriven fill:#e1f5e1
+    style Explore1 fill:#e1e5ff
+    style Explore2 fill:#e1e5ff
+    style Start2 fill:#e1f5e1
+    style Bugfix2 fill:#ffe1e1
+    style ExploreB fill:#e1e5ff
+    style SpecDrivenB fill:#e1f5e1
+    style ExploreC fill:#e1e5ff
 ```
 
 ### 快速判断
 
-| 如果你...           | 选择        |
-| ------------------- | ----------- |
-| 说"有个 bug"        | Bugfix      |
-| 说"想加功能"        | Spec-Driven |
-| 说"能不能/是否可行" | Explore     |
-| 说"不确定怎么做"    | Explore     |
-| 说"帮忙看看"        | Explore     |
+| 如果你...             | 选择          |
+| --------------------- | ------------- |
+| 说"有个 bug"          | Bugfix        |
+| 说"想加功能"          | Spec-Driven   |
+| 说"调研一下/评估一下" | Spike         |
+| 说"A 和 B 哪个好"     | Spike         |
+| 说"能不能/是否可行"   | Spike/Explore |
+| 说"不确定怎么做"      | Explore       |
+| 说"帮忙看看"          | Explore       |
 
 ## 下一步
 
 - **[命令参考](04-commands.md)** - 查看所有 `/opsx-*` 命令的详细用法
 - **[目录结构](05-directory-structure.md)** - 理解文件组织的最佳实践
 - **[最佳实践](06-best-practices.md)** - 学习模式与反模式
+
+```
+
+```

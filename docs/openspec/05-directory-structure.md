@@ -141,17 +141,21 @@ workflow:
 
 ```
 changes/
-└── add-user-auth/              # 变更目录
-    ├── .openspec.yaml          # 变更元数据
-    ├── proposal.md             # 提案文档
-    ├── design.md               # 设计文档
-    ├── specs/                  # 规格目录
-    │   ├── auth/               # 功能模块
-    │   │   ├── login.md        # 登录规格
-    │   │   └── register.md     # 注册规格
-    │   └── session/            # 另一个模块
-    │       └── spec.md
-    └── tasks.md                # 任务列表
+├── add-user-auth/              # Spec-Driven 变更
+│   ├── .openspec.yaml          # 变更元数据
+│   ├── proposal.md             # 提案文档
+│   ├── design.md               # 设计文档
+│   ├── specs/                  # 规格目录
+│   │   └── auth/
+│   │       ├── login.md
+│   │       └── register.md
+│   └── tasks.md                # 任务列表
+│
+└── evaluate-state-management/  # Spike 变更
+    ├── .openspec.yaml          # 调研配置
+    ├── research-question.md    # 研究问题
+    ├── exploration-log.md      # 探索日志
+    └── decision.md             # 决策文档
 ```
 
 ##### .openspec.yaml
@@ -346,12 +350,15 @@ AI 助手的配置目录。
 ├── opencode.json               # 插件配置
 ├── command/                    # 斜杠命令定义
 │   ├── opsx-explore.md
+│   ├── opsx-spike.md
 │   ├── opsx-propose.md
 │   ├── opsx-bugfix.md
 │   ├── opsx-apply.md
 │   └── opsx-archive.md
 └── skills/                     # 技能定义
     ├── openspec-explore/
+    │   └── SKILL.md
+    ├── openspec-spike/
     │   └── SKILL.md
     ├── openspec-propose/
     │   └── SKILL.md
@@ -441,9 +448,6 @@ docs/
 │   ├── 04-commands.md          # 命令参考
 │   ├── 05-directory-structure.md # 本文档
 │   └── 06-best-practices.md    # 最佳实践
-└── openspec-team/              # 团队协作文档
-    ├── README.md
-    └── ...
 ```
 
 ## src/ 目录

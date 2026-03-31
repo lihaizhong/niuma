@@ -130,7 +130,7 @@ openspec/changes/add-user-preferences/
 
 ### 2.4 design.md 示例
 
-```markdown
+````markdown
 # Design: 用户偏好设置
 
 ## 技术方案
@@ -138,18 +138,25 @@ openspec/changes/add-user-preferences/
 ### 1. 状态管理
 
 使用 React Context + localStorage 实现偏好管理：
-```
 
-┌─────────────────────────────────────────────────────────┐
-│ PreferencesProvider │
-│ ┌─────────────┐ ┌─────────────┐ ┌─────────────────┐ │
-│ │ Theme │ │ Language │ │ localStorage │ │
-│ │ State │ │ State │ │ Sync │ │
-│ └─────────────┘ └─────────────┘ └─────────────────┘ │
-└─────────────────────────────────────────────────────────┘
-│ │ │
-▼ ▼ ▼
-ThemeProvider I18nProvider localStorage.setItem()
+```mermaid
+flowchart TB
+    subgraph PreferencesProvider["PreferencesProvider"]
+        TS["Theme<br/>State"]
+        LS["Language<br/>State"]
+        SS["localStorage<br/>Sync"]
+    end
+
+    PreferencesProvider -->|"theme"| TP["ThemeProvider"]
+    PreferencesProvider -->|"language"| IP["I18nProvider"]
+    PreferencesProvider -->|"save"| ST["localStorage.setItem()"]
+
+    style PreferencesProvider fill:#f5f5f5,stroke:#333
+    style TS fill:#e1f5e1
+    style LS fill:#fff2cc
+    style SS fill:#e1e5ff
+```
+````
 
 ````
 
@@ -549,26 +556,31 @@ openspec/changes/
 
 ## 完整时间线
 
-```
-Day 1, 09:00  /opsx-explore         探索需求
-                ↓
-Day 1, 09:30  /opsx-propose         创建提案
-                ↓
-Day 1, 10:00  审阅文档              修改 design.md
-                ↓
-Day 1, 11:00  /opsx-apply           开始实施
-                ↓
-Day 1, 14:00  完成 Red Phase       测试编写完成
-                ↓
-Day 1, 17:00  完成 Green Phase      功能实现完成
-                ↓
-Day 2, 09:00  完成 Refactor Phase   代码优化完成
-                ↓
-Day 2, 11:00  提交 PR               代码审查
-                ↓
-Day 2, 14:00  合并代码              自动归档
-                ↓
-Day 2, 14:05  完成                 整个流程结束
+```mermaid
+gantt
+    title OpenSpec 工作流程时间线
+    dateFormat X
+    axisFormat %H:%M
+
+    section 探索
+    探索需求 /opsx-explore :done, 09:00, 30m
+
+    section 提案
+    创建提案 /opsx-propose :done, 09:30, 30m
+    审阅文档 :done, 10:00, 60m
+
+    section 实施
+    开始实施 /opsx-apply :done, 11:00, 3h
+    完成 Red Phase :done, 14:00, 3h
+    完成 Green Phase :done, 17:00, 16h
+
+    section 优化
+    完成 Refactor Phase :done, d2, 2h
+
+    section 提交
+    提交 PR 代码审查 :done, d2, 3h
+    合并代码 自动归档 :done, d2, 5m
+    完成 整个流程结束 :milestone, 14:05, 0m
 ```
 
 **总耗时**：约 2 个工作日（包含首次学习的摸索时间）

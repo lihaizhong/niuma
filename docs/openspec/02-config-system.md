@@ -6,21 +6,17 @@
 
 想象一个团队：
 
-```
-你（开发者）          AI 助手              工作流引擎
-    │                  │                      │
-    │  "我要做XX功能"  │                      │
-    │─────────────────▶│                      │
-    │                  │                      │
-    │                  │  "按什么流程做？"    │
-    │                  │─────────────────────▶│
-    │                  │                      │
-    │                  │  "按spec-driven流程" │
-    │                  │◀─────────────────────│
-    │                  │                      │
-    │                  │  "用什么技术栈？"    │
-    │◀─────────────────│                      │
-    │  "看config.yaml" │                      │
+```mermaid
+sequenceDiagram
+    participant Dev as 你（开发者）
+    participant AI as AI 助手
+    participant Engine as 工作流引擎
+
+    Dev->>AI: "我要做XX功能"
+    AI->>Engine: "按什么流程做？"
+    Engine-->>AI: "按spec-driven流程"
+    AI->>Dev: "用什么技术栈？"
+    Dev-->>AI: "看config.yaml"
 ```
 
 不同角色需要不同的信息：
@@ -232,60 +228,70 @@ workflow:
 
 ### 场景：执行 `/opsx-propose add-auth`
 
-```
-Step 1: AI 读取 AGENTS.md
-├─ 了解：我是 SpecWriter 角色
-├─ 了解：我的工作流程是 /opsx-propose → /opsx-apply
-└─ 了解：我必须遵循 TDD，不能跳过测试
+```mermaid
+flowchart TD
+    S1["Step 1: AI 读取 AGENTS.md"] --> S1A["了解: SpecWriter 角色"]
+    S1 --> S1B["了解: 工作流程<br/>/opsx-propose → /opsx-apply"]
+    S1 --> S1C["了解: 必须遵循 TDD<br/>不能跳过测试"]
 
-Step 2: AI 读取 openspec/config.yaml
-├─ 了解：项目使用 TypeScript + Next.js
-├─ 了解：测试框架是 vitest
-├─ 了解：代码放在 src/ 目录
-└─ 了解：验证命令是 pnpm test:unit
+    S2["Step 2: AI 读取 config.yaml"] --> S2A["了解: TypeScript + Next.js"]
+    S2 --> S2B["了解: 测试框架 vitest"]
+    S2 --> S2C["了解: 代码放在 src/"]
+    S2 --> S2D["了解: 验证命令 pnpm test:unit"]
 
-Step 3: 引擎读取 openspec/schemas/spec-driven.yaml
-├─ 了解：propose 阶段需要产生 4 个产物
-├─ 了解：apply 阶段需要通过 3 个检查点
-└─ 了解：validate 阶段是 pre-commit 触发
+    S3["Step 3: 引擎读取 schema"] --> S3A["了解: propose 需 4 个产物"]
+    S3 --> S3B["了解: apply 需通过 3 检查点"]
+    S3 --> S3C["了解: validate pre-commit 触发"]
 
-Step 4: AI 执行 propose 阶段
-├─ 根据 AGENTS.md 定义的角色创建文档
-├─ 参考 config.yaml 中的技术栈编写 design.md
-└─ 按照 schema 定义的产物列表生成文件
+    S4["Step 4: AI 执行 propose"] --> S4A["按 AGENTS 角色创建文档"]
+    S4 --> S4B["按 config 技术栈写 design.md"]
+    S4 --> S4C["按 schema 产物列表生成文件"]
 
-Step 5: 检查点验证
-├─ 引擎按照 schema 定义的检查点运行验证
-├─ 使用 config.yaml 中定义的命令（pnpm test:unit）
-└─ AI 根据 AGENTS.md 的约束决定是否继续
+    S5["Step 5: 检查点验证"] --> S5A["按 schema 检查点验证"]
+    S5 --> S5B["使用 config 定义的命令"]
+    S5 --> S5C["按 AGENTS 约束决定是否继续"]
+
+    S1 --> S2
+    S2 --> S3
+    S3 --> S4
+    S4 --> S5
+
+    style S1 fill:#e1f5e1
+    style S2 fill:#fff2cc
+    style S3 fill:#e1e5ff
+    style S4 fill:#e1f5e1
+    style S5 fill:#fff2cc
 ```
 
 ## 配置层级关系图
 
-```
-                        开发者（你）
-                             │
-            ┌────────────────┼────────────────┐
-            │                │                │
-            ▼                ▼                ▼
-    ┌──────────────┐ ┌──────────────┐ ┌──────────────┐
-    │  AGENTS.md   │ │config.yaml   │ │schemas/*.yaml│
-    ├──────────────┤ ├──────────────┤ ├──────────────┤
-    │  AI 行为指南  │ │  项目配置    │ │  工作流定义  │
-    ├──────────────┤ ├──────────────┤ ├──────────────┤
-    │ • 角色定义   │ │ • 技术栈    │ │ • 阶段      │
-    │ • 工作流程   │ │ • 模块划分  │ │ • 产物      │
-    │ • 约束规则   │ │ • 命令定义  │ │ • 检查点    │
-    └──────┬───────┘ └──────┬───────┘ └──────┬───────┘
-           │                │                │
-           └────────────────┼────────────────┘
-                            │
-                            ▼
-                    ┌──────────────┐
-                    │   AI 助手    │
-                    │  读取配置    │
-                    │  执行任务    │
-                    └──────────────┘
+```mermaid
+flowchart TB
+    Dev["开发者（你）"]
+
+    subgraph Configs["配置层"]
+        A1["AGENTS.md<br/>AI 行为指南"]
+        A2["config.yaml<br/>项目配置"]
+        A3["schemas/*.yaml<br/>工作流定义"]
+
+        A1D["• 角色定义<br/>• 工作流程<br/>• 约束规则"]
+        A2D["• 技术栈<br/>• 模块划分<br/>• 命令定义"]
+        A3D["• 阶段<br/>• 产物<br/>• 检查点"]
+
+        A1 --> A1D
+        A2 --> A2D
+        A3 --> A3D
+    end
+
+    AI["AI 助手<br/>读取配置<br/>执行任务"]
+
+    Dev --> Configs
+    Configs --> AI
+
+    style A1 fill:#e1f5e1
+    style A2 fill:#fff2cc
+    style A3 fill:#e1e5ff
+    style AI fill:#f0f0f0
 ```
 
 ## 常见误解澄清
@@ -378,8 +384,27 @@ AI 会读取所有三层配置：
 2. .opencode/command/opsx-xxx.md
    添加新的命令定义
 
-3. 可选：AGENTS.md
+3. .opencode/skills/openspec-xxx/SKILL.md
+   添加新的技能定义
+
+4. 可选：AGENTS.md
    如果新阶段需要新的 AI 行为，才需要更新
+```
+
+**示例：添加 Spike 工作流**
+
+```
+1. openspec/schemas/spike.yaml
+   定义 spike 工作流的阶段和产物
+
+2. .opencode/command/opsx-spike.md
+   定义 /opsx-spike 命令
+
+3. .opencode/skills/openspec-spike/SKILL.md
+   定义 spike 技能逻辑
+
+4. docs/openspec/03-workflows.md
+   添加 spike 工作流文档
 ```
 
 **为什么这样设计？**
