@@ -20,36 +20,26 @@ flowchart TB
     subgraph Wrapper[" "]
         direction TB
 
-        subgraph Layer1["Layer 1: AI 行为指南 (AGENTS.md)"]
-            L1A["告诉 AI 如何与你协作"]
-            L1B["• 角色定义<br/>(SpecWriter, Developer, Tester...)"]
-            L1C["• 工作流程<br/>(探索→提案→实施→归档)"]
-            L1D["• 约束规则<br/>(必须 TDD、必须写测试...)"]
-            L1A --> L1B
-            L1A --> L1C
-            L1A --> L1D
+        subgraph Layer1["Layer 1: AI 行为指南"]
+            L1A(("告诉 AI<br/>如何与你协作"))
+            L1A --> L1B["• 角色定义<br/>(SpecWriter, Developer...)"]
+            L1A --> L1C["• 工作流程<br/>(探索→提案→实施→归档)"]
+            L1A --> L1D["• 约束规则<br/>(必须 TDD、必须写测试...)"]
         end
 
-        subgraph Layer2["Layer 2: 项目配置 (openspec/config.yaml)"]
-            L2A["定义项目的基本信息和技术栈"]
-            L2B["• 项目元数据<br/>(名称、语言、运行时)"]
-            L2C["• 技术栈<br/>(框架、测试工具、UI 库)"]
-            L2D["• 模块划分<br/>(niuma-engine, src, openspec...)"]
-            L2E["• 常用命令<br/>(install, dev, test, build...)"]
-            L2A --> L2B
-            L2A --> L2C
-            L2A --> L2D
-            L2A --> L2E
+        subgraph Layer2["Layer 2: 项目配置"]
+            L2A(("定义项目的<br/>基本信息和技术栈"))
+            L2A --> L2B["• 项目元数据<br/>(名称、语言、运行时)"]
+            L2A --> L2C["• 技术栈<br/>(框架、测试工具、UI 库)"]
+            L2A --> L2D["• 模块划分<br/>(niuma-engine, src...)"]
+            L2A --> L2E["• 常用命令<br/>(install, dev, test...)"]
         end
 
-        subgraph Layer3["Layer 3: 工作流定义 (openspec/schemas/*.yaml)"]
-            L3A["定义不同类型任务的详细流程"]
-            L3B["• spec-driven<br/>新功能开发 (提案→设计→规格→任务)"]
-            L3C["• bugfix<br/>Bug 修复 (报告→定位→修复→回归测试)"]
-            L3D["• spike<br/>技术调研 (问题→探索→结论)"]
-            L3A --> L3B
-            L3A --> L3C
-            L3A --> L3D
+        subgraph Layer3["Layer 3: 工作流定义"]
+            L3A(("定义不同类型<br/>任务的详细流程"))
+            L3A --> L3B["• spec-driven<br/>新功能开发 (提案→设计→规格→任务)"]
+            L3A --> L3C["• bugfix<br/>Bug 修复 (报告→定位→修复→回归测试)"]
+            L3A --> L3D["• spike<br/>技术调研 (问题→探索→结论)"]
         end
 
         Layer1 --> Layer2
@@ -60,6 +50,11 @@ flowchart TB
     style Layer2 fill:#fff2cc
     style Layer3 fill:#e1e5ff
     style Wrapper fill:none,stroke:none
+
+    %% 中心节点样式
+    style L1A fill:#4a9c4a,stroke:#2d6a2d,stroke-width:3px,color:#fff
+    style L2A fill:#e6a817,stroke:#b3820d,stroke-width:3px,color:#333
+    style L3A fill:#5a6fd6,stroke:#3d4fa3,stroke-width:3px,color:#fff
 ```
 
 **关键区别**：
@@ -74,13 +69,13 @@ flowchart TB
 
 ### 入门必读
 
-| 文档                               | 内容                                     | 建议顺序     |
-| ---------------------------------- | ---------------------------------------- | ------------ |
-| [安装指南](install.md)             | 从零搭建 Harness 环境（AI 引导）         | **第 -1 步** |
-| [00-快速开始](00-quick-start.md)   | **5 分钟入门教程**                       | **第 0 步**  |
-| [01-概览](01-overview.md)          | 系统整体介绍、核心概念                   | 第 1 步      |
-| [02-配置体系](02-config-system.md) | AGENTS.md vs config.yaml vs schemas 详解 | 第 2 步      |
-| [03-工作流](03-workflows.md)       | spec-driven、bugfix、spike 详解          | 第 3 步      |
+| 文档                               | 内容                                     | 建议顺序    |
+| ---------------------------------- | ---------------------------------------- | ----------- |
+| [安装指南](install.md)             | 从零搭建 Harness 环境（AI 引导）         | **第 0 步** |
+| [00-快速开始](00-quick-start.md)   | **5 分钟入门教程**                       | **第 1 步** |
+| [01-概览](01-overview.md)          | 系统整体介绍、核心概念                   | 第 2 步     |
+| [02-配置体系](02-config-system.md) | AGENTS.md vs config.yaml vs schemas 详解 | 第 3 步     |
+| [03-工作流](03-workflows.md)       | spec-driven、bugfix、spike 详解          | 第 4 步     |
 
 ### 使用参考
 
