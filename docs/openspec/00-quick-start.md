@@ -53,7 +53,6 @@ ls -la
 ├── AGENTS.md               # AI 行为指南
 ├── docs/                   # 文档
 │   ├── openspec/           # Harness 使用文档
-
 │
 └── src/                    # 源代码
 ```
