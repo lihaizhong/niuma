@@ -15,33 +15,46 @@
 
 ### 三层配置体系
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│  Layer 1: AI 行为指南 (AGENTS.md)                           │
-│  └── 告诉 AI 如何与你协作                                   │
-│      - 角色定义 (SpecWriter, Developer, Tester...)         │
-│      - 工作流程 (探索→提案→实施→归档)                      │
-│      - 约束规则 (必须 TDD、必须写测试...)                  │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│  Layer 2: 项目配置 (openspec/config.yaml)                   │
-│  └── 定义项目的基本信息和技术栈                             │
-│      - 项目元数据 (名称、语言、运行时)                       │
-│      - 技术栈 (框架、测试工具、UI 库)                        │
-│      - 模块划分 (niuma-engine, src, openspec...)            │
-│      - 常用命令 (install, dev, test, build...)              │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│  Layer 3: 工作流定义 (openspec/schemas/*.yaml)              │
-│  └── 定义不同类型任务的详细流程                             │
-│      - spec-driven: 新功能开发 (提案→设计→规格→任务)        │
-│      - bugfix: Bug 修复 (报告→定位→修复→回归测试)           │
-│      - spike: 技术调研 (问题→探索→结论)                     │
-└─────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph Layer1["Layer 1: AI 行为指南 (AGENTS.md)"]
+        L1A["告诉 AI 如何与你协作"]
+        L1B["• 角色定义<br/>(SpecWriter, Developer, Tester...)"]
+        L1C["• 工作流程<br/>(探索→提案→实施→归档)"]
+        L1D["• 约束规则<br/>(必须 TDD、必须写测试...)"]
+        L1A --> L1B
+        L1A --> L1C
+        L1A --> L1D
+    end
+
+    subgraph Layer2["Layer 2: 项目配置 (openspec/config.yaml)"]
+        L2A["定义项目的基本信息和技术栈"]
+        L2B["• 项目元数据<br/>(名称、语言、运行时)"]
+        L2C["• 技术栈<br/>(框架、测试工具、UI 库)"]
+        L2D["• 模块划分<br/>(niuma-engine, src, openspec...)"]
+        L2E["• 常用命令<br/>(install, dev, test, build...)"]
+        L2A --> L2B
+        L2A --> L2C
+        L2A --> L2D
+        L2A --> L2E
+    end
+
+    subgraph Layer3["Layer 3: 工作流定义 (openspec/schemas/*.yaml)"]
+        L3A["定义不同类型任务的详细流程"]
+        L3B["• spec-driven<br/>新功能开发 (提案→设计→规格→任务)"]
+        L3C["• bugfix<br/>Bug 修复 (报告→定位→修复→回归测试)"]
+        L3D["• spike<br/>技术调研 (问题→探索→结论)"]
+        L3A --> L3B
+        L3A --> L3C
+        L3A --> L3D
+    end
+
+    Layer1 --> Layer2
+    Layer2 --> Layer3
+
+    style Layer1 fill:#e1f5e1
+    style Layer2 fill:#fff2cc
+    style Layer3 fill:#e1e5ff
 ```
 
 **关键区别**：
@@ -149,11 +162,37 @@ ls openspec/changes/add-dark-mode/
 
 ### 1. 清晰分离关注点
 
-```
-规格（做什么） ←──── 人负责 ────→ 文档化、可讨论
-     │
-     ▼
-实现（怎么做） ←──── AI 辅助 ────→ 代码生成、验证
+```mermaid
+flowchart TD
+    subgraph Spec["规格（做什么）"]
+        S1["文档化"]
+        S2["可讨论"]
+    end
+
+    subgraph Human["人负责"]
+        H1["决策"]
+        H2["验收"]
+    end
+
+    subgraph AI["AI 辅助"]
+        A1["代码生成"]
+        A2["验证"]
+    end
+
+    subgraph Impl["实现（怎么做）"]
+        I1["编码"]
+        I2["测试"]
+    end
+
+    Spec <---> Human
+    Human -.->|指导| AI
+    AI <---> Impl
+    Impl -.->|反馈| Human
+
+    style Spec fill:#e1f5e1
+    style Human fill:#fff2cc
+    style AI fill:#e1e5ff
+    style Impl fill:#ffe1e1
 ```
 
 ### 2. 可追溯的变更历史
