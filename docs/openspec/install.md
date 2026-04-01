@@ -183,6 +183,107 @@ AI 自动检测技术栈 → 展示检测报告 → 用户确认/修改
 
 ---
 
+## 阶段 3.5：AI 配置目录检测与选择
+
+在安装 AI 助手配置之前，AI 需要检测当前环境并确定目标配置目录。
+
+### 3.5.1 检测已存在的 AI 配置目录
+
+AI 扫描项目根目录，检查以下 AI 工具配置目录是否存在：
+
+| AI 工具        | 配置目录           | 检测标志                                       |
+| -------------- | ------------------ | ---------------------------------------------- |
+| OpenCode       | `.opencode/`       | `opencode.json` 或 `.opencode/skills/`         |
+| Claude Code    | `.claude/`         | `.claude/commands/` 或 `.claude/settings.json` |
+| Cursor         | `.cursor/`         | `.cursor/rules/` 或 `.cursor/settings.json`    |
+| GitHub Copilot | `.github/copilot/` | `.github/copilot/instructions.md`              |
+| VS Code        | `.vscode/`         | `.vscode/settings.json`                        |
+| Windsurf       | `.windsurf/`       | `.windsurf/rules/`                             |
+| 其他工具       | 用户指定           | -                                              |
+
+**检测逻辑：**
+
+```
+扫描项目根目录
+  ├─ 发现 0 个 AI 配置目录 → 进入 3.5.2（检测当前运行的 AI 工具）
+  ├─ 发现 1 个 AI 配置目录 → 提示用户确认
+  │   "检测到 [工具名] 配置目录 ([路径])，是否在此目录更新配置？"
+  │   [是] → 使用该目录
+  │   [否] → 进入 3.5.2
+  └─ 发现 2+ 个 AI 配置目录 → 提示用户选择
+      "检测到多个 AI 配置目录："
+      □ [工具A] ([路径])
+      □ [工具B] ([路径])
+      □ [工具C] ([路径])
+
+      请选择要更新的目录（可多选）：
+      [确认] [全部更新] [跳过]
+```
+
+### 3.5.2 检测当前运行的 AI 工具
+
+如果用户未选择现有目录，或需要添加新的 AI 工具支持，AI 检测当前正在运行的 AI 助手：
+
+**检测方法：**
+
+```
+1. 检查环境变量
+   - OPENCODE_SESSION_ID → 当前使用 OpenCode
+   - CLAUDE_CODE_VERSION → 当前使用 Claude Code
+   - CURSOR_VERSION → 当前使用 Cursor
+
+2. 检查运行时特征
+   - 进程树中包含 "opencode" → OpenCode
+   - 进程树中包含 "claude" → Claude Code
+   - 进程树中包含 "cursor" → Cursor
+
+3. 检查上下文信息
+   - 系统提示词或上下文中包含特定标识
+```
+
+**检测后处理：**
+
+```
+当前运行的 AI 工具：[工具名]
+
+该工具是否在已检测到的列表中？
+  ├─ 是 → 询问："当前使用 [工具名]，是否更新其配置目录？"
+  └─ 否 → 询问：
+      "检测到您当前使用 [工具名]，但该工具不在标准支持列表中。
+
+       是否需要为此工具创建配置目录？
+       [是] → 请输入配置目录名称（默认：.[工具名小写]/）：
+       [否] → 请手动选择或输入目标配置目录："
+```
+
+### 3.5.3 目标配置目录确认
+
+最终确认目标配置目录：
+
+```
+📁 目标 AI 配置目录：[路径]
+
+将在此目录下创建：
+  ├── commands/
+  │   ├── opsx-explore.md
+  │   ├── opsx-propose.md
+  │   ├── opsx-apply.md
+  │   ├── opsx-archive.md
+  │   ├── opsx-bugfix.md
+  │   └── opsx-spike.md
+  └── skills/
+      ├── openspec-explore/
+      ├── openspec-propose/
+      ├── openspec-apply-change/
+      ├── openspec-archive-change/
+      ├── openspec-bugfix/
+      └── openspec-spike/
+
+[确认安装] [更换目录] [取消]
+```
+
+---
+
 ## 阶段 4：执行安装
 
 ### 4.1 创建目录结构
@@ -210,6 +311,115 @@ AI 从 `docs/openspec/.template/` 读取模板并填充：
 | `.template/AGENTS.md`            | `AGENTS.md`                    | 填充变量后写入 |
 | `.template/custom/commands/*`    | `{{AI_CONFIG_DIR}}/commands/*` | 直接复制       |
 | `.template/custom/skills/*`      | `{{AI_CONFIG_DIR}}/skills/*`   | 直接复制       |
+
+#### 4.2.1 AGENTS.md 生成逻辑
+
+**生成流程：**
+
+```
+1. 读取模板 .template/AGENTS.md
+2. 替换变量占位符：
+   - {{PROJECT_NAME}} → 项目名称
+   - {{PROJECT_DESCRIPTION}} → 项目描述
+   - {{PACKAGE_MANAGER}} → 包管理器
+   - {{TEST_DIR}} → 测试目录
+   - {{SRC_DIR}} → 源码目录
+3. 检查目标路径是否已存在 AGENTS.md
+4. 如果存在 → 进入冲突处理流程
+5. 如果不存在 → 直接写入
+```
+
+**冲突处理（目标文件已存在）：**
+
+```
+检测到项目根目录已存在 AGENTS.md
+
+可能的情况：
+├─ 旧版 OpenSpec 的 AI 行为指南
+├─ 其他 AI 工具的配置文件
+└─ 用户自定义的 AI 指南
+
+处理方式：
+1. 检查文件头部是否有 OpenSpec 标识（target: AI Assistant）
+   ├─ 是 → 这是旧版 OpenSpec 配置，询问是否覆盖
+   │       "检测到旧版 OpenSpec AGENTS.md，是否更新到最新版本？"
+   │       [更新] [保留现有] [对比差异]
+   └─ 否 → 进入步骤 2
+
+2. 检查是否为其他工具专属配置
+   ├─ 是 → 进入步骤 3
+   └─ 否 → 进入步骤 4
+
+3. 其他情况（可能是用户自定义或其他工具配置）
+       "检测到已存在的 AI 配置文件，可能与其他 AI 工具冲突。"
+       [备份并创建新的 AGENTS.md] [重命名为 AGENTS.md.bak 并创建] [跳过]
+```
+
+**专属 AI 文档检测与处理：**
+
+在安装 AGENTS.md（通用 AI 文档）之前，先检测是否存在专属 AI 文档：
+
+| 专属文档 | 文件名模式                                    | 说明                    |
+| -------- | --------------------------------------------- | ----------------------- |
+| IFLOW    | `IFLOW.md`, `iflow.md`                        | iFlow 专属配置          |
+| Claude   | `CLAUDE.md`, `claude.md`, `.claude/CLAUDE.md` | Claude Code 专属配置    |
+| Cursor   | `CURSOR.md`, `cursor.md`, `.cursor/CURSOR.md` | Cursor 专属配置         |
+| OpenCode | `OPENCODE.md`, `opencode.md`                  | OpenCode 专属配置       |
+| Copilot  | `COPILOT.md`, `copilot.md`                    | GitHub Copilot 专属配置 |
+
+**检测逻辑：**
+
+```
+扫描项目根目录及 AI 配置目录，查找专属 AI 文档：
+
+发现 0 个专属文档 → 直接生成 AGENTS.md
+
+发现 1+ 个专属文档 → 提示用户：
+"检测到项目中已存在专属 AI 配置文件：
+   • [IFLOW.md] - iFlow 专属配置
+   • [CLAUDE.md] - Claude Code 专属配置
+
+   AGENTS.md 是通用 AI 行为指南，可被所有 AI 工具读取。
+   专属 AI 文档仅对特定 AI 工具有效。
+
+   请选择操作：
+   □ 同时生成 AGENTS.md（推荐，作为通用指南）
+   □ 将专属文档内容合并到 AGENTS.md
+   □ 跳过，保留现有专属文档（不推荐，其他 AI 工具无法读取）"
+```
+
+**处理方式：**
+
+```
+用户选择：
+
+[A] 同时生成 AGENTS.md
+    → 保留现有专属文档
+    → 生成新的 AGENTS.md
+    → 在 AGENTS.md 顶部添加注释：
+      "注意：本项目同时存在 [工具名] 专属配置 [文件名]，
+       当冲突时，专属配置优先于本通用配置"
+
+[B] 将专属文档内容合并到 AGENTS.md
+    → 解析专属文档内容
+    → 提取关键配置（角色定义、工作流程、约束等）
+    → 合并到 AGENTS.md 模板中
+    → 备份原专属文档为 [原文件名].bak
+    → 生成合并后的 AGENTS.md
+
+[C] 跳过生成
+    → 保留现有专属文档
+    → 给出警告：
+      "警告：未生成 AGENTS.md，其他 AI 工具可能无法正确理解项目规范。
+       如需通用 AI 支持，可稍后手动运行安装流程。"
+```
+
+**注意事项：**
+
+- 始终创建备份（`.bak` 或 `.backup.<timestamp>`）
+- 如果用户选择保留现有文件，跳过 AGENTS.md 生成，但给出警告
+- 迁移旧格式时，尽可能保留原有配置内容
+- 专属文档的优先级高于 AGENTS.md，避免配置冲突
 
 ### 4.3 配置变量填充
 
