@@ -2,11 +2,24 @@
 
 > 所有 `/opsx-*` 命令的详细用法速查
 
+## 命令定义位置
+
+所有命令定义存储在 `{{AI_CONFIG_DIR}}/` 目录中：
+
+- **命令入口**：`{{AI_CONFIG_DIR}}/commands/*.md` - 用户可见的命令描述
+- **执行逻辑**：`{{AI_CONFIG_DIR}}/skills/openspec-*/SKILL.md` - AI 执行的详细步骤
+
+完整命令定义可参考：
+
+- `.template/custom/commands/` - 命令模板
+- `.template/custom/skills/` - 技能模板
+
 ## 命令总览
 
 | 命令            | 功能     | 适用场景             | 对应工作流         |
 | --------------- | -------- | -------------------- | ------------------ |
-| `/opsx-explore` | 探索模式 | 需求不明确、技术选型 | Explore            |
+| `/opsx-explore` | 探索模式 | 需求不明确、自由讨论 | Explore            |
+| `/opsx-spike`   | 技术调研 | 技术选型、可行性研究 | Spike              |
 | `/opsx-propose` | 创建提案 | 新功能、架构改动     | Spec-Driven        |
 | `/opsx-bugfix`  | Bug 修复 | 修复问题、错误处理   | Bugfix             |
 | `/opsx-apply`   | 实施任务 | 开始实现已规划的功能 | Spec-Driven/Bugfix |
@@ -81,6 +94,164 @@ AI 列出风险：
 
 - 说"结束探索"或"开始实施"
 - AI 会询问是否要创建正式变更
+
+### 命令定义
+
+- **命令定义**：`{{AI_CONFIG_DIR}}/commands/opsx-explore.md`
+- **执行逻辑**：`{{AI_CONFIG_DIR}}/skills/openspec-explore/SKILL.md`
+- **模板参考**：`.template/custom/commands/opsx-explore.md`
+
+## /opsx-spike
+
+### 功能
+
+启动技术调研（Spike），进行时间盒限制的研究并产出决策文档。
+
+### 语法
+
+```bash
+/opsx-spike <spike-name> [optional: description]
+```
+
+### 参数
+
+- `spike-name`（必需）- 调研名称，kebab-case 格式，如 `evaluate-state-management`
+- `description`（可选）- 简短描述
+
+### 命名规范
+
+```
+✅ 正确：
+  - evaluate-state-management
+  - compare-api-options
+  - investigate-performance-issue
+  - prototype-webrtc-integration
+
+❌ 错误：
+  - research (太笼统)
+  - spike1 (无意义)
+  - ReduxVsZustand (应该用 kebab-case)
+```
+
+### 使用步骤
+
+#### 步骤 1：启动 Spike
+
+```bash
+/opsx-spike evaluate-state-management
+
+AI: 正在创建 Spike 变更...
+     创建 research-question.md 模板
+
+请定义研究问题：
+- Problem_Statement: 需要选择轻量级状态管理方案
+- Research_Goals: 评估 Redux vs Zustand vs Context
+- Scope: 对比包大小、API、性能
+- Timebox: 4 小时
+```
+
+#### 步骤 2：填写研究问题
+
+AI 引导填写 research-question.md：
+
+```markdown
+# Research Question: 状态管理方案选择
+
+## Problem_Statement
+
+当前项目需要添加全局状态管理，要求：
+
+- 轻量级（<5KB）
+- TypeScript 友好
+- 易于测试
+
+## Research_Goals
+
+1. 对比 Redux Toolkit、Zustand、Context API
+2. 评估学习曲线
+3. 测试实际性能
+
+## Scope
+
+**In Scope**: 三个方案的基础功能对比
+**Out of Scope**: 高级功能、长期维护成本
+
+## Timebox
+
+4 小时
+```
+
+#### 步骤 3：进行探索
+
+```bash
+AI: 开始探索阶段...
+
+你可以：
+1. 阅读文档
+2. 编写原型代码
+3. 进行实验
+4. 记录发现
+
+我会帮你记录到 exploration-log.md
+```
+
+#### 步骤 4：形成决策
+
+AI 协助撰写 decision.md：
+
+```markdown
+# Decision: 采用 Zustand
+
+## Summary
+
+经过 3.5 小时调研，评估了三个状态管理方案。
+
+## Recommendation
+
+**采用 Zustand**
+
+## Rationale
+
+- 包大小仅 1KB（vs Redux 11KB）
+- TypeScript 原生支持
+- API 极简，学习成本低
+
+## Next_Steps
+
+1. 创建实现变更: `/opsx-propose add-zustand-store`
+2. 编写迁移指南
+```
+
+### 产物详解
+
+| 文件                   | 用途     | 内容                   |
+| ---------------------- | -------- | ---------------------- |
+| `.openspec.yaml`       | 调研配置 | schema、状态、时间盒   |
+| `research-question.md` | 研究问题 | 要研究什么、范围、时间 |
+| `exploration-log.md`   | 探索日志 | 发现、实验、对比       |
+| `decision.md`          | 决策文档 | 结论、理由、下一步     |
+
+### Spike vs Explore
+
+| 场景                   | 使用            | 原因             |
+| ---------------------- | --------------- | ---------------- |
+| "Redux 还是 Zustand？" | `/opsx-spike`   | 需要产出明确决策 |
+| "这个功能合理吗？"     | `/opsx-explore` | 开放式讨论       |
+| "API 是否可行？"       | `/opsx-spike`   | 需要验证并决策   |
+| "不知道怎么实现"       | `/opsx-explore` | 需要澄清方案     |
+
+### 时间盒规则
+
+- **默认**: 4 小时
+- **最大**: 2 天
+- **到期**: 必须下结论（即使是不完整的）
+- **延期**: 需要明确理由和新的时间盒
+
+### 命令定义
+
+- **命令定义**：`{{AI_CONFIG_DIR}}/commands/opsx-spike.md`
+- **执行逻辑**：`{{AI_CONFIG_DIR}}/skills/openspec-spike/SKILL.md`
+- **模板参考**：`.template/custom/commands/opsx-spike.md`
 
 ## /opsx-propose
 
@@ -183,6 +354,12 @@ AI: 提案阶段完成！
 - 变更名称唯一，不能重复
 - 可以多次运行来更新文档
 - 确认完成后才能进入 Apply 阶段
+
+### 命令定义
+
+- **命令定义**：`{{AI_CONFIG_DIR}}/commands/opsx-propose.md`
+- **执行逻辑**：`{{AI_CONFIG_DIR}}/skills/openspec-propose/SKILL.md`
+- **模板参考**：`.template/custom/commands/opsx-propose.md`
 
 ## /opsx-bugfix
 
@@ -371,6 +548,12 @@ P2 - Medium: 非核心功能问题
 P3 - Low: 轻微问题
 ```
 
+### 命令定义
+
+- **命令定义**：`{{AI_CONFIG_DIR}}/commands/opsx-bugfix.md`
+- **执行逻辑**：`{{AI_CONFIG_DIR}}/skills/openspec-bugfix/SKILL.md`
+- **模板参考**：`.template/custom/commands/opsx-bugfix.md`
+
 ## /opsx-apply
 
 ### 功能
@@ -500,6 +683,12 @@ AI: 所有任务完成！
 - 每个任务必须完成 Red→Green→Refactor
 - 可以随时中断，下次继续
 
+### 命令定义
+
+- **命令定义**：`{{AI_CONFIG_DIR}}/commands/opsx-apply.md`
+- **执行逻辑**：`{{AI_CONFIG_DIR}}/skills/openspec-apply-change/SKILL.md`
+- **模板参考**：`.template/custom/commands/opsx-apply.md`
+
 ## /opsx-archive
 
 ### 功能
@@ -545,13 +734,20 @@ ls openspec/changes/archive/
 
 通常不需要手动运行，因为：
 
-- **Spec-Driven**：合并到 main 后自动归档
-- **Bugfix**：合并到 main 后自动归档
+- **Spec-Driven**：Release 发布或部署成功后自动归档
+- **Bugfix**：Release 发布或部署成功后自动归档
+- **Spike**：Release 发布或部署成功后自动归档
 
 手动归档只在特殊情况下使用：
 
 - 放弃变更时
 - 手动清理旧变更时
+
+### 命令定义
+
+- **命令定义**：`{{AI_CONFIG_DIR}}/commands/opsx-archive.md`
+- **执行逻辑**：`{{AI_CONFIG_DIR}}/skills/openspec-archive-change/SKILL.md`
+- **模板参考**：`.template/custom/commands/opsx-archive.md`
 
 ## 命令组合使用
 
@@ -600,17 +796,25 @@ git commit -m "fix: API timeout issue"
 ### 典型流程 3：技术调研
 
 ```bash
-# 1. 探索
-/opsx-explore
-> "应该用 Redis 还是内存缓存？"
+# 1. 启动 Spike 调研
+/opsx-spike evaluate-caching-strategy
+> "对比 Redis vs 内存缓存 vs 本地存储"
 
-# 2. 得出结论
-> "Redis 适合我们的场景"
+# 2. 定义研究问题
+> AI 引导填写 research-question.md
 
-# 3. 转为正式开发
+# 3. 进行探索
+> 阅读文档、编写原型、测试性能
+> 记录发现到 exploration-log.md
+
+# 4. 形成决策
+> AI 协助撰写 decision.md
+> "推荐：使用 Redis"
+
+# 5. 转为正式开发
 /opsx-propose add-redis-cache
 
-# 4. 继续 Spec-Driven 流程...
+# 6. 继续 Spec-Driven 流程...
 ```
 
 ## 故障排除
@@ -676,13 +880,14 @@ AI: [Checkpoint Failed] test:unit
 
 ## 快捷键速查
 
-| 意图         | 命令                   |
-| ------------ | ---------------------- |
-| 不确定怎么做 | `/opsx-explore`        |
-| 加新功能     | `/opsx-propose <name>` |
-| 修 Bug       | `/opsx-bugfix <id>`    |
-| 开始编码     | `/opsx-apply`          |
-| 结束当前     | "完成" 或 "归档"       |
+| 意图          | 命令                   |
+| ------------- | ---------------------- |
+| 不确定怎么做  | `/opsx-explore`        |
+| 技术调研/选型 | `/opsx-spike <name>`   |
+| 加新功能      | `/opsx-propose <name>` |
+| 修 Bug        | `/opsx-bugfix <id>`    |
+| 开始编码      | `/opsx-apply`          |
+| 结束当前      | "完成" 或 "归档"       |
 
 ## 下一步
 

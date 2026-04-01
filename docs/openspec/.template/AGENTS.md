@@ -1,14 +1,14 @@
 ---
 target: AI Assistant
-purpose: Operational guidelines for Niuma project
+purpose: Operational guidelines for PROJECT_NAME project
 version: 1.0
 ---
 
-# AI Agent Guidelines - Niuma Project
+# AI Agent Guidelines - PROJECT_NAME Project
 
 ## Context
 
-Niuma (牛马) - Multi-agent AI assistant system. TypeScript + Node.js + Next.js.
+PROJECT_NAME - PROJECT_DESCRIPTION
 
 See [openspec/config.yaml](./openspec/config.yaml) for detailed project configuration.
 
@@ -38,8 +38,8 @@ Implement tests before code exists.
 Workflow:
 
 1. Read specs from `openspec/changes/<name>/specs/*.md`
-2. Create tests in `src/niuma-engine/tests/` or `src/tests/`
-3. Run `pnpm test:unit` to confirm tests fail (Red)
+2. Create tests in `TEST_DIR/`
+3. Run `PACKAGE_MANAGER test:unit` to confirm tests fail (Red)
 4. Commit tests
 
 Test coverage:
@@ -55,14 +55,14 @@ Implement code to pass tests.
 Workflow:
 
 1. Read spec.md and existing tests
-2. Implement in `src/niuma-engine/` or `src/`
+2. Implement in `SRC_DIR/`
 3. Run tests until pass (Green)
 4. Refactor (Refactor)
 
 Standards:
 
-- Pass `pnpm lint`
-- Pass `pnpm type-check`
+- Pass `PACKAGE_MANAGER lint`
+- Pass `PACKAGE_MANAGER type-check`
 - Maintain coverage
 
 ### Reviewer

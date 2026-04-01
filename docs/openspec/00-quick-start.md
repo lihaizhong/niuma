@@ -4,6 +4,8 @@
 
 ## 前置条件
 
+> **还没有 Harness 环境？** 让 AI 帮你从零搭建 → [install.md](install.md)
+
 确保你已经安装：
 
 - **Node.js** >= 22.0.0
@@ -46,15 +48,12 @@ ls -la
 │   │   └── bugfix.yaml      # Bug 修复
 │   └── changes/             # 变更目录（你的工作）
 │
-├── .opencode/               # AI 助手配置
-│   ├── command/             # 斜杠命令
-│   └── skills/              # 技能定义
+├── {{AI_CONFIG_DIR}}/          # AI 助手配置
+│   ├── commands/             # 斜杠命令
+│   └── skills/               # 技能定义
 │
 ├── AGENTS.md               # AI 行为指南
 ├── docs/                   # 文档
-│   ├── openspec/           # Harness 使用文档
-│   └── openspec-team/      # 团队协作方案
-│
 └── src/                    # 源代码
 ```
 
@@ -146,25 +145,30 @@ git push origin feature/add-welcome-message
 
 你已经完成了一个完整的 Harness 工作流：
 
-```
-探索需求 → 创建提案 → 审阅设计 → 实施任务 → 提交验证
-    │          │          │          │          │
-    │          │          │          │          ▼
-    │          │          │          │      代码合并
-    │          │          │          │      自动归档
-    │          │          │          │
-    │          │          │          ▼
-    │          │          │      TDD 循环
-    │          │          │      Red → Green → Refactor
-    │          │          │
-    │          │          ▼
-    │          │      设计方案和技术选型
-    │          │
-    │          ▼
-    │      proposal.md + design.md + specs/ + tasks.md
-    │
-    ▼
-（可选）/opsx-explore
+```mermaid
+flowchart LR
+    direction TB
+    A[探索需求] --> B[创建提案]
+    B --> C[审阅设计]
+    C --> D[实施任务]
+    D --> E[提交验证]
+    E --> F[代码合并]
+    F --> G[自动归档]
+
+    B1[proposal.md + design.md + specs/ + tasks.md]
+    C1[设计方案 + 技术选型]
+    D1[TDD循环: Red→Green→Refactor]
+
+    B -.-> B1
+    C -.-> C1
+    D -.-> D1
+
+    style A fill:#e1f5e1
+    style G fill:#e1f5e1
+    style F fill:#fff2cc
+    style B1 fill:none,stroke:#999,stroke-dasharray: 5 5
+    style C1 fill:none,stroke:#999,stroke-dasharray: 5 5
+    style D1 fill:none,stroke:#999,stroke-dasharray: 5 5
 ```
 
 ## 下一步
@@ -173,11 +177,12 @@ git push origin feature/add-welcome-message
 
 根据你的需求选择：
 
-| 如果你...    | 使用命令                | 阅读文档                     |
-| ------------ | ----------------------- | ---------------------------- |
-| 加新功能     | `/opsx-propose <name>`  | [03-工作流](03-workflows.md) |
-| 修 Bug       | `/opsx-bugfix <bug-id>` | [03-工作流](03-workflows.md) |
-| 不确定怎么做 | `/opsx-explore`         | [03-工作流](03-workflows.md) |
+| 如果你...     | 使用命令                | 阅读文档                                |
+| ------------- | ----------------------- | --------------------------------------- |
+| 加新功能      | `/opsx-propose <name>`  | [03-工作流](03-workflows.md)            |
+| 修 Bug        | `/opsx-bugfix <bug-id>` | [03-工作流](03-workflows.md)            |
+| 技术调研/选型 | `/opsx-spike <name>`    | [Spike vs Explore](spike-vs-explore.md) |
+| 不确定怎么做  | `/opsx-explore`         | [03-工作流](03-workflows.md)            |
 
 ### 深入学习
 
@@ -199,7 +204,7 @@ git push origin feature/add-welcome-message
 ```bash
 # 检查配置文件是否存在
 ls openspec/config.yaml
-ls .opencode/command/opsx-propose.md
+ls {{AI_CONFIG_DIR}}/commands/opsx-propose.md
 
 # 如果不存在，需要初始化 OpenSpec
 # （参见项目初始化文档）

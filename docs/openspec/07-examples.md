@@ -130,7 +130,7 @@ openspec/changes/add-user-preferences/
 
 ### 2.4 design.md 示例
 
-```markdown
+````markdown
 # Design: 用户偏好设置
 
 ## 技术方案
@@ -138,18 +138,25 @@ openspec/changes/add-user-preferences/
 ### 1. 状态管理
 
 使用 React Context + localStorage 实现偏好管理：
-```
 
-┌─────────────────────────────────────────────────────────┐
-│ PreferencesProvider │
-│ ┌─────────────┐ ┌─────────────┐ ┌─────────────────┐ │
-│ │ Theme │ │ Language │ │ localStorage │ │
-│ │ State │ │ State │ │ Sync │ │
-│ └─────────────┘ └─────────────┘ └─────────────────┘ │
-└─────────────────────────────────────────────────────────┘
-│ │ │
-▼ ▼ ▼
-ThemeProvider I18nProvider localStorage.setItem()
+```mermaid
+flowchart TB
+    subgraph PreferencesProvider["PreferencesProvider"]
+        TS["Theme<br/>State"]
+        LS["Language<br/>State"]
+        SS["localStorage<br/>Sync"]
+    end
+
+    PreferencesProvider -->|"theme"| TP["ThemeProvider"]
+    PreferencesProvider -->|"language"| IP["I18nProvider"]
+    PreferencesProvider -->|"save"| ST["localStorage.setItem()"]
+
+    style PreferencesProvider fill:#f5f5f5,stroke:#333
+    style TS fill:#e1f5e1
+    style LS fill:#fff2cc
+    style SS fill:#e1e5ff
+```
+````
 
 ````
 
@@ -549,26 +556,31 @@ openspec/changes/
 
 ## 完整时间线
 
-```
-Day 1, 09:00  /opsx-explore         探索需求
-                ↓
-Day 1, 09:30  /opsx-propose         创建提案
-                ↓
-Day 1, 10:00  审阅文档              修改 design.md
-                ↓
-Day 1, 11:00  /opsx-apply           开始实施
-                ↓
-Day 1, 14:00  完成 Red Phase       测试编写完成
-                ↓
-Day 1, 17:00  完成 Green Phase      功能实现完成
-                ↓
-Day 2, 09:00  完成 Refactor Phase   代码优化完成
-                ↓
-Day 2, 11:00  提交 PR               代码审查
-                ↓
-Day 2, 14:00  合并代码              自动归档
-                ↓
-Day 2, 14:05  完成                 整个流程结束
+```mermaid
+gantt
+    title OpenSpec 工作流程时间线
+    dateFormat X
+    axisFormat %H:%M
+
+    section 探索
+    探索需求 /opsx-explore :done, 09:00, 30m
+
+    section 提案
+    创建提案 /opsx-propose :done, 09:30, 30m
+    审阅文档 :done, 10:00, 60m
+
+    section 实施
+    开始实施 /opsx-apply :done, 11:00, 3h
+    完成 Red Phase :done, 14:00, 3h
+    完成 Green Phase :done, 17:00, 16h
+
+    section 优化
+    完成 Refactor Phase :done, d2, 2h
+
+    section 提交
+    提交 PR 代码审查 :done, d2, 3h
+    合并代码 自动归档 :done, d2, 5m
+    完成 整个流程结束 :milestone, 14:05, 0m
 ```
 
 **总耗时**：约 2 个工作日（包含首次学习的摸索时间）
@@ -604,6 +616,283 @@ Day 2, 14:05  完成                 整个流程结束
 - [ ] 自动归档成功
 - [ ] archive 目录有变更记录
 - [ ] 无活跃变更残留
+
+---
+
+## 示例 2：技术调研（Spike 工作流）
+
+**场景**：需要为项目选择合适的状态管理方案
+
+### Phase 1: 启动 Spike
+
+```bash
+/opsx-spike evaluate-state-management
+```
+
+AI 创建：
+
+```
+openspec/changes/evaluate-state-management/
+├── .openspec.yaml              # Spike 配置（含时间盒）
+├── research-question.md        # 研究问题
+├── exploration-log.md          # 探索日志
+├── decision.md                 # 决策文档
+└── findings/                   # 研究发现
+```
+
+### Phase 2: 定义研究问题
+
+**research-question.md**:
+
+```markdown
+# Research Question: 状态管理方案选择
+
+## Problem_Statement
+
+项目需要添加全局状态管理，要求：
+
+- 包大小 < 5KB
+- TypeScript 原生支持
+- 学习曲线平缓
+
+## Research_Goals
+
+1. 评估 Redux Toolkit vs Zustand vs Context API
+2. 测试实际性能表现
+3. 评估团队学习成本
+
+## Scope
+
+**In Scope**: 基础功能、性能、易用性
+**Out of Scope**: 高级功能、长期维护成本
+
+## Timebox
+
+4 小时
+```
+
+### Phase 3: 探索研究
+
+记录到 **exploration-log.md**:
+
+```markdown
+# Exploration Log
+
+## Approach
+
+从三个维度对比：包大小、API 复杂度、性能
+
+## Findings
+
+### Redux Toolkit
+
+- 大小: 11KB gzipped
+- 优点: 生态丰富，工具完善
+- 缺点: 样板代码多，学习曲线陡
+
+### Zustand
+
+- 大小: 1KB gzipped
+- 优点: 极简 API，TypeScript 友好
+- 缺点: 社区较小
+
+### Context API
+
+- 大小: 0KB (built-in)
+- 优点: 无需额外依赖
+- 缺点: 频繁更新时性能问题
+
+## Experiments_Conducted
+
+### 性能测试
+
+1000 个组件渲染：
+
+- Redux: ~45ms
+- Zustand: ~30ms
+- Context: ~120ms (闪烁)
+```
+
+### Phase 4: 形成决策
+
+**decision.md**:
+
+```markdown
+# Decision: 采用 Zustand
+
+## Recommendation
+
+**采用 Zustand 作为状态管理方案**
+
+## Rationale
+
+1. 包大小最优（1KB vs 11KB）
+2. TypeScript 原生支持
+3. 性能测试表现最佳
+4. API 极简，学习成本低
+
+## Alternatives_Considered
+
+- Redux: 过度设计，学习成本高
+- Context: 性能问题，不适合复杂状态
+
+## Next_Steps
+
+1. 创建实施变更: `/opsx-propose add-zustand-store`
+2. 预计工期: 2 天
+3. 编写团队使用指南
+```
+
+### Phase 5: 转为实施
+
+```bash
+# Spike 完成后，基于决策创建 Spec-Driven 变更
+/opsx-propose add-zustand-store
+
+# 继续 Spec-Driven 流程...
+```
+
+---
+
+## 示例 3：Bug 修复（Bugfix 工作流）
+
+**场景**：用户报告登录按钮点击无响应
+
+### Phase 1: 启动 Bugfix
+
+```bash
+/opsx-bugfix login-button-unresponsive
+```
+
+AI 创建：
+
+```
+openspec/bugs/login-button-unresponsive/
+├── .openspec.yaml              # Bug 配置
+├── bug-report.md               # 问题报告
+└── fix.md                      # 修复方案
+```
+
+### Phase 2: 填写 Bug 报告
+
+**bug-report.md**:
+
+```markdown
+# Bug Report: 登录按钮无响应
+
+## Symptom
+
+点击登录按钮没有任何反应
+
+## Steps_to_Reproduce
+
+1. 打开首页 https://example.com
+2. 点击右上角"登录"按钮
+3. 观察：无反应，控制台报错
+
+## Expected_Behavior
+
+应该弹出登录对话框
+
+## Actual_Behavior
+
+无任何反应，控制台报错：
+```
+
+TypeError: Cannot read property 'show' of undefined
+
+```
+
+## Environment
+
+- Browser: Chrome 120
+- OS: macOS 14.2
+- App Version: v2.3.1
+
+## Severity
+
+P1 - High: 核心功能损坏
+```
+
+### Phase 3: 复现与定位
+
+AI 分析：
+
+```
+1. 检查代码：LoginButton 组件
+2. 本地启动：pnpm dev
+3. 复现问题：确认 Bug 存在
+4. 分析根因：this 绑定问题
+```
+
+### Phase 4: 实施修复
+
+**fix.md**:
+
+````markdown
+# Fix: 登录按钮无响应
+
+## Root Cause
+
+LoginButton 组件使用了错误的 this 绑定：
+
+```tsx
+// 错误代码
+<button onClick={this.handleClick}>
+```
+
+在类组件中，this 不会自动绑定。
+
+## Fix Description
+
+改为箭头函数：
+
+```tsx
+// 修复后
+<button onClick={() => this.handleClick()}>
+```
+
+## Files Changed
+
+- src/components/LoginButton.tsx
+
+## Testing Strategy
+
+1. 单元测试：测试点击事件
+2. 手动测试：本地验证修复
+
+## Regression Test
+
+```typescript
+// src/tests/regression/login-button.test.ts
+it('should open login modal when clicked', () => {
+  render(<LoginButton />);
+  fireEvent.click(screen.getByText('登录'));
+  expect(screen.getByTestId('login-modal')).toBeVisible();
+});
+```
+````
+
+### Phase 5: 验证与提交
+
+```bash
+# 运行回归测试
+pnpm test:unit login-button
+
+# 运行所有测试确保没有破坏
+pnpm test:all
+
+# 提交
+git add .
+git commit -m "fix: login button click handler binding
+
+- Fix this binding in LoginButton component
+- Add regression test to prevent recurrence
+
+Fixes login-button-unresponsive"
+
+# 合并后自动归档到 openspec/bugs/archive/
+```
 
 ---
 

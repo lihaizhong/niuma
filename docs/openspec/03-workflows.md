@@ -1,38 +1,37 @@
 # 03 - 工作流详解
 
-> 深入理解 spec-driven、bugfix、explore 三种工作流
+> 深入理解 spec-driven、bugfix、spike、explore 四种工作流
 
 ## 工作流选择决策树
 
-```
-                    开始
-                     │
-         ┌───────────┴───────────┐
-         │                       │
-    发现 Bug?               新功能/改动?
-         │                       │
-    ┌────┴────┐             ┌────┴────┐
-    │         │             │         │
-   是         否           是         否
-    │         │             │         │
-    ▼         ▼             ▼         ▼
- Bugfix    不确定        Spec-     Explore
- 工作流     做什么?      Driven     工作流
-              │          工作流
-              ▼
-         Explore
-         工作流
+```mermaid
+flowchart TD
+    Start([开始]) --> Q1{发现 Bug?}
+    Q1 -->|是| Bugfix[Bugfix 工作流]
+    Q1 -->|否| Q2{技术调研?}
+
+    Q2 -->|是| Spike[Spike 工作流]
+    Q2 -->|否| Q3{新功能/改动?}
+
+    Q3 -->|是| SpecDriven[Spec-Driven 工作流]
+    Q3 -->|否| Explore[Explore 工作流]
+
+    style Start fill:#e1f5e1
+    style Bugfix fill:#ffe1e1
+    style Spike fill:#fff2cc
+    style SpecDriven fill:#e1f5e1
+    style Explore fill:#e1e5ff
 ```
 
 ## 工作流对比
 
-| 维度         | Spec-Driven      | Bugfix        | Explore            |
-| ------------ | ---------------- | ------------- | ------------------ |
-| **适用场景** | 新功能、架构改动 | Bug 修复      | 需求澄清、技术调研 |
-| **核心目标** | 设计先行         | 快速修复      | 明确方向           |
-| **产物数量** | 多（4+文档）     | 少（2-3文档） | 无固定             |
-| **时间投入** | 前期设计多       | 快速定位      | 灵活               |
-| **检查点**   | 完整             | 核心检查      | 无                 |
+| 维度         | Spec-Driven      | Bugfix        | Spike          | Explore        |
+| ------------ | ---------------- | ------------- | -------------- | -------------- |
+| **适用场景** | 新功能、架构改动 | Bug 修复      | 技术调研、选型 | 需求澄清、讨论 |
+| **核心目标** | 设计先行         | 快速修复      | 探索并决策     | 明确方向       |
+| **产物数量** | 多（4+文档）     | 少（2-3文档） | 中等（3文档）  | 无固定         |
+| **时间投入** | 前期设计多       | 快速定位      | 时间盒限制     | 灵活           |
+| **检查点**   | 完整             | 核心检查      | 无             | 无             |
 
 ## Spec-Driven 工作流
 
@@ -74,6 +73,8 @@ AI: "建议使用 WebSocket"
 ```
 
 **产物**：讨论记录（可选）
+
+---
 
 #### Phase 2: Propose（提案）
 
@@ -118,28 +119,104 @@ openspec/changes/<name>/
 
 **design.md** - 怎么做？
 
-```markdown
+````markdown
 # Design: 暗黑模式实现
 
 ## 技术选型
 
-- CSS 变量管理主题色
-- localStorage 存储用户偏好
-- matchMedia 监听系统主题
+- **主题管理**: CSS 变量（`--color-*`）管理主题色
+- **持久化**: localStorage 存储用户偏好
+- **系统同步**: matchMedia API 监听系统主题
 
 ## 架构设计
-```
-
-ThemeProvider
-├── 读取 localStorage 偏好
-├── 监听系统主题变化
-└── 注入 CSS 变量
 
 ```
-
-## 风险
-- 第三方组件可能不兼容
+src/
+├── providers/
+│   └── ThemeProvider.tsx    # 主题上下文提供者
+├── hooks/
+│   └── useTheme.ts           # 主题切换 Hook
+├── components/
+│   └── ThemeToggle.tsx       # 主题切换组件
+└── styles/
+    └── themes/
+        ├── light.css         # 亮色主题变量
+        └── dark.css          # 暗黑主题变量
 ```
+
+## 组件设计
+
+### ThemeProvider
+
+```tsx
+interface ThemeProviderProps {
+  children: React.ReactNode;
+  defaultTheme?: "light" | "dark" | "system";
+}
+
+// 职责：// 1. 从 localStorage 读取用户偏好
+// 2. 监听系统主题变化（matchMedia）
+// 3. 注入对应的 CSS 变量
+// 4. 提供主题上下文（useTheme）
+```
+
+### ThemeToggle
+
+```tsx
+// 职责：
+// 1. 显示当前主题状态
+// 2. 提供主题切换按钮
+// 3. 三种模式循环切换：light → dark → system
+```
+
+## 数据流
+
+```
+用户点击切换
+    ↓
+ThemeToggle.setTheme()
+    ↓
+更新 localStorage
+    ↓
+ThemeProvider 感知变化
+    ↓
+更新 CSS 变量
+    ↓
+UI 重新渲染
+```
+
+## 技术决策
+
+| 决策点       | 选择          | 原因                   |
+| ------------ | ------------- | ---------------------- |
+| 主题存储     | localStorage  | 简单可靠，无需后端     |
+| CSS 方案     | CSS 变量      | 动态切换，兼容性好     |
+| 系统主题监听 | matchMedia    | 浏览器原生 API，性能好 |
+| 状态管理     | React Context | 轻量级，不引入额外依赖 |
+
+## 风险与缓解
+
+| 风险                   | 影响 | 缓解措施                                  |
+| ---------------------- | ---- | ----------------------------------------- |
+| 第三方组件不兼容       | 高   | 提供 CSS 变量覆盖机制，优先支持主流 UI 库 |
+| localStorage 不可用    | 低   | 降级为内存存储，session 内有效            |
+| 系统主题频繁切换       | 低   | 防抖处理，避免频繁重绘                    |
+| SSR/SSG hydration 问题 | 中   | 使用 useEffect 避免服务端渲染不匹配       |
+
+## 测试策略
+
+- **单元测试**: useTheme Hook 的状态切换逻辑
+- **集成测试**: ThemeProvider + ThemeToggle 组合行为
+- **E2E 测试**: 用户切换主题的完整流程
+
+## 实现顺序
+
+1. 实现 CSS 变量主题系统
+2. 实现 ThemeProvider + useTheme
+3. 实现 ThemeToggle 组件
+4. 适配所有现有组件
+5. 添加过渡动画
+````
 
 **specs/\*.md** - 做什么？
 
@@ -178,6 +255,124 @@ THEN 监听 matchMedia 并自动切换
 - [ ] 添加过渡动画
 ```
 
+## 组件设计
+
+### ThemeProvider
+
+```tsx
+interface ThemeProviderProps {
+  children: React.ReactNode;
+  defaultTheme?: "light" | "dark" | "system";
+}
+
+// 职责：
+// 1. 从 localStorage 读取用户偏好
+// 2. 监听系统主题变化（matchMedia）
+// 3. 注入对应的 CSS 变量
+// 4. 提供主题上下文useTheme）
+```
+
+### ThemeToggle
+
+```tsx
+// 职责：
+// 1. 显示当前主题状态
+// 2. 提供主题切换按钮
+// 3. 三种模式循环切换：light → dark → system
+```
+
+## 数据流
+
+```
+用户点击切换
+    ↓
+ThemeToggle.setTheme()
+    ↓
+更新 localStorage
+    ↓
+ThemeProvider 感知变化
+    ↓
+更新 CSS 变量
+    ↓
+UI 重新渲染
+```
+
+## 技术决策
+
+| 决策点       | 选择          | 原因                   |
+| ------------ | ------------- | ---------------------- |
+| 主题存储     | localStorage  | 简单可靠，无需后端     |
+| CSS 方案     | CSS 变量      | 动态切换，兼容性好     |
+| 系统主题监听 | matchMedia    | 浏览器原生 API，性能好 |
+| 状态管理     | React Context | 轻量级，不引入额外依赖 |
+
+## 风险与缓解
+
+| 风险                  | 影响 | 缓解措施                                  |
+| --------------------- | ---- | ----------------------------------------- |
+| 第三方组件不兼容      | 高   | 提供 CSS 变量覆盖机制，优先支持主流 UI 库 |
+| localStorage 不可用   | 低   | 降级为内存存储，session 内有效            |
+| 系统主题频繁切换      | 低   | 防抖处理，避免频繁重绘                    |
+| SSR/SSGhydration 问题 | 中   | 使用 useEffect 避免服务端渲染不匹配       |
+
+## 测试策略
+
+- **单元测试**: useThemeHook 的状态切换逻辑
+- **集成测试**: ThemeProvider + ThemeToggle 组合行为
+- **E2E 测试**: 用户切换主题的完整流程
+
+## 实现顺序
+
+1. 实现 CSS 变量主题系统
+2. 实现 ThemeProvider + useTheme
+3. 实现 ThemeToggle 组件
+4. 适配所有现有组件
+5. 添加过渡动画
+
+`````
+
+**specs/\*.md** - 做什么？
+
+````markdown
+# Spec: 主题切换
+
+## 场景 1: 手动切换
+
+WHEN 用户点击主题按钮
+THEN 切换主题并保存偏好
+
+## 场景 2: 跟随系统
+
+WHEN 用户选择"跟随系统"
+THEN 监听 matchMedia 并自动切换
+
+`````
+
+**tasks.md** - 何时做？
+
+```markdown
+# Tasks
+
+## Red Phase
+
+- [ ] 编写 ThemeProvider 测试
+- [ ] 编写主题切换组件测试
+
+## Green Phase
+
+- [ ] 实现 ThemeProvider
+- [ ] 实现主题切换组件
+
+## Refactor Phase
+
+- [ ] 优化性能
+- [ ] 添加过渡动画
+```
+
+`````
+
+---
+
 #### Phase 3: Apply（实施）
 
 **触发条件**：设计完成，开始编码
@@ -186,20 +381,29 @@ THEN 监听 matchMedia 并自动切换
 
 **TDD 循环**：
 
-```
-          ┌─────────────────────────────────────┐
-          │                                     │
-          ▼                                     │
-┌─────────────────┐     ┌─────────────────┐    │
-│  Red            │────▶│  Green          │    │
-│  写测试（失败）  │     │  写实现（通过）  │    │
-└─────────────────┘     └─────────────────┘    │
-          ▲                     │              │
-          │                     ▼              │
-          │           ┌─────────────────┐      │
-          └───────────│  Refactor       │◀─────┘
-                      │  重构（保持通过）│
-                      └─────────────────┘
+```mermaid
+flowchart LR
+    subgraph RED["🔴 Red Phase"]
+        R["写测试<br/>(失败)"]
+    end
+
+    subgraph GREEN["🟢 Green Phase"]
+        G["写实现<br/>(通过)"]
+    end
+
+    subgraph REFACTOR["🔵 Refactor Phase"]
+        Ref["重构<br/>(保持通过)"]
+    end
+
+    RED -->|"最小实现"| GREEN
+    GREEN -->|"优化代码"| REFACTOR
+    REFACTOR -->|"继续改进"| RED
+    REFACTOR -->|"完成"| DONE{{"任务完成"}}
+
+    style RED fill:#ffe1e1
+    style GREEN fill:#e1ffe1
+    style REFACTOR fill:#e1e5ff
+    style DONE fill:#fff2cc
 ```
 
 **实施步骤**：
@@ -236,6 +440,8 @@ pnpm test:unit ThemeProvider
 - `lint` - 代码风格检查
 - `type-check` - TypeScript 类型检查
 
+---
+
 #### Phase 4: Validate（验证）
 
 **触发条件**：pre-commit 钩子
@@ -244,27 +450,21 @@ pnpm test:unit ThemeProvider
 
 **检查点**：
 
-```
-┌─────────────────────────────────────────┐
-│  Pre-commit Validation                  │
-├─────────────────────────────────────────┤
-│                                         │
-│  [✓] openspec validate                  │
-│      检查规格完整性                      │
-│                                         │
-│  [✓] test:all                           │
-│      运行所有测试（单元+集成）            │
-│                                         │
-│  [✓] type-check                         │
-│      TypeScript 类型检查                 │
-│                                         │
-│  [✓] lint                               │
-│      ESLint 代码风格检查                 │
-│                                         │
-│  [✓] format-check                       │
-│      代码格式化检查                      │
-│                                         │
-└─────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph PreCommit["Pre-commit Validation"]
+        V["✓ openspec validate<br/>检查规格完整性"]
+        T["✓ test:all<br/>运行所有测试（单元+集成）"]
+        TC["✓ type-check<br/>TypeScript 类型检查"]
+        L["✓ lint<br/>ESLint 代码风格检查"]
+        FC["✓ format-check<br/>代码格式化检查"]
+    end
+
+    V --> T --> TC --> L --> FC
+    FC --> Pass{{"全部通过 → 提交成功"}}
+
+    style PreCommit fill:#f5f5f5,stroke:#333
+    style Pass fill:#e1ffe1
 ```
 
 **失败处理**：
@@ -272,22 +472,25 @@ pnpm test:unit ThemeProvider
 - 任一检查失败 → commit 被阻止
 - 开发者修复问题 → 重新提交
 
+---
+
 #### Phase 5: Archive（归档）
 
-**触发条件**：post-merge 到 main 分支
+**触发条件**：Release 发布或部署成功后（通过 GitHub Actions 自动触发）
 
 **目标**：保存历史，清理工作区
 
 **操作**：
 
 ```bash
-# 自动执行
+# 自动执行（GitHub Actions 触发）
 openspec archive <change-name>
 
 # 效果：
 # 1. 将 openspec/changes/<name>/ 移动到 openspec/changes/archive/
-# 2. 生成归档报告
-# 3. 清理工作区
+# 2. 同步 delta specs 到主规格
+# 3. 生成归档报告
+# 4. 清理工作区
 ```
 
 **归档后结构**：
@@ -303,6 +506,8 @@ openspec/changes/
 │       └── tasks.md
 └── (active changes...)       # 活跃的变更
 ```
+
+---
 
 ### 完整示例
 
@@ -400,6 +605,8 @@ TypeError: Cannot read property 'show' of undefined
 刷新页面后重新点击
 ```
 
+---
+
 #### Phase 2: Reproduce（复现）
 
 **目标**：确认 Bug 可复现
@@ -416,6 +623,8 @@ AI: 尝试在本地环境复现...
 
 结论：Bug 确认存在
 ```
+
+---
 
 #### Phase 3: Fix（修复）
 
@@ -443,7 +652,7 @@ LoginButton 组件中的 handleClick 方法使用了错误的 this 绑定：
 // 错误代码
 <button onClick={this.handleClick}>
 ```
-````
+`````
 
 在类组件中，this 不会自动绑定。
 
@@ -490,9 +699,22 @@ it('should open login modal when clicked', () => {
 - 所有现有测试（确保没破坏）
 - Lint 和类型检查
 
+---
+
+#### Phase 4: Validate（验证）
+
+与 Spec-Driven 相同，运行：
+- 回归测试（必须通过）
+- 所有现有测试（确保没破坏）
+- Lint 和类型检查
+
+---
+
 #### Phase 5: Archive（归档）
 
 与 Spec-Driven 相同，自动归档到 `openspec/bugs/archive/`。
+
+---
 
 ### 完整示例
 
@@ -521,6 +743,285 @@ git commit -m "fix: login button click handler"
 
 # Step 6: 自动归档
 ````
+
+## Spike 工作流
+
+### 概述
+
+**核心理念**：时间盒限制的探索性研究
+
+当你需要：
+
+- 评估技术选型（Redux vs Zustand？）
+- 验证技术可行性（能否集成某 API？）
+- 探索未知领域（新框架、新协议）
+- 调查性能问题（为什么慢？如何优化？）
+
+就用 Spike 工作流。
+
+### 与 Explore 的区别
+
+| 维度       | Spike                   | Explore                     |
+| ---------- | ----------------------- | --------------------------- |
+| **目标**   | 得出明确决策            | 澄清需求或方案              |
+| **产物**   | 必须产出决策文档        | 无固定产物                  |
+| **时间**   | 有时间盒限制            | 灵活                        |
+| **下一步** | 转为 Spec-Driven 或放弃 | 可能转为 Spec-Driven/Bugfix |
+
+### 阶段详解
+
+#### Phase 1: Define（定义）
+
+**触发条件**：开始技术调研
+
+**目标**：明确研究问题和范围
+
+**产物**：
+
+```
+openspec/changes/<spike-name>/
+├── .openspec.yaml              # 调研配置
+└── research-question.md        # 研究问题定义
+```
+
+**research-question.md 结构**：
+
+```markdown
+# Research Question: 技术选型调研
+
+## Problem_Statement
+
+需要选择一个状态管理方案，要求：
+
+- 支持 TypeScript
+- 轻量级
+- 易于测试
+
+## Research_Goals
+
+1. 评估 Redux Toolkit vs Zustand vs Context API
+2. 测试在我们场景下的性能
+3. 评估学习曲线
+
+## Scope
+
+**In Scope**:
+
+- 三个方案的对比分析
+- 简单原型验证
+- 团队技能评估
+
+**Out of Scope**:
+
+- 完整实现
+- 性能基准测试
+- 长期维护成本分析
+
+## Timebox
+
+4 小时
+```
+
+---
+
+#### Phase 2: Explore（探索）
+
+**目标**：进行研究、实验、收集发现
+
+**活动**：
+
+```
+1. 文档阅读
+   - 阅读官方文档
+   - 查看社区评价
+   - 搜索最佳实践
+
+2. 代码实验
+   - 编写原型代码
+   - 测试关键场景
+   - 验证可行性
+
+3. 记录发现
+   - 实时记录发现
+   - 包括失败的尝试
+   - 记录假设和验证
+```
+
+**产物**：
+
+```
+openspec/changes/<spike-name>/
+├── .openspec.yaml
+├── research-question.md
+└── exploration-log.md          # 新增：探索日志
+```
+
+**exploration-log.md 结构**：
+
+```markdown
+# Exploration Log: 状态管理调研
+
+## Approach
+
+按以下维度对比三个方案：
+
+1. 包大小
+2. API 复杂度
+3. TypeScript 支持
+4. 测试友好度
+
+## Findings
+
+### Redux Toolkit
+
+- **大小**: ~11KB gzipped
+- **优点**: 生态丰富，工具链完善
+- **缺点**: 学习曲线陡峭，样板代码多
+
+### Zustand
+
+- **大小**: ~1KB gzipped
+- **优点**: 极简 API，TypeScript 友好
+- **缺点**: 社区较小，插件较少
+
+### Context API
+
+- **大小**: 0KB (built-in)
+- **优点**: 无需额外依赖
+- **缺点**: 频繁更新时性能问题
+
+## Experiments_Conducted
+
+### 实验 1: 性能测试
+
+创建 1000 个组件，测试渲染性能：
+
+- Redux: ~45ms
+- Zustand: ~30ms
+- Context: ~120ms (有闪烁)
+
+### 实验 2: 代码复杂度
+
+实现相同功能所需代码行数：
+
+- Redux: ~80 行
+- Zustand: ~25 行
+  - Context: ~40 行
+```
+
+---
+
+#### Phase 3: Conclude（结论）
+
+**目标**：综合发现，形成决策
+
+**产物**：
+
+```
+openspec/changes/<spike-name>/
+├── .openspec.yaml
+├── research-question.md
+├── exploration-log.md
+└── decision.md                 # 新增：决策文档
+```
+
+**decision.md 结构**：
+
+```markdown
+# Decision: 状态管理方案选择
+
+## Summary
+
+经过 4 小时调研，评估了 Redux Toolkit、Zustand 和 Context API 三个方案。
+
+## Recommendation
+
+**采用 Zustand 作为状态管理方案**
+
+## Rationale
+
+1. **包大小**: Zustand 仅 1KB，对首屏加载影响最小
+2. **开发效率**: API 极简，减少样板代码
+3. **TypeScript**: 原生支持，无需额外配置
+4. **性能**: 在实验中表现最佳
+
+## Alternatives_Considered
+
+### Redux Toolkit
+
+**为什么不选**:
+
+- 对我们当前复杂度来说是过度设计
+- 学习成本较高
+- 样板代码增加维护负担
+
+### Context API
+
+**为什么不选**:
+
+- 性能测试中出现渲染问题
+- 随着功能增长，Provider 嵌套可能变得复杂
+
+## Risks
+
+1. **社区规模**: Zustand 社区比 Redux 小，第三方资源较少
+2. **长期维护**: 项目相对年轻，长期支持不确定
+
+**缓解措施**:
+
+- 保持状态逻辑简单，便于未来迁移
+- 封装状态层，隐藏实现细节
+
+## Next_Steps
+
+1. 创建实现变更: `/opsx-propose add-zustand-store`
+2. 迁移现有全局状态
+3. 编写团队使用指南
+```
+
+#### Phase 4: Archive（归档）
+
+**触发条件**：post-merge 到 main 分支
+
+**目标**：保存调研历史
+
+Spike 完成后，决策文档成为重要的历史记录。即使决定不采用某方案,调研过程也有价值。
+
+---
+
+### 完整示例
+
+```bash
+# 场景：调研实时协作方案
+
+# Step 1: 启动 Spike
+/opsx-spike webrtc-vs-socketio
+
+# Step 2: 定义问题
+> AI 引导填写 research-question.md
+> "需要选择实时同步技术"
+
+# Step 3: 进行探索
+> 阅读 WebSocket 文档
+> 测试 Socket.io 示例
+> 验证 WebRTC 可行性
+> 记录发现
+
+# Step 4: 形成决策
+> AI 协助撰写 decision.md
+> 明确推荐和理由
+
+# Step 5: 后续行动
+# 根据决策创建 Spec-Driven 变更实施
+/opsx-propose implement-realtime-collab
+```
+
+### Spike 最佳实践
+
+1. **严格遵守时间盒**: 到期后必须下结论，即使是不完整的结论
+2. **记录失败**: 失败的实验同样有价值
+3. **可丢弃代码**: Spike 代码不需要测试，标记为实验性质
+4. **明确下一步**: 每个 Spike 必须有清晰的后续行动
 
 ## Explore 工作流
 
@@ -590,57 +1091,81 @@ AI 分析：
 
 ### 与 Spec-Driven 的关系
 
-```
-Explore           Spec-Driven
-   │                   │
-   │ 明确需求/方案      │
-   └─────────┬─────────┘
-             ▼
-    ┌─────────────────┐
-    │  决策点          │
-    │  继续？/放弃？   │
-    └────────┬────────┘
-             │
-    ┌────────┴────────┐
-    │                 │
-    ▼                 ▼
-进入 Propose       结束探索
-阶段              （无产出）
+```mermaid
+flowchart LR
+    E["Explore<br/>探索"] -->|"明确需求/方案"| DP["决策点"]
+    S["Spec-Driven<br/>提案"] -->|"继续？/放弃？"| DP
+
+    DP -->|"继续"| P["进入 Propose<br/>阶段"]
+    DP -->|"放弃"| X["结束探索<br/>(无产出)"]
+
+    style E fill:#e1e5ff
+    style S fill:#e1f5e1
+    style DP fill:#fff2cc
+    style P fill:#e1ffe1
+    style X fill:#ffe1e1
 ```
 
 ## 工作流选择指南
 
 ### 决策树
 
-```
-发现 Bug？
-├── 是 → Bugfix 工作流
-│        └── 快速修复 + 回归测试
-│
-└── 否 → 新功能/改动？
-         ├── 是 → 需求明确？
-         │        ├── 是 → Spec-Driven
-n         │        │        └── 完整设计 + TDD
-         │        │
-         │        └── 否 → Explore
-         │                 └── 讨论澄清
-         │
-         └── 否 → 其他
-                  └── 使用 Explore
+```mermaid
+flowchart TD
+    Start([开始]) --> Q1{发现 Bug?}
+
+    Q1 -->|是| Bugfix["Bugfix 工作流<br/>快速修复 + 回归测试"]
+    Q1 -->|否| Q2{技术调研?}
+
+    Q2 -->|是| Spike["Spike 工作流<br/>研究 → 决策 → 实施"]
+    Q2 -->|否| Q3{新功能/改动?}
+
+    Q3 -->|是| Q4{需求明确?}
+
+    Q4 -->|是| SpecDriven["Spec-Driven<br/>完整设计 + TDD"]
+    Q4 -->|否| Explore1["Explore<br/>讨论澄清"]
+
+    Q3 -->|否| Explore2["Explore<br/>其他情况"]
+
+    Start2([开始]) --> Q1B{发现 Bug?}
+    Q1B -->|是| Bugfix2["Bugfix 工作流"]
+    Q1B -->|否| Q3B{新功能/改动?}
+    Q3B -->|是| Q4B{需求明确?}
+    Q3B -->|否| ExploreB["Explore"]
+    Q4B -->|是| SpecDrivenB["Spec-Driven"]
+    Q4B -->|否| ExploreC["Explore"]
+
+    style Start fill:#e1f5e1
+    style Bugfix fill:#ffe1e1
+    style Spike fill:#fff2cc
+    style SpecDriven fill:#e1f5e1
+    style Explore1 fill:#e1e5ff
+    style Explore2 fill:#e1e5ff
+    style Start2 fill:#e1f5e1
+    style Bugfix2 fill:#ffe1e1
+    style ExploreB fill:#e1e5ff
+    style SpecDrivenB fill:#e1f5e1
+    style ExploreC fill:#e1e5ff
 ```
 
 ### 快速判断
 
-| 如果你...           | 选择        |
-| ------------------- | ----------- |
-| 说"有个 bug"        | Bugfix      |
-| 说"想加功能"        | Spec-Driven |
-| 说"能不能/是否可行" | Explore     |
-| 说"不确定怎么做"    | Explore     |
-| 说"帮忙看看"        | Explore     |
+| 如果你...             | 选择          |
+| --------------------- | ------------- |
+| 说"有个 bug"          | Bugfix        |
+| 说"想加功能"          | Spec-Driven   |
+| 说"调研一下/评估一下" | Spike         |
+| 说"A 和 B 哪个好"     | Spike         |
+| 说"能不能/是否可行"   | Spike/Explore |
+| 说"不确定怎么做"      | Explore       |
+| 说"帮忙看看"          | Explore       |
 
 ## 下一步
 
 - **[命令参考](04-commands.md)** - 查看所有 `/opsx-*` 命令的详细用法
 - **[目录结构](05-directory-structure.md)** - 理解文件组织的最佳实践
 - **[最佳实践](06-best-practices.md)** - 学习模式与反模式
+
+```
+
+```

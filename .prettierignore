@@ -1,0 +1,3 @@
+# OpenSpec templates contain Mustache placeholders which are not valid YAML/Markdown
+# These are processed at project initialization time, not meant to be parsed directly
+docs/openspec/.template/

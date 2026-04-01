@@ -8,20 +8,38 @@
 
 传统开发：
 
-```
-人：思考 → 写代码 → 测试 → 调试 → 重构
-        ↑___________________________↓
-        └──────── 循环往复 ─────────┘
+```mermaid
+flowchart LR
+    A[思考] --> B[写代码]
+    B --> C[测试]
+    C --> D[调试]
+    D --> E[重构]
+    E -.-> B
+
+    style A fill:#ffe1e1
+    style E fill:#ffe1e1
 ```
 
 Harness Engineering：
 
-```
-人：思考 → 写规格 → 讨论确认
-                ↓
-AI：理解规格 → 生成代码 → 运行测试 → 反馈结果
-                ↓
-人：确认/调整 ← 迭代改进
+```mermaid
+flowchart TD
+    A[人: 思考] --> B[写规格]
+    B --> C[讨论确认]
+    C --> D[AI: 理解规格]
+    D --> E[生成代码]
+    E --> F[运行测试]
+    F --> G[反馈结果]
+    G --> H{确认/调整}
+    H -.-> C
+
+    style A fill:#e1f5e1
+    style B fill:#e1f5e1
+    style H fill:#e1f5e1
+    style D fill:#e1e5ff
+    style E fill:#e1e5ff
+    style F fill:#e1e5ff
+    style G fill:#e1e5ff
 ```
 
 **核心转变**：人专注于"做什么"和"为什么"，AI 协助"怎么做"。
@@ -30,63 +48,58 @@ AI：理解规格 → 生成代码 → 运行测试 → 反馈结果
 
 ### 整体架构图
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                        开发者（你）                              │
-│                   思考、决策、验收、调整                         │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                              ▼ 输入规格、确认方案
-┌─────────────────────────────────────────────────────────────────┐
-│                    OpenSpec Harness 引擎                         │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                  │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │
-│  │   探索阶段    │  │   提案阶段    │  │   实施阶段    │          │
-│  │ /opsx-explore│  │/opsx-propose │  │ /opsx-apply  │          │
-│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘          │
-│         │                 │                 │                   │
-│         └─────────────────┼─────────────────┘                   │
-│                           ▼                                     │
-│                  ┌─────────────────┐                           │
-│                  │   工作流引擎     │                           │
-│                  │ schemas/*.yaml  │                           │
-│                  └─────────────────┘                           │
-│                           │                                     │
-│                           ▼                                     │
-│                  ┌─────────────────┐                           │
-│                  │   配置系统       │                           │
-│                  │ config.yaml     │                           │
-│                  └─────────────────┘                           │
-│                                                                  │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                              ▼ 生成代码、运行测试
-┌─────────────────────────────────────────────────────────────────┐
-│                         AI 助手                                  │
-│              理解规格、生成代码、执行验证、反馈结果               │
-└─────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart LR
+    subgraph Developer["开发者（你）"]
+        direction LR
+        D1[思考]
+        D2[决策]
+        D3[验收]
+        D4[调整]
+    end
+
+    subgraph Engine["OpenSpec Harness 引擎"]
+        direction LR
+        P1[/opsx-explore\n探索/]
+        P2[/opsx-propose\n提案/]
+        P3[/opsx-apply\n实施/]
+        W1[schemas/*.yaml]
+        C1[config.yaml]
+        P1 --> P2 --> P3 --> W1 --> C1
+    end
+
+    subgraph AI["AI 助手"]
+        direction LR
+        A1[理解规格]
+        A2[生成代码]
+        A3[运行测试]
+        A4[反馈结果]
+        A1 --> A2 --> A3 --> A4
+    end
+
+    Developer -->|输入规格\n确认方案| P1
+    P3 -->|生成代码\n运行测试| A1
+    A4 -->|反馈| Developer
+
+    style Developer fill:#e1f5e1
+    style AI fill:#e1e5ff
+    style Engine fill:#fff2cc
 ```
 
 ### 数据流
 
-```
-1. 开发者输入需求
-        ↓
-2. Harness 引擎解析
-   - 确定工作流类型（spec-driven / bugfix / explore）
-   - 加载对应 schema
-   - 读取项目配置
-        ↓
-3. AI 助手执行
-   - 理解当前阶段目标
-   - 生成相应产物（文档/代码）
-   - 运行验证检查
-        ↓
-4. 开发者确认
-   - 审核生成内容
-   - 确认或调整
-   - 进入下一阶段
+```mermaid
+sequenceDiagram
+    participant Dev as 开发者
+    participant Engine as Harness引擎
+    participant AI as AI助手
+
+    Dev->>Engine: 1. 输入需求
+    Note over Engine: 确定工作流类型<br/>加载 schema<br/>读取项目配置
+    Engine->>AI: 2. 解析需求
+    Note over AI: 理解阶段目标<br/>生成产物<br/>运行验证
+    AI->>Dev: 3. 返回结果
+    Note over Dev: 审核内容<br/>确认或调整<br/>进入下一阶段
 ```
 
 ## 核心概念
@@ -95,61 +108,169 @@ AI：理解规格 → 生成代码 → 运行测试 → 反馈结果
 
 **变更**是 Harness 的基本工作单元，代表一个完整的开发任务。
 
-两种类型的变更：
+三种类型的变更：
 
+**类型 1：新功能变更 (spec-driven)**
+
+```mermaid
+flowchart TB
+    SD1[openspec/changes/]
+    SD2["<change-name>/"]
+    SD3[".openspec.yaml"]
+    SD4["proposal.md"]
+    SD5["design.md"]
+    SD6["specs/"]
+    SD7["tasks.md"]
+    SD8["archive/"]
+
+    SD1 --> SD2
+    SD2 --> SD3
+    SD2 --> SD4
+    SD2 --> SD5
+    SD2 --> SD6
+    SD2 --> SD7
+    SD1 --> SD8
+
+    style SD1 fill:#e1f5e1
+    style SD2 fill:#e1f5e1
+    style SD3 fill:#fff
+    style SD4 fill:#fff
+    style SD5 fill:#fff
+    style SD6 fill:#fff
+    style SD7 fill:#fff
+    style SD8 fill:#fff2cc
 ```
-新功能变更 (spec-driven)          Bug 修复 (bugfix)
-───────────────────────           ─────────────────
-openspec/changes/                 openspec/bugs/
-├── <change-name>/                ├── <bug-id>/
-│   ├── .openspec.yaml            │   ├── .openspec.yaml
-│   ├── proposal.md               │   ├── bug-report.md
-│   ├── design.md                 │   └── fix.md
-│   ├── specs/                    └──
-│   └── tasks.md
-└── archive/                      └── archive/
+
+**类型 2：Bug 修复 (bugfix)**
+
+```mermaid
+flowchart TB
+    BF1[openspec/bugs/]
+    BF2["<bug-id>/"]
+    BF3[".openspec.yaml"]
+    BF4["bug-report.md"]
+    BF5["fix.md"]
+    BF6["archive/"]
+
+    BF1 --> BF2
+    BF2 --> BF3
+    BF2 --> BF4
+    BF2 --> BF5
+    BF1 --> BF6
+
+    style BF1 fill:#ffe1e1
+    style BF2 fill:#ffe1e1
+    style BF3 fill:#fff
+    style BF4 fill:#fff
+    style BF5 fill:#fff
+    style BF6 fill:#fff2cc
+```
+
+**类型 3：技术调研 (spike)**
+
+```mermaid
+flowchart TB
+    SP1[openspec/changes/]
+    SP2["<spike-name>/"]
+    SP3[".openspec.yaml"]
+    SP4["research-question.md"]
+    SP5["exploration-log.md"]
+    SP6["decision.md"]
+    SP7["findings/"]
+    SP8["archive/"]
+
+    SP1 --> SP2
+    SP2 --> SP3
+    SP2 --> SP4
+    SP2 --> SD5
+    SP2 --> SP6
+    SP2 --> SP7
+    SP1 --> SP8
+
+    style SP1 fill:#fff2cc
+    style SP2 fill:#fff2cc
+    style SP3 fill:#fff
+    style SP4 fill:#fff
+    style SP5 fill:#fff
+    style SP6 fill:#fff
+    style SP7 fill:#fff
+    style SP8 fill:#e1f5e1
 ```
 
 ### 2. 阶段（Phase）
 
 每个工作流由多个**阶段**组成，阶段之间有明确的顺序和检查点。
 
-```
-探索 (Explore) → 提案 (Propose) → 实施 (Apply) → 验证 (Validate) → 归档 (Archive)
+```mermaid
+flowchart LR
+    A[探索<br/>Explore] --> B[提案<br/>Propose]
+    B --> C[实施<br/>Apply]
+    C --> D[验证<br/>Validate]
+    D --> E[归档<br/>Archive]
 
-     │              │              │              │              │
-     ▼              ▼              ▼              ▼              ▼
-  需求澄清       方案设计       代码实现       质量检查       历史记录
-  范围界定       规格定义       测试验证       自动归档       知识沉淀
+    A1[需求澄清<br/>范围界定] --> A
+    B1[方案设计<br/>规格定义] --> B
+    C1[代码实现<br/>测试验证] --> C
+    D1[质量检查<br/>自动归档] --> D
+    E1[历史记录<br/>知识沉淀] --> E
+
+    style A fill:#e1f5e1
+    style B fill:#e1f5e1
+    style C fill:#e1f5e1
+    style D fill:#fff2cc
+    style E fill:#e1f5e1
 ```
 
 ### 3. 产物（Artifact）
 
 每个阶段产生特定的**产物**，产物是阶段完成的标志。
 
-```
-提案阶段产物:
-├── proposal.md     ← 为什么要做这个变更？
-├── design.md       ← 技术方案是什么？
-├── specs/*.md      ← 详细规格是什么？
-└── tasks.md        ← 具体任务有哪些？
+**提案阶段产物**
 
-实施阶段产物:
-├── 代码实现
-├── 测试用例
-└── 文档更新
+```mermaid
+flowchart LR
+    P1["proposal.md<br/>为什么要做这个变更？"]
+    P2["design.md<br/>技术方案是什么？"]
+    P3["specs/*.md<br/>详细规格是什么？"]
+    P4["tasks.md<br/>具体任务有哪些？"]
+
+    P1 --> P2 --> P3 --> P4
+
+    style P1 fill:#e1f5e1
+    style P2 fill:#e1f5e1
+    style P3 fill:#e1f5e1
+    style P4 fill:#e1f5e1
+```
+
+**实施阶段产物**
+
+```mermaid
+flowchart LR
+    I1["代码实现"]
+    I2["测试用例"]
+    I3["文档更新"]
+
+    I1 --> I2 --> I3
+
+    style I1 fill:#e1e5ff
+    style I2 fill:#e1e5ff
+    style I3 fill:#e1e5ff
 ```
 
 ### 4. 检查点（Gate）
 
 **检查点**是阶段之间的质量控制机制，确保只有满足条件才能进入下一阶段。
 
-```
-实施阶段检查点:
-├── test:unit      ← 单元测试必须通过
-├── lint           ← 代码风格必须合规
-├── type-check     ← TypeScript 类型必须正确
-└── openspec validate  ← 规格必须完整
+```mermaid
+flowchart TB
+    subgraph Gates["实施阶段检查点"]
+        G1["test:unit<br/><i>单元测试必须通过</i>"]
+        G2["lint<br/><i>代码风格必须合规</i>"]
+        G3["type-check<br/><i>TypeScript 类型必须正确</i>"]
+        G4["openspec validate<br/><i>规格必须完整</i>"]
+    end
+
+    style Gates fill:#fff2cc
 ```
 
 ## 工作流类型
@@ -160,13 +281,27 @@ openspec/changes/                 openspec/bugs/
 
 **核心理念**：先写规格，后写代码（Specification First）
 
-```
-流程:
-探索需求 → 创建提案 → 设计架构 → 定义规格 → 实施任务 → 归档
-    │          │          │          │          │        │
-    ▼          ▼          ▼          ▼          ▼        ▼
-  讨论       写       技术       详细       TDD      历史
-  澄清    proposal   方案      规格      实施     记录
+```mermaid
+flowchart LR
+    A[探索需求] --> B[创建提案]
+    B --> C[设计架构]
+    C --> D[定义规格]
+    D --> E[实施任务]
+    E --> F[归档]
+
+    A1[讨论<br/>澄清] --> A
+    B1[写<br/>proposal] --> B
+    C1[技术<br/>方案] --> C
+    D1[详细<br/>规格] --> D
+    E1[TDD<br/>实施] --> E
+    F1[历史<br/>记录] --> F
+
+    style A fill:#e1f5e1
+    style B fill:#e1f5e1
+    style C fill:#e1f5e1
+    style D fill:#e1f5e1
+    style E fill:#e1f5e1
+    style F fill:#e1f5e1
 ```
 
 **产物**：
@@ -182,13 +317,27 @@ openspec/changes/                 openspec/bugs/
 
 **核心理念**：快速定位、最小修复、回归测试
 
-```
-流程:
-报告问题 → 复现验证 → 定位根因 → 实施修复 → 回归测试 → 归档
-    │          │          │          │          │        │
-    ▼          ▼          ▼          ▼          ▼        ▼
-  现象      确认       分析        修改       验证     记录
-  描述      存在       原因        代码       通过     教训
+```mermaid
+flowchart LR
+    A[报告问题] --> B[复现验证]
+    B --> C[定位根因]
+    C --> D[实施修复]
+    D --> E[回归测试]
+    E --> F[归档]
+
+    A1[现象<br/>描述] --> A
+    B1[确认<br/>存在] --> B
+    C1[分析<br/>原因] --> C
+    D1[修改<br/>代码] --> D
+    E1[验证<br/>通过] --> E
+    F1[记录<br/>教训] --> F
+
+    style A fill:#ffe1e1
+    style B fill:#ffe1e1
+    style C fill:#ffe1e1
+    style D fill:#ffe1e1
+    style E fill:#ffe1e1
+    style F fill:#e1f5e1
 ```
 
 **产物**：
@@ -197,20 +346,67 @@ openspec/changes/                 openspec/bugs/
 - fix.md（修复方案）
 - regression test（回归测试）
 
+### Spike（技术调研）
+
+**适用场景**：技术选型、可行性验证、性能调查、新技术预研
+
+**核心理念**：时间盒限制的探索性研究，必须产出明确决策
+
+```mermaid
+flowchart LR
+    A[定义问题] --> B[探索研究]
+    B --> C[形成决策]
+    C --> D[归档]
+
+    A1[research-question<br/>研究问题] --> A
+    B1[exploration-log<br/>探索日志] --> B
+    C1[decision<br/>决策文档] --> C
+    D1[知识沉淀] --> D
+
+    style A fill:#fff2cc
+    style B fill:#fff2cc
+    style C fill:#fff2cc
+    style D fill:#e1f5e1
+```
+
+**产物**：
+
+- research-question.md（研究问题定义）
+- exploration-log.md（探索日志）
+- decision.md（决策文档）
+- findings/（研究发现）
+
+**关键特性**：
+
+- **时间盒限制**：默认 4 小时，最长 2 天
+- **必须下结论**：即使是不完整的结论也要记录
+- **可丢弃代码**：Spike 代码不需要测试，标记为实验性质
+- **转为实施**：调研完成后通常转为 Spec-Driven 实施
+
 ### Explore（自由探索）
 
 **适用场景**：需求不明确、技术方案不确定、风险评估
 
 **核心理念**：先想清楚，再动手做
 
-```
-流程:
-提出疑问 → 讨论分析 → 形成结论 → （可选）转为正式变更
-    │          │          │              │
-    ▼          ▼          ▼              ▼
-  开放性      多角度     决策点        进入
-  问题       思考       形成          spec-driven
-                       或 bugfix
+```mermaid
+flowchart TD
+    A[提出疑问] --> B[讨论分析]
+    B --> C[形成结论]
+    C --> D{转为正式变更?}
+    D -->|是| E[spec-driven]
+    D -->|是| F[bugfix]
+    D -->|否| G[结束]
+
+    A1[开放性<br/>问题] --> A
+    B1[多角度<br/>思考] --> B
+    C1[决策点<br/>形成] --> C
+
+    style A fill:#e1e5ff
+    style B fill:#e1e5ff
+    style C fill:#fff2cc
+    style E fill:#e1f5e1
+    style F fill:#ffe1e1
 ```
 
 **产物**：无固定产物，可能有讨论记录或决策文档
@@ -219,21 +415,40 @@ openspec/changes/                 openspec/bugs/
 
 Harness 使用**三层配置**来定义如何工作：
 
-```
-Layer 1: AGENTS.md
-├── 目标读者：AI 助手
-├── 内容：角色定义、工作流程、约束规则
-└── 作用：告诉 AI "怎么工作"
+```mermaid
+flowchart TB
+    subgraph Wrapper[" "]
+        direction LR
 
-Layer 2: openspec/config.yaml
-├── 目标读者：项目/开发者
-├── 内容：项目信息、技术栈、命令
-└── 作用：定义 "项目是什么"
+        subgraph Layer1["Layer 1: AGENTS.md"]
+            direction TB
+            L1A["目标读者: AI 助手"]
+            L1B["内容: 角色定义、工作流程、约束规则"]
+            L1C["作用: 告诉 AI '怎么工作'"]
+        end
 
-Layer 3: openspec/schemas/*.yaml
-├── 目标读者：工作流引擎
-├── 内容：阶段定义、产物定义、检查点
-└── 作用：定义 "任务怎么做"
+        subgraph Layer2["Layer 2: openspec/config.yaml"]
+            direction TB
+            L2A["目标读者: 项目/开发者"]
+            L2B["内容: 项目信息、技术栈、命令"]
+            L2C["作用: 定义 '项目是什么'"]
+        end
+
+        subgraph Layer3["Layer 3: openspec/schemas/*.yaml"]
+            direction TB
+            L3A["目标读者: 工作流引擎"]
+            L3B["内容: 阶段定义、产物定义、检查点"]
+            L3C["作用: 定义 '任务怎么做'"]
+        end
+
+        Layer1 --> Layer2
+        Layer2 --> Layer3
+    end
+
+    style Layer1 fill:#e1f5e1
+    style Layer2 fill:#fff2cc
+    style Layer3 fill:#e1e5ff
+    style Wrapper fill:none,stroke:none
 ```
 
 详细说明参见 [02-配置体系](02-config-system.md)。

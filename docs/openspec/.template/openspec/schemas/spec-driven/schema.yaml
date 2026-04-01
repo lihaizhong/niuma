@@ -1,0 +1,87 @@
+name: spec-driven
+version: "1.0"
+description: Specification-driven development workflow with TDD integration
+
+artifacts:
+  - id: proposal
+    generates: proposal.md
+    description: Change proposal with problem statement and solution overview
+    template: proposal.md
+    requires: []
+
+  - id: specs
+    generates: specs/**/*.md
+    description: Specifications with requirements and scenarios
+    template: specs/spec.md
+    requires:
+      - proposal
+
+  - id: design
+    generates: design.md
+    description: Technical design decisions and trade-offs
+    template: design.md
+    requires:
+      - specs
+
+  - id: tasks
+    generates: tasks.md
+    description: Implementation tasks organized in Red-Green-Refactor phases
+    template: tasks.md
+    requires:
+      - design
+
+apply:
+  requires:
+    - tasks
+  tracks: tasks.md
+
+# Extended configuration (OpenSpec custom extensions)
+extensions:
+  tdd:
+    enabled: true
+    mapping:
+      spec_to_test: "<module>/tests/<feature>.test.ts"
+      test_to_impl: "<module>/<feature>.ts"
+    spec_format:
+      required_sections: [Purpose, Requirements, Scenarios]
+      keywords: [SHALL, MUST]
+      scenario_structure: [WHEN, THEN]
+    tasks_structure:
+      red_phase:
+        prefix: "1."
+        action: "Write test for"
+        verifiable_by: "test fails"
+      green_phase:
+        prefix: "2."
+        action: "Implement to pass"
+        verifiable_by: "test passes"
+      refactor_phase:
+        prefix: "3."
+        action: "Optimize"
+        verifiable_by: "tests still pass, code improved"
+
+  validation:
+    gates:
+      pre_commit:
+        - openspec validate
+        - test:unit
+        - lint
+        - type-check
+      post_merge:
+        - openspec archive
+
+  artifacts_config:
+    proposal:
+      max_words: 500
+      required_sections: [Non-goals, Acceptance Criteria]
+    specs:
+      required_sections: [Purpose, Requirements]
+      keywords: [SHALL, MUST]
+      scenarios: required
+    design:
+      diagrams: ASCII
+      content: [design decisions, trade-offs]
+    tasks:
+      chunk_size: 30min
+      verifiable: true
+      organization: [Red, Green, Refactor]

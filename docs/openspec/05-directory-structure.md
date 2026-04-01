@@ -7,7 +7,7 @@
 ```
 project-root/
 ├── openspec/                   # OpenSpec 配置和变更
-├── .opencode/                  # AI 助手配置
+├── {{AI_CONFIG_DIR}}/          # AI 助手配置
 ├── docs/                       # 文档
 ├── src/                        # 源代码
 ├── AGENTS.md                   # AI 行为指南
@@ -23,9 +23,15 @@ openspec/
 ├── config.yaml                 # 项目基础配置
 ├── SCHEMA-USAGE-GUIDE.md       # Schema 使用指南
 ├── schemas/                    # 工作流定义
-│   ├── spec-driven.yaml        # 新功能开发
-│   ├── bugfix.yaml             # Bug 修复
-│   └── spike.yaml              # 技术调研（可选）
+│   ├── spec-driven/            # 新功能开发
+│   │   ├── schema.yaml         # 工作流配置
+│   │   └── templates/           # 产物模板
+│   ├── bugfix/                 # Bug 修复
+│   │   ├── schema.yaml
+│   │   └── templates/
+│   └── spike/                  # 技术调研（可选）
+│       ├── schema.yaml
+│       └── templates/
 ├── changes/                    # Spec-Driven 变更
 │   ├── <change-name>/          # 单个变更
 │   │   ├── .openspec.yaml      # 变更配置
@@ -82,55 +88,110 @@ context:
 
 ### schemas/
 
-定义工作流的详细规则。
+定义工作流的详细规则。每个 schema 是一个目录，包含配置文件和模板。
 
-#### spec-driven.yaml
+#### 目录结构
+
+```
+schemas/
+├── spec-driven/              # 新功能开发工作流
+│   ├── schema.yaml           # 工作流配置
+│   └── templates/            # 产物模板
+│       ├── proposal.md.tpl
+│       ├── design.md.tpl
+│       ├── spec.md.tpl
+│       └── tasks.md.tpl
+├── bugfix/                   # Bug 修复工作流
+│   ├── schema.yaml
+│   └── templates/
+│       ├── bug-report.md.tpl
+│       └── fix.md.tpl
+└── spike/                    # 技术调研工作流
+    ├── schema.yaml
+    └── templates/
+        ├── research-question.md.tpl
+        ├── exploration-log.md.tpl
+        └── decision.md.tpl
+```
+
+#### spec-driven/schema.yaml
 
 ```yaml
 schema:
   name: spec-driven
   version: "1.0"
 
-workflow:
-  phases:
-    - id: explore
-      name: Explore
-      command: /opsx-explore
+artifacts:
+  - id: proposal
+    generates: proposal.md
+    template: templates/proposal.md.tpl
+    required_sections: [Non-goals, Acceptance Criteria]
 
-    - id: propose
-      name: Propose
-      produces: [proposal.md, design.md, specs/, tasks.md]
+  - id: design
+    generates: design.md
+    template: templates/design.md.tpl
+    requires: [proposal]
 
-    - id: apply
-      name: Apply
-      gates: [test:unit, lint, type-check]
+  - id: specs
+    generates: specs/
+    template: templates/spec.md.tpl
+    requires: [design]
 
-    - id: archive
-      name: Archive
-      trigger: post-merge
+  - id: tasks
+    generates: tasks.md
+    template: templates/tasks.md.tpl
+    requires: [specs]
+
+phases:
+  - id: explore
+    name: Explore
+    command: /opsx-explore
+
+  - id: propose
+    name: Propose
+    produces: [proposal, design, specs, tasks]
+
+  - id: apply
+    name: Apply
+    gates: [test:unit, lint, type-check]
+
+  - id: archive
+    name: Archive
+    trigger: post-merge
 ```
 
-#### bugfix.yaml
+#### bugfix/schema.yaml
 
 ```yaml
 schema:
   name: bugfix
   version: "1.0"
 
-workflow:
-  phases:
-    - id: report
-      name: Report
-      produces: [bug-report.md]
+artifacts:
+  - id: bug_report
+    generates: bug-report.md
+    template: templates/bug-report.md.tpl
+    required_sections: [Symptom, Steps_to_Reproduce]
 
-    - id: fix
-      name: Fix
-      produces: [fix.md]
-      gates: [regression-test, test:all]
+  - id: fix
+    generates: fix.md
+    template: templates/fix.md.tpl
+    requires: [bug_report]
+    required_sections: [Root_Cause, Fix_Description]
 
-    - id: archive
-      name: Archive
-      trigger: post-merge
+phases:
+  - id: report
+    name: Report
+    produces: [bug_report]
+
+  - id: fix
+    name: Fix
+    produces: [fix]
+    gates: [regression-test, test:all]
+
+  - id: archive
+    name: Archive
+    trigger: post-merge
 ```
 
 ### changes/ 目录
@@ -141,17 +202,21 @@ workflow:
 
 ```
 changes/
-└── add-user-auth/              # 变更目录
-    ├── .openspec.yaml          # 变更元数据
-    ├── proposal.md             # 提案文档
-    ├── design.md               # 设计文档
-    ├── specs/                  # 规格目录
-    │   ├── auth/               # 功能模块
-    │   │   ├── login.md        # 登录规格
-    │   │   └── register.md     # 注册规格
-    │   └── session/            # 另一个模块
-    │       └── spec.md
-    └── tasks.md                # 任务列表
+├── add-user-auth/              # Spec-Driven 变更
+│   ├── .openspec.yaml          # 变更元数据
+│   ├── proposal.md             # 提案文档
+│   ├── design.md               # 设计文档
+│   ├── specs/                  # 规格目录
+│   │   └── auth/
+│   │       ├── login.md
+│   │       └── register.md
+│   └── tasks.md                # 任务列表
+│
+└── evaluate-state-management/  # Spike 变更
+    ├── .openspec.yaml          # 调研配置
+    ├── research-question.md    # 研究问题
+    ├── exploration-log.md      # 探索日志
+    └── decision.md             # 决策文档
 ```
 
 ##### .openspec.yaml
@@ -337,135 +402,208 @@ bugs/
 添加了回归测试
 ```
 
-## .opencode/ 目录
+## {{AI_CONFIG_DIR}}/ 目录
 
-AI 助手的配置目录。
+AI 助手的配置目录，定义所有 `/opsx-*` 命令和对应的技能逻辑。
 
 ```
-.opencode/
-├── opencode.json               # 插件配置
-├── command/                    # 斜杠命令定义
-│   ├── opsx-explore.md
-│   ├── opsx-propose.md
-│   ├── opsx-bugfix.md
-│   ├── opsx-apply.md
-│   └── opsx-archive.md
+{{AI_CONFIG_DIR}}/
+├── commands/                   # 斜杠命令定义
+│   ├── opsx-explore.md         # 探索模式命令
+│   ├── opsx-spike.md           # 技术调研命令
+│   ├── opsx-propose.md         # 创建提案命令
+│   ├── opsx-bugfix.md          # Bug 修复命令
+│   ├── opsx-apply.md           # 实施任务命令
+│   └── opsx-archive.md         # 归档变更命令
 └── skills/                     # 技能定义
     ├── openspec-explore/
-    │   └── SKILL.md
+    │   └── SKILL.md            # 探索技能
+    ├── openspec-spike/
+    │   └── SKILL.md            # 技术调研技能
     ├── openspec-propose/
-    │   └── SKILL.md
+    │   └── SKILL.md            # 提案创建技能
     ├── openspec-bugfix/
-    │   └── SKILL.md
+    │   └── SKILL.md            # Bug 修复技能
     ├── openspec-apply-change/
-    │   └── SKILL.md
+    │   └── SKILL.md            # 变更实施技能
     └── openspec-archive-change/
-        └── SKILL.md
+        └── SKILL.md            # 变更归档技能
 ```
 
-### opencode.json
+### commands/
 
-插件配置：
+斜杠命令的定义文件。每个命令文件描述命令的用途和基本流程。
 
-```json
-{
-  "$schema": "https://opencode.ai/config.json",
-  "plugin": ["opencode-vibeguard@latest"]
-}
-```
-
-### command/
-
-斜杠命令的定义文件。
-
-#### opsx-propose.md
+#### 命令文件结构
 
 ```markdown
 ---
-description: Propose a new change
+description: 命令的简短描述
 ---
 
-Propose a new change with artifacts.
+命令的详细说明...
 
-## Steps
+**Input**: 输入参数说明
 
-1. Create change directory
-2. Generate proposal.md
-3. Generate design.md
-4. Generate specs/
-5. Generate tasks.md
+**Steps**
+
+1. 步骤一
+2. 步骤二
+3. 步骤三
+
+**Output**
+
+命令的输出格式
+
+**Guardrails**
+
+- 约束规则一
+- 约束规则二
 ```
+
+#### 示例：opsx-propose.md
+
+````markdown
+---
+description: Propose a new change - create it and generate all artifacts in one step
+---
+
+Propose a new change - create the change and generate all artifacts in one step.
+
+I'll create a change with artifacts:
+
+- proposal.md (what & why)
+- design.md (how)
+- tasks.md (implementation steps)
+
+When ready to implement, run /opsx-apply
+
+---
+
+**Input**: The argument after `/opsx-propose` is the change name (kebab-case),
+OR a description of what the user wants to build.
+
+**Steps**
+
+1. **If no input provided, ask what they want to build**
+   ...
+
+2. **Create the change directory**
+   ```bash
+   openspec new change "<name>"
+   ```
+````
+
+...
+
+**Guardrails**
+
+- Create ALL artifacts needed for implementation
+- Always read dependency artifacts before creating a new one
+- ...
+
+````
 
 ### skills/
 
-技能定义目录，包含 AI 执行命令的具体逻辑。
+技能定义目录，包含 AI 执行命令的具体逻辑。每个技能对应一个命令，但包含更详细的实现指令。
 
-#### SKILL.md 结构
+#### 技能文件结构
 
 ```markdown
 ---
 name: openspec-propose
+description: 技能描述
+license: MIT
+compatibility: 兼容性说明
+metadata:
+  author: openspec
+  version: "1.0"
+  generatedBy: "1.2.0"
 ---
 
-Skill for proposing changes.
+技能的详细实现说明...
 
-## Steps
+**Steps**
 
-1. Ask user what to build
-2. Run `openspec new change <name>`
-3. Create artifacts in order:
-   - proposal.md
-   - design.md
-   - specs/
-   - tasks.md
-4. Show completion status
+1. **步骤名称**
+   详细说明...
 
-## Guardrails
+   ```bash
+   # 示例命令
+   openspec new change "<name>"
+````
 
-- Always ask before proceeding
-- Verify files created
-- Follow schema rules
-```
-
-## docs/ 目录
-
-项目文档。
+**Output**
 
 ```
-docs/
-├── openspec/                   # OpenSpec 文档
-│   ├── README.md               # 导航页
-│   ├── 01-overview.md          # 系统概览
-│   ├── 02-config-system.md     # 配置体系
-│   ├── 03-workflows.md         # 工作流详解
-│   ├── 04-commands.md          # 命令参考
-│   ├── 05-directory-structure.md # 本文档
-│   └── 06-best-practices.md    # 最佳实践
-└── openspec-team/              # 团队协作文档
-    ├── README.md
-    └── ...
+预期的输出格式
 ```
+
+**Guardrails**
+
+- 约束规则
+
+```
+
+#### 技能与命令的区别
+
+| 对比项 | Command (命令) | Skill (技能) |
+|--------|---------------|--------------|
+| **位置** | `{{AI_CONFIG_DIR}}/commands/` | `{{AI_CONFIG_DIR}}/skills/` |
+| **用途** | 用户可见的命令定义 | AI 执行的详细逻辑 |
+| **详细程度** | 高层次的流程概述 | 逐步的具体指令 |
+| **读者** | 用户和 AI | 主要是 AI |
+| **示例** | "创建提案" | "运行 openspec new，然后按依赖顺序创建 artifacts" |
+
+### {{AI_CONFIG_DIR}}/ 与 openspec/ 的关系
+
+```
+
+┌─────────────────────────────────────────────────────────────┐
+│ 四层配置体系 │
+├─────────────────────────────────────────────────────────────┤
+│ │
+│ Layer 1: AGENTS.md → AI 行为指南（角色、约束） │
+│ ↓ │
+│ Layer 2: openspec/config.yaml → 项目配置（技术栈、命令） │
+│ ↓ │
+│ Layer 3: openspec/schemas/ → 工作流定义（阶段、产物） │
+│ ↓ │
+│ Layer 4: {{AI_CONFIG_DIR}}/ → AI 执行层（命令、技能） │
+│ ├── commands/ → 用户命令入口 │
+│ └── skills/ → AI 执行逻辑 │
+│ │
+└─────────────────────────────────────────────────────────────┘
+
+```
+
+- **commands/**: 定义用户可用的 `/opsx-*` 命令
+- **skills/**: 定义 AI 执行命令时的具体行为
+- 两者配合：用户输入命令 → AI 读取对应的 skill → 执行具体操作
 
 ## src/ 目录
 
 源代码（根据项目类型不同而异）。
 
 ```
+
 src/
-├── app/                        # Next.js App Router
-│   ├── layout.tsx
-│   ├── page.tsx
-│   └── globals.css
-├── components/                 # 组件
-│   └── ui/
-├── lib/                        # 工具函数
-├── niuma-engine/               # Agent 核心
-│   ├── index.ts
-│   ├── types.ts
-│   └── tests/
-└── tests/                      # 测试
-    └── unit/
-```
+├── app/ # Next.js App Router
+│ ├── layout.tsx
+│ ├── page.tsx
+│ └── globals.css
+├── components/ # 组件
+│ └── ui/
+├── lib/ # 工具函数
+├── niuma-engine/ # Agent 核心
+│ ├── index.ts
+│ ├── types.ts
+│ └── tests/
+└── tests/ # 测试
+└── unit/
+
+````
 
 ## AGENTS.md
 
@@ -501,7 +639,7 @@ SHALL NOT:
 
 - Skip tests
 - Ignore type errors
-```
+````
 
 ## 目录组织原则
 
@@ -509,7 +647,7 @@ SHALL NOT:
 
 ```
 openspec/     → 工作流和变更管理
-.opencode/    → AI 助手配置
+{{AI_CONFIG_DIR}}/     → AI 助手配置
 docs/         → 人类可读文档
 src/          → 源代码
 ```
@@ -534,7 +672,7 @@ changes/
 ```
 AGENTS.md       → AI 行为（高层）
 config.yaml     → 项目信息（中层）
-schemas/*.yaml  → 工作流规则（底层）
+schemas/        → 工作流规则（底层）
 ```
 
 ## 文件命名规范

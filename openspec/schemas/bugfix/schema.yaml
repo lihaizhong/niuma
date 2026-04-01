@@ -1,0 +1,113 @@
+name: bugfix
+version: "1.0"
+description: Streamlined workflow for bug fixes with minimal overhead
+
+artifacts:
+  - id: bug-report
+    generates: bug-report.md
+    description: Bug report with symptom, reproduction steps, and environment
+    template: bug-report.md
+    requires: []
+
+  - id: fix
+    generates: fix.md
+    description: Fix description with root cause and implementation details
+    template: fix.md
+    requires:
+      - bug-report
+
+  - id: regression-test
+    generates: regression-test.md
+    description: Regression test case to prevent recurrence
+    template: regression-test.md
+    requires:
+      - fix
+
+apply:
+  requires:
+    - regression-test
+  tracks: fix.md
+
+# Extended configuration (OpenSpec custom extensions)
+extensions:
+  severity:
+    p0_critical:
+      description: System down, data loss, security breach
+      response_time: "immediate"
+      workflow: hotfix
+    p1_high:
+      description: Core feature broken, blocking workflow
+      response_time: "same day"
+      gates: [skip-design-review]
+    p2_medium:
+      description: Feature impaired, workaround exists
+      response_time: "this sprint"
+    p3_low:
+      description: Cosmetic, edge case, nice-to-have
+      response_time: "backlog"
+
+  rules:
+    minimal_change:
+      principle: "Minimal change"
+      description: Only fix the bug, don't refactor surrounding code
+    regression_test_required:
+      principle: "Regression test required"
+      description: Every bugfix must include a test case that fails before the fix and passes after
+    no_bypass_without_reason:
+      principle: "No bypass without reason"
+      description: Document why immediate fix was needed if normal process wasn't followed
+    root_cause_tracking:
+      principle: "Track root cause"
+      description: Record root cause for identifying systemic issues
+
+  validation:
+    gates:
+      pre_commit:
+        - test:all
+        - lint
+        - type-check
+        - regression-test
+
+  artifacts_config:
+    bug_report:
+      required_sections:
+        - Symptom
+        - Steps_to_Reproduce
+        - Expected_Behavior
+        - Actual_Behavior
+        - Environment
+      optional_sections:
+        - Root_Cause_Analysis
+        - Workaround
+      max_words: 300
+    fix:
+      required_sections:
+        - Root_Cause
+        - Fix_Description
+        - Files_Changed
+        - Testing_Strategy
+      optional_sections:
+        - Spec_Impact
+        - Risks
+        - Follow_Up
+    regression_test:
+      required_sections:
+        - Test_Case
+        - Coverage
+
+  integration:
+    git:
+      branch_naming: "fix/<bug-id>-<short-description>"
+      commit_prefix: "fix:"
+    issues:
+      link_required: true
+      auto_close: true
+    tests:
+      pattern: "src/tests/regression/<bug-id>.test.ts"
+      naming: "should not regress: <symptom>"
+
+  hotfix_override:
+    allowed: true
+    conditions:
+      - severity: p0_critical
+      - approval: tech-lead

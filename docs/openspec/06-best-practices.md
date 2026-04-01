@@ -181,6 +181,100 @@ AI：好的，启动 bugfix 流程
 /opsx-propose refactor-auth-module
 ```
 
+### Spike 工作流最佳实践
+
+#### 1. 严格遵守时间盒
+
+```markdown
+# ✅ 推荐：时间到就下结论
+
+## Timebox: 4 小时
+
+## 实际用时: 4 小时
+
+尽管还有一些疑问，但已经 enough to decide:
+
+- 推荐方案：Zustand
+- 理由：满足所有硬性要求
+- 风险：社区较小（可接受）
+
+## Next_Steps
+
+- 如后续发现问题，可再进行补充调研
+```
+
+#### 2. 记录失败的尝试
+
+```markdown
+# ✅ 推荐：记录死胡同
+
+## 实验 3: 使用 Context + useReducer
+
+**尝试**: 用原生 Context 实现复杂状态
+
+**结果**: 失败
+
+**原因**:
+
+- 需要频繁更新导致大量重渲染
+- Provider 嵌套变得复杂
+- 测试困难
+
+**学习**: 原生方案不适合复杂状态，需要专业库
+```
+
+#### 3. 可丢弃代码管理
+
+```bash
+# ✅ 推荐：明确标记实验代码
+
+spike/
+└── evaluate-state-management/
+    ├── research-question.md
+    ├── exploration-log.md
+    ├── decision.md
+    └── code-spikes/
+        ├── redux-prototype/           # 标记为实验代码
+        │   ├── README.md             # 说明这是 throwaway
+        │   └── store.ts
+        └── zustand-prototype/
+            ├── README.md
+            └── store.ts
+```
+
+#### 4. 决策必须明确
+
+```markdown
+# ✅ 推荐：清晰的决策
+
+## Recommendation
+
+**采用 Zustand 作为状态管理方案**
+
+理由：
+
+1. 包大小最优（1KB vs 11KB）
+2. TypeScript 原生支持
+3. 团队学习成本低
+
+## Next_Steps
+
+1. 创建实施变更: `/opsx-propose add-zustand-store`
+2. 预计工期: 2 天
+3. 负责人: @dev-team
+```
+
+```markdown
+# ❌ 避免：模糊的结论
+
+## Recommendation
+
+"Zustand 看起来不错，Redux 也可以，
+具体用哪个可以再讨论。"
+
+# 问题：没有明确决策，调研失去意义
+```
+
 ### 3. 紧急情况处理
 
 ```markdown
@@ -432,6 +526,15 @@ it('should not regress bug #123', () => {
 - [ ] 需求已经过探索和澄清
 - [ ] 选择了正确的 Schema
 - [ ] 变更名称符合规范
+
+### Spike 调研阶段
+
+- [ ] research-question.md 明确问题和范围
+- [ ] 设定了合理的时间盒
+- [ ] exploration-log.md 记录了关键发现
+- [ ] 包含失败的尝试和教训
+- [ ] decision.md 有明确的决策
+- [ ] 有清晰的下一步行动
 
 ### 提案阶段
 
