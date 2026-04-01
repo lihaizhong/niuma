@@ -234,17 +234,77 @@ openspec/
 
 ### Step 4.3 配置变量填充
 
-填充以下变量到 `config.yaml`：
+#### AGENTS.md 变量
+
+| 占位符                | 替换为   | 示例                       |
+| --------------------- | -------- | -------------------------- |
+| `PROJECT_NAME`        | 项目名称 | `MyApp`                    |
+| `PROJECT_DESCRIPTION` | 项目描述 | `A web application for...` |
+| `TEST_DIR`            | 测试目录 | `src/tests/`               |
+| `SRC_DIR`             | 源码目录 | `src/`                     |
+| `PACKAGE_MANAGER`     | 包管理器 | `pnpm`                     |
+
+#### config.yaml 变量
+
+**基础变量（直接替换）：**
+
+| 占位符                    | 替换为     | 示例                |
+| ------------------------- | ---------- | ------------------- |
+| `{{PROJECT_NAME}}`        | 项目名称   | `MyApp`             |
+| `{{PROJECT_DESCRIPTION}}` | 项目描述   | `A web application` |
+| `{{LANGUAGE}}`            | 编程语言   | `TypeScript`        |
+| `{{RUNTIME}}`             | 运行时     | `Node.js >=22.0.0`  |
+| `{{PACKAGE_MANAGER}}`     | 包管理器   | `pnpm`              |
+| `{{LANGUAGE_VERSION}}`    | 语言版本   | `TypeScript 5.9+`   |
+| `{{TEST_FRAMEWORK}}`      | 测试框架   | `vitest`            |
+| `{{RUNTIME_VERSION}}`     | 运行时版本 | `Node.js >=22.0.0`  |
+
+**条件变量（根据项目类型生成整行）：**
+
+| 占位符                      | 生成逻辑                                                  | 示例输出                      |
+| --------------------------- | --------------------------------------------------------- | ----------------------------- |
+| `{{WEB_FRAMEWORK_LINE}}`    | Web项目 → `web_framework: Next.js 15`<br>非Web项目 → 空行 | `web_framework: Next.js 15`   |
+| `{{UI_FRAMEWORK_LINE}}`     | 有UI框架 → `ui: React 19 + Tailwind CSS`<br>无 → 空行     | `ui: React 19 + Tailwind CSS` |
+| `{{BUILD_TOOL_LINE}}`       | 指定构建工具 → `build_tool: Vite`<br>未指定 → 空行        | `build_tool: Vite`            |
+| `{{TYPESCRIPT_CONVENTION}}` | TypeScript项目 → `- Strict TypeScript`<br>非TS → 空行     | `- Strict TypeScript`         |
+
+**模块配置（动态生成多行）：**
+
+`{{MODULES_SECTION}}` 根据项目类型生成：
 
 ```yaml
-{{PROJECT_NAME}}         → 项目名称
-{{PROJECT_DESCRIPTION}}  → 自动生成
-{{PROJECT_TYPE}}         → web-frontend/client/backend/fullstack
-{{LANGUAGE}}             → TypeScript/JavaScript/Go/Java/Python
-{{PACKAGE_MANAGER}}      → pnpm/npm/yarn/bun
-{{TEST_FRAMEWORK}}       → vitest/jest/cypress/playwright
-{{WEB_FRAMEWORK}}        → Next.js/Vue/Express
-{{MODULE_NAME}}          → src/app/lib
+# Web/全栈项目示例
+src:
+  purpose: Next.js web service
+  scope: Web UI, API routes, components
+  tests: src/tests/
+
+# 服务端项目示例
+src:
+  purpose: API service
+  scope: Routes, controllers, services
+  tests: src/tests/
+```
+
+**命令配置（条件生成）：**
+
+| 占位符                        | 生成逻辑                                     | 示例                          |
+| ----------------------------- | -------------------------------------------- | ----------------------------- |
+| `{{DEV_COMMAND_LINE}}`        | 有dev命令 → `dev: pnpm dev`                  | `dev: pnpm dev`               |
+| `{{BUILD_COMMAND_LINE}}`      | 有build命令 → `build: pnpm build`            | `build: pnpm build`           |
+| `{{TEST_COMMAND_LINE}}`       | 有test命令 → `test: pnpm test`               | `test: pnpm test`             |
+| `{{TEST_UNIT_COMMAND_LINE}}`  | 有unit test → `test_unit: pnpm test:unit`    | `test_unit: pnpm test:unit`   |
+| `{{LINT_COMMAND_LINE}}`       | 有lint命令 → `lint: pnpm lint`               | `lint: pnpm lint`             |
+| `{{TYPE_CHECK_COMMAND_LINE}}` | 有type-check → `type_check: pnpm type-check` | `type_check: pnpm type-check` |
+
+> ⚠️ **CRITICAL**: 所有占位符**必须**替换，不能原样复制到目标文件！
+
+**验证方法：**
+
+```bash
+# 替换完成后检查是否还有未替换的占位符
+grep -E '\{\{[A-Z_]+\}\}' openspec/config.yaml AGENTS.md
+# 应该无输出
 ```
 
 ---
