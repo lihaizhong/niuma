@@ -1,23 +1,23 @@
 # OpenSpec Harness 安装指南
 
-> AI 助手读取此文件，引导用户完成 Harness 环境搭建
-
-## 前置要求
-
-**必须全局安装 openspec CLI**，否则无法继续：
-
-```bash
-npm install -g @openspec/cli
-
-# 验证安装
-openspec --version
-```
-
-如果未安装，AI 将退出并提示用户先安装。
+> **AI 指令**：本文档指导你完成 Harness 环境搭建。**逐阶段执行，不要跳过任何步骤。**
 
 ---
 
-## 安装流程概览
+## ⚠️ 前置要求（必须）
+
+**MUST: 全局安装 openspec CLI**
+
+```bash
+npm install -g @openspec/cli
+openspec --version  # 验证安装
+```
+
+❌ 未安装则**立即停止**并提示用户安装。
+
+---
+
+## 🎯 安装流程速览
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
@@ -37,9 +37,9 @@ openspec --version
 
 ## 阶段 1：收集项目信息
 
-AI 将通过对话询问以下信息：
+### Step 1.1 新项目 or 老项目？
 
-### Q1：新项目 or 老项目？
+向用户展示：
 
 ```
 你好！我来帮你搭建 OpenSpec Harness 环境。
@@ -49,7 +49,7 @@ A) 从零创建新项目
 B) 已有项目，想引入 Harness
 ```
 
-### Q2：项目类型
+### Step 1.2 项目类型
 
 **如果选 A（新项目）：**
 
@@ -63,106 +63,41 @@ B) 已有项目，想引入 Harness
 
 **如果选 B（老项目）：**
 
-AI 自动检测技术栈 → 展示检测报告 → 用户确认/修改
+> 🎯 **ACTION**: 自动检测技术栈 → 展示报告 → 用户确认
 
 ---
 
 ## 阶段 2：项目类型专属问题
 
-根据项目类型，询问以下必要问题：
+根据项目类型询问：
 
-### Web 前端项目
-
-| 问题                    | 选项                                                                              |
-| ----------------------- | --------------------------------------------------------------------------------- |
-| **2.1 框架**            | □ React<br>□ Vue<br>□ Angular<br>□ Svelte<br>□ Solid<br>□ 其他                    |
-| **2.2 如果选 React**    | □ Next.js<br>□ Remix<br>□ 纯 React + Vite<br>□ 纯 React + CRA                     |
-| **2.3 构建工具**        | □ Vite<br>□ Webpack<br>□ Parcel<br>□ 框架自带                                     |
-| **2.4 包管理器**        | □ pnpm<br>□ npm<br>□ yarn<br>□ bun                                                |
-| **2.5 测试框架**        | □ Vitest<br>□ Jest<br>□ Cypress<br>□ Playwright<br>□ 无                           |
-| **2.6 UI 方案**         | □ Tailwind CSS<br>□ CSS Modules<br>□ Styled Components<br>□ UI 库 (AntD/Material) |
-| **2.7 使用 TypeScript** | □ 是<br>□ 否                                                                      |
-| **2.8 项目名称**        | 输入：**\_\_\_\_**（. 或空 = 当前目录）                                           |
-
-### 客户端项目
-
-| 问题                 | 选项                                            |
-| -------------------- | ----------------------------------------------- |
-| **2.1 平台类型**     | □ 桌面端<br>□ 移动端<br>□ 跨平台                |
-| **2.2 桌面端框架**   | □ Electron<br>□ Tauri<br>□ Flutter Desktop      |
-| **2.3 移动端框架**   | □ React Native<br>□ Flutter<br>□ 原生           |
-| **2.4 如果选 Tauri** | □ Rust（默认）<br>□ Go                          |
-| **2.5 状态管理**     | □ Redux/Zustand<br>□ MobX<br>□ Context/Provider |
-| **2.6 包管理器**     | □ pnpm<br>□ npm<br>□ yarn<br>□ bun              |
-| **2.7 项目名称**     | 输入：**\_\_\_\_**                              |
-
-### 服务端项目
-
-| 问题                   | 选项                                                                |
-| ---------------------- | ------------------------------------------------------------------- |
-| **2.1 语言/运行时**    | □ Node.js<br>□ Go<br>□ Java<br>□ Python<br>□ Rust<br>□ 其他         |
-| **2.2 如果选 Node.js** | □ Express<br>□ Fastify<br>□ NestJS<br>□ Koa                         |
-| **2.3 API 类型**       | □ REST<br>□ GraphQL<br>□ gRPC<br>□ tRPC                             |
-| **2.4 数据库**         | □ PostgreSQL<br>□ MySQL<br>□ MongoDB<br>□ Redis<br>□ SQLite<br>□ 无 |
-| **2.5 ORM/数据层**     | □ Prisma<br>□ TypeORM<br>□ Drizzle<br>□ 原生 SQL<br>□ 无            |
-| **2.6 认证方案**       | □ JWT<br>□ Session<br>□ OAuth2<br>□ 无                              |
-| **2.7 部署目标**       | □ Docker<br>□ Serverless<br>□ K8s<br>□ 传统服务器                   |
-| **2.8 项目名称**       | 输入：**\_\_\_\_**                                                  |
-
-### 全栈项目
-
-| 问题                   | 选项                                                      |
-| ---------------------- | --------------------------------------------------------- |
-| **2.1 全栈框架**       | □ Next.js<br>□ Nuxt<br>□ SvelteKit<br>□ Remix<br>□ Django |
-| **2.2 如果选 Next.js** | □ App Router<br>□ Pages Router                            |
-| **2.3 渲染模式**       | □ SSR<br>□ SSG<br>□ ISR<br>□ 混合                         |
-| **2.4 数据库位置**     | □ Serverless/云<br>□ 自托管<br>□ SQLite                   |
-| **2.5 ORM**            | □ Drizzle<br>□ Prisma<br>□ TypeORM<br>□ 原生 SQL          |
-| **2.6 认证方案**       | □ NextAuth.js/Auth.js<br>□ Clerk<br>□ Lucia<br>□ 自建 JWT |
-| **2.7 部署平台**       | □ Vercel<br>□ Netlify<br>□ Railway<br>□ 自托管            |
-| **2.8 包管理器**       | □ pnpm<br>□ npm<br>□ yarn<br>□ bun                        |
-| **2.9 项目名称**       | 输入：**\_\_\_\_**                                        |
+| 项目类型     | 必问问题                                                                     |
+| ------------ | ---------------------------------------------------------------------------- |
+| **Web 前端** | 框架(React/Vue/Angular)、构建工具、包管理器、测试框架、TypeScript?、项目名称 |
+| **客户端**   | 平台(桌面/移动/跨平台)、框架(Electron/Tauri/Flutter)、包管理器、项目名称     |
+| **服务端**   | 语言/运行时、Web框架、数据库、ORM、认证方案、部署目标、项目名称              |
+| **全栈**     | 全栈框架(Next.js/Nuxt等)、渲染模式、数据库、ORM、认证、部署平台、项目名称    |
 
 ---
 
 ## 阶段 3：老项目自动检测
 
-对于老项目，AI 将自动检测技术栈：
+> 🎯 **ACTION**: 仅对老项目执行
 
-### 检测逻辑
+### 检测清单
 
 ```
-1. 检查 package.json 是否存在 → Node.js 项目
-2. 解析 dependencies：
-   - next → Next.js
-   - react → React
-   - vue → Vue
-   - @angular/core → Angular
-3. 解析 devDependencies：
-   - vitest → Vitest
-   - jest → Jest
-   - cypress → Cypress
-4. 检查 lock 文件：
-   - pnpm-lock.yaml → pnpm
-   - yarn.lock → yarn
-   - package-lock.json → npm
-5. 检查配置文件：
-   - next.config.js → Next.js 确认
-   - tailwind.config.js → Tailwind CSS
-   - vite.config.ts → Vite
+□ 检查 package.json → Node.js 项目确认
+  □ 解析 dependencies: next→Next.js, react→React, vue→Vue
+  □ 解析 devDependencies: vitest→Vitest, jest→Jest
+□ 检查 lock 文件: pnpm-lock.yaml→pnpm, yarn.lock→yarn
+□ 检查配置文件: next.config.js→Next.js, tailwind.config.js→Tailwind
 ```
 
-### 检测报告示例
+### 检测报告模板
 
 ```
 🔍 技术栈检测报告
-
-检测依据：
-• package.json 存在 → Node.js 项目
-• dependencies 中发现 next → Next.js 框架
-• devDependencies 中发现 vitest → Vitest 测试框架
-• 存在 tailwind.config.js → Tailwind CSS
-• 存在 pnpm-lock.yaml → pnpm 包管理器
 
 📋 检测结果：
 ├─ 项目类型: Web 前端（Next.js 全栈）
@@ -171,23 +106,65 @@ AI 自动检测技术栈 → 展示检测报告 → 用户确认/修改
 ├─ 语言: TypeScript
 ├─ 包管理器: pnpm
 ├─ 测试框架: Vitest
-├─ UI: Tailwind CSS
 └─ 运行时: Node.js >=18.0.0
 
-⚠️ 以下项需要确认：
-  • 渲染模式 (SSR/SSG/SPA)
-  • 数据库 (如果有使用)
-
+⚠️ 需要确认：渲染模式、数据库
 [确认无误] [修改配置]
+```
+
+---
+
+## 阶段 3.5：AI 配置目录检测与选择
+
+### Step 3.5.1 扫描已存在的 AI 配置
+
+检测以下目录：
+
+| AI 工具     | 配置目录           | 检测标志          |
+| ----------- | ------------------ | ----------------- |
+| OpenCode    | `.opencode/`       | `opencode.json`   |
+| Claude Code | `.claude/`         | `settings.json`   |
+| Cursor      | `.cursor/`         | `rules/`          |
+| Copilot     | `.github/copilot/` | `instructions.md` |
+| VS Code     | `.vscode/`         | `settings.json`   |
+
+**决策分支：**
+
+- **0 个目录** → 进入 Step 3.5.2
+- **1 个目录** → 询问："检测到 [工具] 配置，是否在此更新？"
+- **2+ 个目录** → 多选界面："选择要更新的目录"
+
+### Step 3.5.2 检测当前运行的 AI
+
+通过以下信号检测：
+
+- `OPENCODE_SESSION_ID` → OpenCode
+- `CLAUDE_CODE_VERSION` → Claude Code
+- `CURSOR_VERSION` → Cursor
+
+> 🎯 **ACTION**: 如果检测到新工具，询问是否创建配置目录。
+
+### Step 3.5.3 确认目标目录
+
+显示并确认：
+
+```
+📁 目标 AI 配置目录：[路径]
+
+将创建：
+├── commands/ (6 个命令文件)
+└── skills/ (6 个技能目录)
+
+[确认安装] [更换目录] [取消]
 ```
 
 ---
 
 ## 阶段 4：执行安装
 
-### 4.1 创建目录结构
+### Step 4.1 创建目录结构
 
-AI 执行 `openspec init` 创建基础目录：
+> ⚠️ **CRITICAL**: 执行 `openspec init` 仅创建空目录结构
 
 ```
 openspec/
@@ -199,74 +176,169 @@ openspec/
 └── skills/
 ```
 
-### 4.2 从 .template 拷贝配置
+### Step 4.2 从模板拷贝配置
 
-AI 从 `docs/openspec/.template/` 读取模板并填充：
+> 🎯 **ACTION**: 从 `docs/openspec/.template/` 复制以下文件：
 
-| 源文件                           | 目标文件                       | 操作           |
-| -------------------------------- | ------------------------------ | -------------- |
-| `.template/openspec/config.yaml` | `openspec/config.yaml`         | 填充变量后写入 |
-| `.template/openspec/schemas/*`   | `openspec/schemas/*`           | 直接复制       |
-| `.template/AGENTS.md`            | `AGENTS.md`                    | 填充变量后写入 |
-| `.template/custom/commands/*`    | `{{AI_CONFIG_DIR}}/commands/*` | 直接复制       |
-| `.template/custom/skills/*`      | `{{AI_CONFIG_DIR}}/skills/*`   | 直接复制       |
+| 源文件                           | 目标文件                       |
+| -------------------------------- | ------------------------------ |
+| `.template/openspec/config.yaml` | `openspec/config.yaml`         |
+| `.template/openspec/schemas/*`   | `openspec/schemas/*`           |
+| `.template/AGENTS.md`            | `AGENTS.md`                    |
+| `.template/custom/commands/*`    | `{{AI_CONFIG_DIR}}/commands/*` |
+| `.template/custom/skills/*`      | `{{AI_CONFIG_DIR}}/skills/*`   |
 
-### 4.3 配置变量填充
+> ⚠️ **CRITICAL**: Commands 和 Skills **必须**从 `.template/custom/` 复制，**禁止使用** `openspec init` 生成的默认内容！
 
-根据用户回答，填充以下变量：
+#### 4.2.1 Commands 清单（必须全部复制）
+
+```
+□ opsx-explore.md
+□ opsx-propose.md
+□ opsx-apply.md
+□ opsx-archive.md
+□ opsx-bugfix.md
+□ opsx-spike.md
+```
+
+#### 4.2.2 Skills 清单（必须全部复制）
+
+```
+□ openspec-explore/
+□ openspec-propose/
+□ openspec-apply-change/
+□ openspec-archive-change/
+□ openspec-bugfix/
+□ openspec-spike/
+```
+
+#### 4.2.3 AGENTS.md 生成
+
+**流程：**
+
+1. 读取模板 `.template/AGENTS.md`
+2. 替换变量占位符
+3. **冲突检测**：检查目标文件是否存在
+
+**冲突处理决策树：**
+
+```
+目标文件已存在？
+├─ 是 → 有 OpenSpec 标识？
+│   ├─ 是 → 询问是否更新
+│   └─ 否 → 是专属 AI 文档？(IFLOW.md, CLAUDE.md 等)
+│       ├─ 是 → 询问：同时生成 / 合并 / 跳过
+│       └─ 否 → 备份后创建
+└─ 否 → 直接写入
+```
+
+### Step 4.3 配置变量填充
+
+#### AGENTS.md 变量
+
+| 占位符                | 替换为   | 示例                       |
+| --------------------- | -------- | -------------------------- |
+| `PROJECT_NAME`        | 项目名称 | `MyApp`                    |
+| `PROJECT_DESCRIPTION` | 项目描述 | `A web application for...` |
+| `TEST_DIR`            | 测试目录 | `src/tests/`               |
+| `SRC_DIR`             | 源码目录 | `src/`                     |
+| `PACKAGE_MANAGER`     | 包管理器 | `pnpm`                     |
+
+#### config.yaml 变量
+
+**基础变量（直接替换）：**
+
+| 占位符                    | 替换为     | 示例                |
+| ------------------------- | ---------- | ------------------- |
+| `{{PROJECT_NAME}}`        | 项目名称   | `MyApp`             |
+| `{{PROJECT_DESCRIPTION}}` | 项目描述   | `A web application` |
+| `{{LANGUAGE}}`            | 编程语言   | `TypeScript`        |
+| `{{RUNTIME}}`             | 运行时     | `Node.js >=22.0.0`  |
+| `{{PACKAGE_MANAGER}}`     | 包管理器   | `pnpm`              |
+| `{{LANGUAGE_VERSION}}`    | 语言版本   | `TypeScript 5.9+`   |
+| `{{TEST_FRAMEWORK}}`      | 测试框架   | `vitest`            |
+| `{{RUNTIME_VERSION}}`     | 运行时版本 | `Node.js >=22.0.0`  |
+
+**条件变量（根据项目类型生成整行）：**
+
+| 占位符                      | 生成逻辑                                                  | 示例输出                      |
+| --------------------------- | --------------------------------------------------------- | ----------------------------- |
+| `{{WEB_FRAMEWORK_LINE}}`    | Web项目 → `web_framework: Next.js 15`<br>非Web项目 → 空行 | `web_framework: Next.js 15`   |
+| `{{UI_FRAMEWORK_LINE}}`     | 有UI框架 → `ui: React 19 + Tailwind CSS`<br>无 → 空行     | `ui: React 19 + Tailwind CSS` |
+| `{{BUILD_TOOL_LINE}}`       | 指定构建工具 → `build_tool: Vite`<br>未指定 → 空行        | `build_tool: Vite`            |
+| `{{TYPESCRIPT_CONVENTION}}` | TypeScript项目 → `- Strict TypeScript`<br>非TS → 空行     | `- Strict TypeScript`         |
+
+**模块配置（动态生成多行）：**
+
+`{{MODULES_SECTION}}` 根据项目类型生成：
 
 ```yaml
-# config.yaml 中的变量
-{{PROJECT_NAME}}         → 用户输入的项目名
-{{PROJECT_DESCRIPTION}}  → 根据类型自动生成
-{{PROJECT_TYPE}}         → web-frontend/client/backend/fullstack
-{{LANGUAGE}}             → TypeScript/JavaScript/Go/Java/Python
-{{LANGUAGE_VERSION}}     → 根据类型推断
-{{RUNTIME}}              → Node.js >=22.0.0/Go 1.21+/等
-{{RUNTIME_VERSION}}      → 具体版本
-{{PACKAGE_MANAGER}}      → pnpm/npm/yarn/bun
-{{TEST_FRAMEWORK}}       → vitest/jest/cypress/playwright
-{{WEB_FRAMEWORK}}        → Next.js/Vue/Express/等
-{{UI_FRAMEWORK}}         → Tailwind CSS/等
-{{BUILD_TOOL}}           → Vite/Webpack/等
-{{MODULE_NAME}}          → src/app/lib
-{{HAS_DEV_COMMAND}}      → true/false
-{{HAS_BUILD_COMMAND}}    → true/false
-{{HAS_TEST_COMMAND}}     → true/false
-{{HAS_TEST_UNIT_COMMAND}}→ true/false
-{{HAS_LINT_COMMAND}}     → true/false
-{{HAS_TYPE_CHECK_COMMAND}}→ true/false
+# Web/全栈项目示例
+src:
+  purpose: Next.js web service
+  scope: Web UI, API routes, components
+  tests: src/tests/
+
+# 服务端项目示例
+src:
+  purpose: API service
+  scope: Routes, controllers, services
+  tests: src/tests/
+```
+
+**命令配置（条件生成）：**
+
+| 占位符                        | 生成逻辑                                     | 示例                          |
+| ----------------------------- | -------------------------------------------- | ----------------------------- |
+| `{{DEV_COMMAND_LINE}}`        | 有dev命令 → `dev: pnpm dev`                  | `dev: pnpm dev`               |
+| `{{BUILD_COMMAND_LINE}}`      | 有build命令 → `build: pnpm build`            | `build: pnpm build`           |
+| `{{TEST_COMMAND_LINE}}`       | 有test命令 → `test: pnpm test`               | `test: pnpm test`             |
+| `{{TEST_UNIT_COMMAND_LINE}}`  | 有unit test → `test_unit: pnpm test:unit`    | `test_unit: pnpm test:unit`   |
+| `{{LINT_COMMAND_LINE}}`       | 有lint命令 → `lint: pnpm lint`               | `lint: pnpm lint`             |
+| `{{TYPE_CHECK_COMMAND_LINE}}` | 有type-check → `type_check: pnpm type-check` | `type_check: pnpm type-check` |
+
+> ⚠️ **CRITICAL**: 所有占位符**必须**替换，不能原样复制到目标文件！
+
+**验证方法：**
+
+```bash
+# 替换完成后检查是否还有未替换的占位符
+grep -E '\{\{[A-Z_]+\}\}' openspec/config.yaml AGENTS.md
+# 应该无输出
 ```
 
 ---
 
 ## 阶段 5：合并规则
 
-如果目标目录已存在文件，按以下规则合并：
+> 🎯 **ACTION**: 如果目标文件已存在，按以下规则处理：
+
+### 决策流程
 
 ```
-文件是否在现有目录中？
-  ├─ 否 → 直接使用模板版本
-  └─ 是 → 文件是否与 openspec 相关？
-      ├─ 否（用户自定义）→ 保留现有版本
-      └─ 是（openspec 相关）→ 使用模板版本
+文件是否存在？
+├─ 否 → 使用模板版本
+└─ 是 → 与 openspec 相关？
+    ├─ 否 → 保留现有版本（用户自定义）
+    └─ 是 → 使用模板版本（覆盖）
+```
 
-判断 "与 openspec 相关" 的文件：
-✓ openspec/ 目录下的所有文件
+### "与 openspec 相关" 的文件清单
+
+**必须覆盖（标准组件）：**
+
+```
+✓ openspec/ 目录下所有文件
 ✓ AGENTS.md
-✓ {{AI_CONFIG_DIR}}/commands/opsx-propose.md（标准命令）
-✓ {{AI_CONFIG_DIR}}/commands/opsx-apply.md（标准命令）
-✓ {{AI_CONFIG_DIR}}/commands/opsx-explore.md（标准命令）
-✓ {{AI_CONFIG_DIR}}/commands/opsx-archive.md（标准命令）
-✓ {{AI_CONFIG_DIR}}/skills/openspec-propose/（标准技能）
-✓ {{AI_CONFIG_DIR}}/skills/openspec-apply-change/（标准技能）
-✓ {{AI_CONFIG_DIR}}/skills/openspec-archive-change/（标准技能）
-✓ {{AI_CONFIG_DIR}}/skills/openspec-explore/（标准技能）
+✓ {{AI_CONFIG_DIR}}/commands/opsx-{explore,propose,apply,archive}.md
+✓ {{AI_CONFIG_DIR}}/skills/openspec-{explore,propose,apply-change,archive-change}/
+```
 
-✗ {{AI_CONFIG_DIR}}/commands/opsx-bugfix.md（自定义命令）
-✗ {{AI_CONFIG_DIR}}/commands/opsx-spike.md（自定义命令）
-✗ {{AI_CONFIG_DIR}}/skills/openspec-bugfix/（自定义技能）
-✗ {{AI_CONFIG_DIR}}/skills/openspec-spike/（自定义技能）
+**保留用户自定义：**
+
+```
+✗ {{AI_CONFIG_DIR}}/commands/opsx-{bugfix,spike}.md
+✗ {{AI_CONFIG_DIR}}/skills/openspec-{bugfix,spike}/
 ✗ 用户自己的其他配置文件
 ```
 
@@ -274,17 +346,17 @@ AI 从 `docs/openspec/.template/` 读取模板并填充：
 
 ## 阶段 6：完成验证
 
-安装完成后，AI 验证以下内容：
+> 🎯 **ACTION**: 安装完成后逐项验证：
 
 ```
-✓ openspec/config.yaml 存在且格式正确
-✓ openspec/schemas/ 包含 spec-driven、bugfix、spike
-✓ AGENTS.md 存在
-✓ {{AI_CONFIG_DIR}}/commands/ 包含必要命令
-✓ {{AI_CONFIG_DIR}}/skills/ 包含必要技能
+□ openspec/config.yaml 存在且格式正确
+□ openspec/schemas/ 包含 spec-driven、bugfix、spike
+□ AGENTS.md 存在
+□ {{AI_CONFIG_DIR}}/commands/ 包含 6 个命令文件
+□ {{AI_CONFIG_DIR}}/skills/ 包含 6 个技能目录
 ```
 
-并提示用户：
+**全部通过 → 提示用户：**
 
 ```
 🎉 OpenSpec Harness 环境搭建完成！
@@ -301,36 +373,22 @@ AI 从 `docs/openspec/.template/` 读取模板并填充：
 
 ---
 
-## 模板目录结构
+## 附录：模板目录结构
 
 ```
 docs/openspec/.template/
 ├── README.md                    # 模板使用说明
-├── AGENTS.md                    # AI 行为指南（带变量）
+├── AGENTS.md                    # AI 行为指南模板
 ├── openspec/
-│   ├── config.yaml              # 通用配置模板（带变量）
+│   ├── config.yaml              # 配置模板
 │   └── schemas/
-│       ├── spec-driven/         # 新功能开发工作流
-│       ├── bugfix/              # Bug 修复工作流
-│       └── spike/               # 技术调研工作流
-└── {{AI_CONFIG_DIR}}/                         # AI 助手配置（通用，支持多种 AI 工具）
-    ├── commands/                # 斜杠命令
-    │   ├── opsx-explore.md      # 标准：探索模式
-    │   ├── opsx-propose.md      # 标准：创建提案
-    │   ├── opsx-apply.md        # 标准：实施变更
-    │   ├── opsx-archive.md      # 标准：归档变更
-    │   ├── opsx-bugfix.md       # 自定义：Bug 修复
-    │   └── opsx-spike.md        # 自定义：技术调研
-    └── skills/                  # 技能定义
-        ├── openspec-explore/    # 标准
-        ├── openspec-propose/    # 标准
-        ├── openspec-apply-change/    # 标准
-        ├── openspec-archive-change/  # 标准
-        ├── openspec-bugfix/     # 自定义
-        └── openspec-spike/      # 自定义
+│       ├── spec-driven/         # 新功能开发
+│       ├── bugfix/              # Bug 修复
+│       └── spike/               # 技术调研
+└── custom/                      # AI 配置模板
+    ├── commands/                # 6 个命令文件
+    └── skills/                  # 6 个技能目录
 ```
-
-**注意**：`.template` 是一个独立的、可复用的配置模板库，与当前工程的实际配置解耦。
 
 ---
 
