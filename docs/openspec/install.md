@@ -312,7 +312,77 @@ AI 从 `docs/openspec/.template/` 读取模板并填充：
 | `.template/custom/commands/*`    | `{{AI_CONFIG_DIR}}/commands/*` | 直接复制       |
 | `.template/custom/skills/*`      | `{{AI_CONFIG_DIR}}/skills/*`   | 直接复制       |
 
-#### 4.2.1 AGENTS.md 生成逻辑
+**重要提示：** Commands 和 Skills 必须从 `.template/custom/` 复制，**不能使用 `openspec init` 生成的默认内容**。
+
+`openspec init` 仅创建基础目录结构，不会生成完整的命令和技能定义。必须使用模板中的预定义内容。
+
+---
+
+#### 4.2.1 Commands 和 Skills 复制详情
+
+##### Commands 文件清单
+
+必须从 `.template/custom/commands/` 复制以下文件到 `{{AI_CONFIG_DIR}}/commands/`：
+
+| 文件              | 用途             | 是否必须 |
+| ----------------- | ---------------- | -------- |
+| `opsx-explore.md` | 探索模式命令定义 | 是       |
+| `opsx-propose.md` | 创建提案命令定义 | 是       |
+| `opsx-apply.md`   | 实施变更命令定义 | 是       |
+| `opsx-archive.md` | 归档变更命令定义 | 是       |
+| `opsx-bugfix.md`  | Bug 修复命令定义 | 是       |
+| `opsx-spike.md`   | 技术调研命令定义 | 是       |
+
+**注意：** 命令文件包含特定于 OpenSpec Harness 的执行逻辑，与 `openspec init` 生成的默认命令不同。
+
+##### Skills 文件清单
+
+必须从 `.template/custom/skills/` 复制以下目录到 `{{AI_CONFIG_DIR}}/skills/`：
+
+| 目录                       | 用途             | 是否必须 |
+| -------------------------- | ---------------- | -------- |
+| `openspec-explore/`        | 探索模式技能实现 | 是       |
+| `openspec-propose/`        | 创建提案技能实现 | 是       |
+| `openspec-apply-change/`   | 实施变更技能实现 | 是       |
+| `openspec-archive-change/` | 归档变更技能实现 | 是       |
+| `openspec-bugfix/`         | Bug 修复技能实现 | 是       |
+| `openspec-spike/`          | 技术调研技能实现 | 是       |
+
+**注意：** 每个技能目录包含 `SKILL.md` 文件，定义了 AI 执行命令的具体步骤和逻辑。
+
+##### 复制操作确认
+
+复制完成后，验证以下内容：
+
+```
+{{AI_CONFIG_DIR}}/
+├── commands/
+│   ├── opsx-explore.md      ✓
+│   ├── opsx-propose.md      ✓
+│   ├── opsx-apply.md        ✓
+│   ├── opsx-archive.md      ✓
+│   ├── opsx-bugfix.md       ✓
+│   └── opsx-spike.md        ✓
+└── skills/
+    ├── openspec-explore/          ✓
+    ├── openspec-propose/          ✓
+    ├── openspec-apply-change/     ✓
+    ├── openspec-archive-change/   ✓
+    ├── openspec-bugfix/           ✓
+    └── openspec-spike/            ✓
+```
+
+**常见问题：**
+
+Q: 能否使用 `openspec init` 生成的 commands/skills？  
+A: **不能。** `openspec init` 生成的是通用模板，不包含 OpenSpec Harness 特有的斜杠命令（/opsx-\*）定义。
+
+Q: 目标目录已存在 commands/skills 怎么办？  
+A: 按照阶段 5 的合并规则处理。如果是 `openspec init` 生成的默认内容，用模板内容覆盖。
+
+---
+
+#### 4.2.3 AGENTS.md 生成逻辑
 
 **生成流程：**
 
