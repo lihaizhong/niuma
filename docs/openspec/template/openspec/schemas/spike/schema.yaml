@@ -1,0 +1,29 @@
+name: spike
+version: "1.0"
+description: Technical research and exploratory investigation workflow
+
+artifacts:
+  - id: research-question
+    generates: research-question.md
+    description: Research question with scope and success criteria
+    template: research-question.md
+    requires: []
+
+  - id: exploration-log
+    generates: exploration-log.md
+    description: Log of research findings and experiments
+    template: exploration-log.md
+    requires:
+      - research-question
+
+  - id: decision
+    generates: decision.md
+    description: Final decision and recommendations
+    template: decision.md
+    requires:
+      - exploration-log
+
+apply:
+  requires:
+    - decision
+  tracks: decision.md

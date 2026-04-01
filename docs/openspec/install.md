@@ -6,6 +6,17 @@
 
 本指南用于 AI 引导用户从零搭建个人 Harness 环境。AI 应阅读 `docs/openspec/` 下的文档来理解 Harness 的设计理念和配置方式，然后通过与用户对话，逐步完成环境搭建。
 
+**快速开始：** 所有配置文件模板位于 `docs/openspec/template/` 目录，可直接复制使用：
+
+```bash
+# 一键复制所有模板
+cp -r docs/openspec/template/openspec ./
+cp docs/openspec/template/AGENTS.md ./
+# 然后编辑文件替换占位符
+```
+
+详见 `docs/openspec/template/README.md`
+
 **核心原则：**
 
 - AI 是引导者，用户是决策者
@@ -58,19 +69,38 @@ B) 已有项目，想引入 Harness
 
 根据 `docs/openspec/02-config-system.md` 和 `openspec/config.yaml`，核心文件包括：
 
-| 文件路径                            | 用途             | 必须创建 |
-| ----------------------------------- | ---------------- | -------- |
-| `openspec/config.yaml`              | 项目配置         | ✓        |
-| `openspec/schemas/spec-driven.yaml` | 新功能开发工作流 | ✓        |
-| `openspec/schemas/bugfix.yaml`      | Bug 修复工作流   | ✓        |
-| `openspec/schemas/spike.yaml`       | 技术调研工作流   | ✓        |
-| `AGENTS.md`                         | AI 行为指南      | ✓        |
-| `.opencode/`                        | AI 助手配置目录  | ✓        |
-| `.opencode/commands/`               | 斜杠命令         | ✓        |
-| `.opencode/skills/`                 | 技能定义         | ✓        |
-| `.opencode/opencode.json`           | OpenCode 配置    | 可选     |
+| 文件路径                        | 用途             | 必须创建 |
+| ------------------------------- | ---------------- | -------- |
+| `openspec/config.yaml`          | 项目配置         | ✓        |
+| `openspec/schemas/spec-driven/` | 新功能开发工作流 | ✓        |
+| `openspec/schemas/bugfix/`      | Bug 修复工作流   | ✓        |
+| `openspec/schemas/spike/`       | 技术调研工作流   | ✓        |
+| `AGENTS.md`                     | AI 行为指南      | ✓        |
+| `.opencode/`                    | AI 助手配置目录  | ✓        |
+| `.opencode/commands/`           | 斜杠命令         | ✓        |
+| `.opencode/skills/`             | 技能定义         | ✓        |
+| `.opencode/opencode.json`       | OpenCode 配置    | 可选     |
+
+**模板位置：** 所有配置文件模板位于 `docs/openspec/template/` 目录，可直接复制使用：
+
+```bash
+# 复制模板到项目
+cp -r docs/openspec/template/openspec ./
+cp docs/openspec/template/AGENTS.md ./
+```
+
+然后编辑文件替换 `{{PLACEHOLDER}}` 占位符（详见 `docs/openspec/template/README.md`）。
 
 ### 2.2 创建 openspec/config.yaml
+
+**方法 1：从模板复制（推荐）**
+
+```bash
+cp docs/openspec/template/openspec/config.yaml ./openspec/
+# 编辑 openspec/config.yaml，替换 {{PLACEHOLDER}} 占位符
+```
+
+**方法 2：手动创建**
 
 根据用户选择的技术栈生成配置文件：
 
@@ -93,12 +123,9 @@ context:
     runtime: Node.js >=22.0.0
 
   modules:
-    niuma-engine:
-      purpose: Agent core implementation
-      scope: Agent base classes, tools, memory, types
     src:
-      purpose: Next.js web service
-      scope: Web UI, API routes, components
+      purpose: Main source code
+      scope: Application logic
 
   conventions:
     - ES Module syntax
@@ -117,215 +144,59 @@ context:
     type_check: pnpm type-check
 ```
 
+详见完整模板：`docs/openspec/template/openspec/config.yaml`
+
 ### 2.3 创建 openspec/schemas/
 
-创建 `openspec/schemas/` 目录并添加以下 3 个工作流定义文件。这些 schema 定义了不同场景下的工作流程：
+创建 `openspec/schemas/` 目录并添加 3 个工作流定义。这些 schema 定义了不同场景下的工作流程：
 
-**创建目录：**
+**方法 1：从模板复制（推荐）**
 
 ```bash
-mkdir -p openspec/schemas
+# 复制完整的 schemas 目录结构
+cp -r docs/openspec/template/openspec/schemas ./openspec/
 ```
 
-#### 2.3.1 spec-driven.yaml（新功能开发工作流）
+模板包含以下工作流：
 
-```yaml
-schema:
-  name: spec-driven
-  version: "1.0"
-  description: Specification-driven development workflow with TDD integration
+| Schema      | 路径                            | 用途       |
+| ----------- | ------------------------------- | ---------- |
+| spec-driven | `openspec/schemas/spec-driven/` | 新功能开发 |
+| bugfix      | `openspec/schemas/bugfix/`      | Bug 修复   |
+| spike       | `openspec/schemas/spike/`       | 技术调研   |
 
-workflow:
-  name: spec-driven-development
-  phases:
-    - id: explore
-      name: Explore
-      trigger: manual
-      command: /opsx-explore
+每个 schema 目录包含：
 
-    - id: propose
-      name: Propose
-      trigger: manual
-      command: /opsx-propose
-      produces: [proposal.md, design.md, specs/, tasks.md]
+- `schema.yaml` - 工作流定义
+- `templates/` - Markdown 模板文件
 
-    - id: apply
-      name: Apply
-      trigger: manual
-      command: /opsx-apply
-      gates: [test:unit, lint, type-check]
+**方法 2：使用 OpenSpec CLI 创建**
 
-    - id: validate
-      name: Validate
-      trigger: pre-commit
-      blocking: true
-      gates: [test:all, type-check, lint]
-
-    - id: archive
-      name: Archive
-      trigger: post-merge
-      branch: main
-      action: auto-archive
-
-artifacts:
-  proposal:
-    max_words: 500
-    required_sections: [Non-goals, Acceptance Criteria]
-
-  specs:
-    required_sections: [Purpose, Requirements]
-    keywords: [SHALL, MUST]
-    scenarios: required
-
-  tasks:
-    organization: [Red, Green, Refactor]
+```bash
+# 创建自定义 schema
+openspec schema init spec-driven --artifacts "proposal,specs,design,tasks"
+openspec schema init bugfix --artifacts "bug-report,fix,regression-test"
+openspec schema init spike --artifacts "research-question,exploration-log,decision"
 ```
 
-#### 2.3.2 bugfix.yaml（Bug 修复工作流）
+**方法 3：手动创建**
 
-```yaml
-schema:
-  name: bugfix
-  version: "1.0"
-  description: Streamlined workflow for bug fixes with minimal overhead
+详见完整模板文件：
 
-workflow:
-  name: bugfix-workflow
-  phases:
-    - id: triage
-      name: Triage
-      trigger: manual
-      command: /opsx-bugfix
-      description: Assess bug severity and assign owner
-
-    - id: reproduce
-      name: Reproduce
-      trigger: manual
-      produces: [bug-report.md]
-
-    - id: fix
-      name: Fix
-      trigger: manual
-      description: Implement fix with regression test
-
-    - id: validate
-      name: Validate
-      trigger: pre-commit
-      blocking: true
-      gates: [test:all, lint, type-check]
-
-    - id: close
-      name: Close
-      trigger: post-merge
-      branch: main
-      action: auto-close
-
-artifacts:
-  bug_report:
-    required_sections:
-      - Symptom
-      - Steps_to_Reproduce
-      - Expected_Behavior
-      - Actual_Behavior
-      - Environment
-
-severity:
-  p0_critical:
-    description: System down, data loss, security breach
-    response_time: "immediate"
-
-  p1_high:
-    description: Core feature broken, blocking workflow
-    response_time: "same day"
-
-  p2_medium:
-    description: Feature impaired, workaround exists
-    response_time: "this sprint"
-
-  p3_low:
-    description: Cosmetic, edge case, nice-to-have
-    response_time: "backlog"
-
-rules:
-  minimal_change:
-    principle: "Minimal change"
-    description: Only fix the bug, don't refactor surrounding code
-
-  regression_test_required:
-    principle: "Regression test required"
-    description: Every bugfix must include a test that fails before and passes after
-```
-
-#### 2.3.3 spike.yaml（技术调研工作流）
-
-```yaml
-schema:
-  name: spike
-  version: "1.0"
-  description: Technical research and exploratory investigation workflow
-
-workflow:
-  name: spike-workflow
-  phases:
-    - id: define
-      name: Define
-      trigger: manual
-      command: /opsx-spike
-      produces: [research-question.md]
-
-    - id: explore
-      name: Explore
-      trigger: manual
-      produces: [exploration-log.md, findings/]
-
-    - id: conclude
-      name: Conclude
-      trigger: manual
-      produces: [decision.md]
-
-    - id: archive
-      name: Archive
-      trigger: post-merge
-      branch: main
-      action: auto-archive
-
-artifacts:
-  research_question:
-    required_sections:
-      - Problem_Statement
-      - Research_Goals
-      - Scope
-    max_words: 400
-
-  exploration_log:
-    required_sections:
-      - Approach
-      - Findings
-    max_words: 2000
-
-  decision:
-    required_sections:
-      - Summary
-      - Recommendation
-      - Rationale
-    max_words: 800
-
-timebox:
-  default: 4h
-  max: 2d
-  warning_threshold: 80%
-
-rules:
-  timebox_respected:
-    principle: "Respect the timebox"
-    description: Spike is time-boxed research by design
-
-  no_production_code:
-    principle: "No production code in spike"
-    description: Spike code stays in spike directory, use spec-driven for implementation
-```
+- `docs/openspec/template/openspec/schemas/spec-driven/schema.yaml`
+- `docs/openspec/template/openspec/schemas/bugfix/schema.yaml`
+- `docs/openspec/template/openspec/schemas/spike/schema.yaml`
 
 ### 2.4 创建 AGENTS.md
+
+**方法 1：从模板复制（推荐）**
+
+```bash
+cp docs/openspec/template/AGENTS.md ./
+# 编辑 AGENTS.md，替换 {{PLACEHOLDER}} 占位符
+```
+
+**方法 2：手动创建**
 
 根据 `docs/openspec/01-overview.md` 创建 AI 行为指南：
 
@@ -374,6 +245,8 @@ Red → Green → Refactor
 | 实施  | /opsx-apply          | TDD 实现             |
 | 归档  | /opsx-archive        | 手动归档（通常自动） |
 ```
+
+详见完整模板：`docs/openspec/template/AGENTS.md`
 
 ---
 
@@ -787,31 +660,40 @@ AI 在引导过程中应参考以下文档：
 ```
 <项目根目录>/
 ├── openspec/
-│   ├── config.yaml          # 项目配置 (必须)
-│   ├── schemas/             # 工作流定义
-│   │   ├── spec-driven.yaml
-│   │   └── bugfix.yaml
-│   └── changes/             # 变更目录
+│   ├── config.yaml              # 项目配置 (必须)
+│   ├── schemas/                 # 工作流定义
+│   │   ├── spec-driven/         # 新功能开发工作流
+│   │   │   ├── schema.yaml
+│   │   │   └── templates/       # Markdown 模板
+│   │   ├── bugfix/              # Bug 修复工作流
+│   │   │   ├── schema.yaml
+│   │   │   └── templates/
+│   │   └── spike/               # 技术调研工作流
+│   │       ├── schema.yaml
+│   │       └── templates/
+│   └── changes/                 # 变更目录
 │
-├── .opencode/               # AI 助手配置 (必须)
-│   ├── commands/            # 斜杠命令 (必须)
+├── .opencode/                   # AI 助手配置 (必须)
+│   ├── commands/                # 斜杠命令 (必须)
 │   │   ├── opsx-propose.md
 │   │   ├── opsx-apply.md
 │   │   └── opsx-explore.md
-│   ├── skills/              # 技能定义 (必须)
-│   └── opencode.json        # OpenCode 配置 (可选)
+│   ├── skills/                  # 技能定义 (必须)
+│   └── opencode.json            # OpenCode 配置 (可选)
 │
 ├── .github/
 │   └── workflows/
-│       └── ci.yml           # GitHub CI (可选)
+│       └── ci.yml               # GitHub CI (可选)
 │
-├── .gitlab-ci.yml           # GitLab CI (可选)
+├── .gitlab-ci.yml               # GitLab CI (可选)
 │
-├── AGENTS.md                # AI 行为指南 (必须)
+├── AGENTS.md                    # AI 行为指南 (必须)
 │
 └── docs/
-    └── openspec/             # Harness 文档
+    └── openspec/                 # Harness 文档
         ├── 00-quick-start.md
         ├── 01-overview.md
         └── ...
 ```
+
+**模板位置：** `docs/openspec/template/` 包含上述所有配置文件的完整模板，可直接复制使用。
