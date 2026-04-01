@@ -74,6 +74,8 @@ AI: "建议使用 WebSocket"
 
 **产物**：讨论记录（可选）
 
+---
+
 #### Phase 2: Propose（提案）
 
 **触发条件**：需求明确，开始设计
@@ -117,28 +119,104 @@ openspec/changes/<name>/
 
 **design.md** - 怎么做？
 
-```markdown
+````markdown
 # Design: 暗黑模式实现
 
 ## 技术选型
 
-- CSS 变量管理主题色
-- localStorage 存储用户偏好
-- matchMedia 监听系统主题
+- **主题管理**: CSS 变量（`--color-*`）管理主题色
+- **持久化**: localStorage 存储用户偏好
+- **系统同步**: matchMedia API 监听系统主题
 
 ## 架构设计
-```
-
-ThemeProvider
-├── 读取 localStorage 偏好
-├── 监听系统主题变化
-└── 注入 CSS 变量
 
 ```
-
-## 风险
-- 第三方组件可能不兼容
+src/
+├── providers/
+│   └── ThemeProvider.tsx    # 主题上下文提供者
+├── hooks/
+│   └── useTheme.ts           # 主题切换 Hook
+├── components/
+│   └── ThemeToggle.tsx       # 主题切换组件
+└── styles/
+    └── themes/
+        ├── light.css         # 亮色主题变量
+        └── dark.css          # 暗黑主题变量
 ```
+
+## 组件设计
+
+### ThemeProvider
+
+```tsx
+interface ThemeProviderProps {
+  children: React.ReactNode;
+  defaultTheme?: "light" | "dark" | "system";
+}
+
+// 职责：// 1. 从 localStorage 读取用户偏好
+// 2. 监听系统主题变化（matchMedia）
+// 3. 注入对应的 CSS 变量
+// 4. 提供主题上下文（useTheme）
+```
+
+### ThemeToggle
+
+```tsx
+// 职责：
+// 1. 显示当前主题状态
+// 2. 提供主题切换按钮
+// 3. 三种模式循环切换：light → dark → system
+```
+
+## 数据流
+
+```
+用户点击切换
+    ↓
+ThemeToggle.setTheme()
+    ↓
+更新 localStorage
+    ↓
+ThemeProvider 感知变化
+    ↓
+更新 CSS 变量
+    ↓
+UI 重新渲染
+```
+
+## 技术决策
+
+| 决策点       | 选择          | 原因                   |
+| ------------ | ------------- | ---------------------- |
+| 主题存储     | localStorage  | 简单可靠，无需后端     |
+| CSS 方案     | CSS 变量      | 动态切换，兼容性好     |
+| 系统主题监听 | matchMedia    | 浏览器原生 API，性能好 |
+| 状态管理     | React Context | 轻量级，不引入额外依赖 |
+
+## 风险与缓解
+
+| 风险                   | 影响 | 缓解措施                                  |
+| ---------------------- | ---- | ----------------------------------------- |
+| 第三方组件不兼容       | 高   | 提供 CSS 变量覆盖机制，优先支持主流 UI 库 |
+| localStorage 不可用    | 低   | 降级为内存存储，session 内有效            |
+| 系统主题频繁切换       | 低   | 防抖处理，避免频繁重绘                    |
+| SSR/SSG hydration 问题 | 中   | 使用 useEffect 避免服务端渲染不匹配       |
+
+## 测试策略
+
+- **单元测试**: useTheme Hook 的状态切换逻辑
+- **集成测试**: ThemeProvider + ThemeToggle 组合行为
+- **E2E 测试**: 用户切换主题的完整流程
+
+## 实现顺序
+
+1. 实现 CSS 变量主题系统
+2. 实现 ThemeProvider + useTheme
+3. 实现 ThemeToggle 组件
+4. 适配所有现有组件
+5. 添加过渡动画
+````
 
 **specs/\*.md** - 做什么？
 
@@ -176,6 +254,124 @@ THEN 监听 matchMedia 并自动切换
 - [ ] 优化性能
 - [ ] 添加过渡动画
 ```
+
+## 组件设计
+
+### ThemeProvider
+
+```tsx
+interface ThemeProviderProps {
+  children: React.ReactNode;
+  defaultTheme?: "light" | "dark" | "system";
+}
+
+// 职责：
+// 1. 从 localStorage 读取用户偏好
+// 2. 监听系统主题变化（matchMedia）
+// 3. 注入对应的 CSS 变量
+// 4. 提供主题上下文useTheme）
+```
+
+### ThemeToggle
+
+```tsx
+// 职责：
+// 1. 显示当前主题状态
+// 2. 提供主题切换按钮
+// 3. 三种模式循环切换：light → dark → system
+```
+
+## 数据流
+
+```
+用户点击切换
+    ↓
+ThemeToggle.setTheme()
+    ↓
+更新 localStorage
+    ↓
+ThemeProvider 感知变化
+    ↓
+更新 CSS 变量
+    ↓
+UI 重新渲染
+```
+
+## 技术决策
+
+| 决策点       | 选择          | 原因                   |
+| ------------ | ------------- | ---------------------- |
+| 主题存储     | localStorage  | 简单可靠，无需后端     |
+| CSS 方案     | CSS 变量      | 动态切换，兼容性好     |
+| 系统主题监听 | matchMedia    | 浏览器原生 API，性能好 |
+| 状态管理     | React Context | 轻量级，不引入额外依赖 |
+
+## 风险与缓解
+
+| 风险                  | 影响 | 缓解措施                                  |
+| --------------------- | ---- | ----------------------------------------- |
+| 第三方组件不兼容      | 高   | 提供 CSS 变量覆盖机制，优先支持主流 UI 库 |
+| localStorage 不可用   | 低   | 降级为内存存储，session 内有效            |
+| 系统主题频繁切换      | 低   | 防抖处理，避免频繁重绘                    |
+| SSR/SSGhydration 问题 | 中   | 使用 useEffect 避免服务端渲染不匹配       |
+
+## 测试策略
+
+- **单元测试**: useThemeHook 的状态切换逻辑
+- **集成测试**: ThemeProvider + ThemeToggle 组合行为
+- **E2E 测试**: 用户切换主题的完整流程
+
+## 实现顺序
+
+1. 实现 CSS 变量主题系统
+2. 实现 ThemeProvider + useTheme
+3. 实现 ThemeToggle 组件
+4. 适配所有现有组件
+5. 添加过渡动画
+
+`````
+
+**specs/\*.md** - 做什么？
+
+````markdown
+# Spec: 主题切换
+
+## 场景 1: 手动切换
+
+WHEN 用户点击主题按钮
+THEN 切换主题并保存偏好
+
+## 场景 2: 跟随系统
+
+WHEN 用户选择"跟随系统"
+THEN 监听 matchMedia 并自动切换
+
+`````
+
+**tasks.md** - 何时做？
+
+```markdown
+# Tasks
+
+## Red Phase
+
+- [ ] 编写 ThemeProvider 测试
+- [ ] 编写主题切换组件测试
+
+## Green Phase
+
+- [ ] 实现 ThemeProvider
+- [ ] 实现主题切换组件
+
+## Refactor Phase
+
+- [ ] 优化性能
+- [ ] 添加过渡动画
+```
+
+`````
+
+---
 
 #### Phase 3: Apply（实施）
 
@@ -244,6 +440,8 @@ pnpm test:unit ThemeProvider
 - `lint` - 代码风格检查
 - `type-check` - TypeScript 类型检查
 
+---
+
 #### Phase 4: Validate（验证）
 
 **触发条件**：pre-commit 钩子
@@ -273,6 +471,8 @@ flowchart TB
 
 - 任一检查失败 → commit 被阻止
 - 开发者修复问题 → 重新提交
+
+---
 
 #### Phase 5: Archive（归档）
 
@@ -306,6 +506,8 @@ openspec/changes/
 │       └── tasks.md
 └── (active changes...)       # 活跃的变更
 ```
+
+---
 
 ### 完整示例
 
@@ -403,6 +605,8 @@ TypeError: Cannot read property 'show' of undefined
 刷新页面后重新点击
 ```
 
+---
+
 #### Phase 2: Reproduce（复现）
 
 **目标**：确认 Bug 可复现
@@ -419,6 +623,8 @@ AI: 尝试在本地环境复现...
 
 结论：Bug 确认存在
 ```
+
+---
 
 #### Phase 3: Fix（修复）
 
@@ -446,7 +652,7 @@ LoginButton 组件中的 handleClick 方法使用了错误的 this 绑定：
 // 错误代码
 <button onClick={this.handleClick}>
 ```
-````
+`````
 
 在类组件中，this 不会自动绑定。
 
@@ -493,9 +699,22 @@ it('should open login modal when clicked', () => {
 - 所有现有测试（确保没破坏）
 - Lint 和类型检查
 
+---
+
+#### Phase 4: Validate（验证）
+
+与 Spec-Driven 相同，运行：
+- 回归测试（必须通过）
+- 所有现有测试（确保没破坏）
+- Lint 和类型检查
+
+---
+
 #### Phase 5: Archive（归档）
 
 与 Spec-Driven 相同，自动归档到 `openspec/bugs/archive/`。
+
+---
 
 ### 完整示例
 
@@ -603,6 +822,8 @@ openspec/changes/<spike-name>/
 4 小时
 ```
 
+---
+
 #### Phase 2: Explore（探索）
 
 **目标**：进行研究、实验、收集发现
@@ -685,8 +906,10 @@ openspec/changes/<spike-name>/
 
 - Redux: ~80 行
 - Zustand: ~25 行
-- Context: ~40 行
+  - Context: ~40 行
 ```
+
+---
 
 #### Phase 3: Conclude（结论）
 
@@ -762,7 +985,9 @@ openspec/changes/<spike-name>/
 
 **目标**：保存调研历史
 
-Spike 完成后，决策文档成为重要的历史记录。即使决定不采用某方案，调研过程也有价值。
+Spike 完成后，决策文档成为重要的历史记录。即使决定不采用某方案,调研过程也有价值。
+
+---
 
 ### 完整示例
 

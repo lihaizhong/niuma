@@ -49,8 +49,9 @@ flowchart TD
 ### 整体架构图
 
 ```mermaid
-flowchart TB
+flowchart LR
     subgraph Developer["开发者（你）"]
+        direction LR
         D1[思考]
         D2[决策]
         D3[验收]
@@ -58,33 +59,27 @@ flowchart TB
     end
 
     subgraph Engine["OpenSpec Harness 引擎"]
-        subgraph Phases["阶段"]
-            P1[/opsx-explore\n探索阶段/]
-            P2[/opsx-propose\n提案阶段/]
-            P3[/opsx-apply\n实施阶段/]
-        end
-
-        subgraph Workflow["工作流引擎"]
-            W1[schemas/*.yaml]
-        end
-
-        subgraph Config["配置系统"]
-            C1[config.yaml]
-        end
+        direction LR
+        P1[/opsx-explore\n探索/]
+        P2[/opsx-propose\n提案/]
+        P3[/opsx-apply\n实施/]
+        W1[schemas/*.yaml]
+        C1[config.yaml]
+        P1 --> P2 --> P3 --> W1 --> C1
     end
 
     subgraph AI["AI 助手"]
+        direction LR
         A1[理解规格]
         A2[生成代码]
         A3[运行测试]
         A4[反馈结果]
+        A1 --> A2 --> A3 --> A4
     end
 
-    Developer -->|输入规格\n确认方案| Phases
-    Phases --> Workflow
-    Workflow --> Config
-    Engine -->|生成代码\n运行测试| AI
-    AI -->|反馈| Developer
+    Developer -->|输入规格\n确认方案| P1
+    P3 -->|生成代码\n运行测试| A1
+    A4 -->|反馈| Developer
 
     style Developer fill:#e1f5e1
     style AI fill:#e1e5ff
@@ -115,64 +110,91 @@ sequenceDiagram
 
 三种类型的变更：
 
+**类型 1：新功能变更 (spec-driven)**
+
 ```mermaid
 flowchart TB
-    subgraph SpecDriven["新功能变更 (spec-driven)"]
-        SD1[openspec/changes/]
-        SD2["<change-name>/"]
-        SD3[".openspec.yaml"]
-        SD4["proposal.md"]
-        SD5["design.md"]
-        SD6["specs/"]
-        SD7["tasks.md"]
-        SD8["archive/"]
+    SD1[openspec/changes/]
+    SD2["<change-name>/"]
+    SD3[".openspec.yaml"]
+    SD4["proposal.md"]
+    SD5["design.md"]
+    SD6["specs/"]
+    SD7["tasks.md"]
+    SD8["archive/"]
 
-        SD1 --> SD2
-        SD2 --> SD3
-        SD2 --> SD4
-        SD2 --> SD5
-        SD2 --> SD6
-        SD2 --> SD7
-        SD1 --> SD8
-    end
+    SD1 --> SD2
+    SD2 --> SD3
+    SD2 --> SD4
+    SD2 --> SD5
+    SD2 --> SD6
+    SD2 --> SD7
+    SD1 --> SD8
 
-    subgraph Bugfix["Bug 修复 (bugfix)"]
-        BF1[openspec/bugs/]
-        BF2["<bug-id>/"]
-        BF3[".openspec.yaml"]
-        BF4["bug-report.md"]
-        BF5["fix.md"]
-        BF6["archive/"]
+    style SD1 fill:#e1f5e1
+    style SD2 fill:#e1f5e1
+    style SD3 fill:#fff
+    style SD4 fill:#fff
+    style SD5 fill:#fff
+    style SD6 fill:#fff
+    style SD7 fill:#fff
+    style SD8 fill:#fff2cc
+```
 
-        BF1 --> BF2
-        BF2 --> BF3
-        BF2 --> BF4
-        BF2 --> BF5
-        BF1 --> BF6
-    end
+**类型 2：Bug 修复 (bugfix)**
 
-    subgraph Spike["技术调研 (spike)"]
-        SP1[openspec/changes/]
-        SP2["<spike-name>/"]
-        SP3[".openspec.yaml"]
-        SP4["research-question.md"]
-        SP5["exploration-log.md"]
-        SP6["decision.md"]
-        SP7["findings/"]
-        SP8["archive/"]
+```mermaid
+flowchart TB
+    BF1[openspec/bugs/]
+    BF2["<bug-id>/"]
+    BF3[".openspec.yaml"]
+    BF4["bug-report.md"]
+    BF5["fix.md"]
+    BF6["archive/"]
 
-        SP1 --> SP2
-        SP2 --> SP3
-        SP2 --> SP4
-        SP2 --> SP5
-        SP2 --> SP6
-        SP2 --> SP7
-        SP1 --> SP8
-    end
+    BF1 --> BF2
+    BF2 --> BF3
+    BF2 --> BF4
+    BF2 --> BF5
+    BF1 --> BF6
 
-    style SpecDriven fill:#e1f5e1
-    style Bugfix fill:#ffe1e1
-    style Spike fill:#fff2cc
+    style BF1 fill:#ffe1e1
+    style BF2 fill:#ffe1e1
+    style BF3 fill:#fff
+    style BF4 fill:#fff
+    style BF5 fill:#fff
+    style BF6 fill:#fff2cc
+```
+
+**类型 3：技术调研 (spike)**
+
+```mermaid
+flowchart TB
+    SP1[openspec/changes/]
+    SP2["<spike-name>/"]
+    SP3[".openspec.yaml"]
+    SP4["research-question.md"]
+    SP5["exploration-log.md"]
+    SP6["decision.md"]
+    SP7["findings/"]
+    SP8["archive/"]
+
+    SP1 --> SP2
+    SP2 --> SP3
+    SP2 --> SP4
+    SP2 --> SD5
+    SP2 --> SP6
+    SP2 --> SP7
+    SP1 --> SP8
+
+    style SP1 fill:#fff2cc
+    style SP2 fill:#fff2cc
+    style SP3 fill:#fff
+    style SP4 fill:#fff
+    style SP5 fill:#fff
+    style SP6 fill:#fff
+    style SP7 fill:#fff
+    style SP8 fill:#e1f5e1
 ```
 
 ### 2. 阶段（Phase）
@@ -203,23 +225,36 @@ flowchart LR
 
 每个阶段产生特定的**产物**，产物是阶段完成的标志。
 
+**提案阶段产物**
+
 ```mermaid
-flowchart TB
-    subgraph Propose["提案阶段产物"]
-        P1["proposal.md<br/><i>为什么要做这个变更？</i>"]
-        P2["design.md<br/><i>技术方案是什么？</i>"]
-        P3["specs/*.md<br/><i>详细规格是什么？</i>"]
-        P4["tasks.md<br/><i>具体任务有哪些？</i>"]
-    end
+flowchart LR
+    P1["proposal.md<br/>为什么要做这个变更？"]
+    P2["design.md<br/>技术方案是什么？"]
+    P3["specs/*.md<br/>详细规格是什么？"]
+    P4["tasks.md<br/>具体任务有哪些？"]
 
-    subgraph Implement["实施阶段产物"]
-        I1["代码实现"]
-        I2["测试用例"]
-        I3["文档更新"]
-    end
+    P1 --> P2 --> P3 --> P4
 
-    style Propose fill:#e1f5e1
-    style Implement fill:#e1e5ff
+    style P1 fill:#e1f5e1
+    style P2 fill:#e1f5e1
+    style P3 fill:#e1f5e1
+    style P4 fill:#e1f5e1
+```
+
+**实施阶段产物**
+
+```mermaid
+flowchart LR
+    I1["代码实现"]
+    I2["测试用例"]
+    I3["文档更新"]
+
+    I1 --> I2 --> I3
+
+    style I1 fill:#e1e5ff
+    style I2 fill:#e1e5ff
+    style I3 fill:#e1e5ff
 ```
 
 ### 4. 检查点（Gate）
@@ -382,30 +417,38 @@ Harness 使用**三层配置**来定义如何工作：
 
 ```mermaid
 flowchart TB
-    subgraph Layer1["Layer 1: AGENTS.md"]
-        L1A["目标读者: AI 助手"]
-        L1B["内容: 角色定义、工作流程、约束规则"]
-        L1C["作用: 告诉 AI '怎么工作'"]
-    end
+    subgraph Wrapper[" "]
+        direction LR
 
-    subgraph Layer2["Layer 2: openspec/config.yaml"]
-        L2A["目标读者: 项目/开发者"]
-        L2B["内容: 项目信息、技术栈、命令"]
-        L2C["作用: 定义 '项目是什么'"]
-    end
+        subgraph Layer1["Layer 1: AGENTS.md"]
+            direction TB
+            L1A["目标读者: AI 助手"]
+            L1B["内容: 角色定义、工作流程、约束规则"]
+            L1C["作用: 告诉 AI '怎么工作'"]
+        end
 
-    subgraph Layer3["Layer 3: openspec/schemas/*.yaml"]
-        L3A["目标读者: 工作流引擎"]
-        L3B["内容: 阶段定义、产物定义、检查点"]
-        L3C["作用: 定义 '任务怎么做'"]
-    end
+        subgraph Layer2["Layer 2: openspec/config.yaml"]
+            direction TB
+            L2A["目标读者: 项目/开发者"]
+            L2B["内容: 项目信息、技术栈、命令"]
+            L2C["作用: 定义 '项目是什么'"]
+        end
 
-    Layer1 --> Layer2
-    Layer2 --> Layer3
+        subgraph Layer3["Layer 3: openspec/schemas/*.yaml"]
+            direction TB
+            L3A["目标读者: 工作流引擎"]
+            L3B["内容: 阶段定义、产物定义、检查点"]
+            L3C["作用: 定义 '任务怎么做'"]
+        end
+
+        Layer1 --> Layer2
+        Layer2 --> Layer3
+    end
 
     style Layer1 fill:#e1f5e1
     style Layer2 fill:#fff2cc
     style Layer3 fill:#e1e5ff
+    style Wrapper fill:none,stroke:none
 ```
 
 详细说明参见 [02-配置体系](02-config-system.md)。

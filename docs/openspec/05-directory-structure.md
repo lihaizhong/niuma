@@ -23,9 +23,15 @@ openspec/
 ├── config.yaml                 # 项目基础配置
 ├── SCHEMA-USAGE-GUIDE.md       # Schema 使用指南
 ├── schemas/                    # 工作流定义
-│   ├── spec-driven.yaml        # 新功能开发
-│   ├── bugfix.yaml             # Bug 修复
-│   └── spike.yaml              # 技术调研（可选）
+│   ├── spec-driven/            # 新功能开发
+│   │   ├── schema.yaml         # 工作流配置
+│   │   └── templates/           # 产物模板
+│   ├── bugfix/                 # Bug 修复
+│   │   ├── schema.yaml
+│   │   └── templates/
+│   └── spike/                  # 技术调研（可选）
+│       ├── schema.yaml
+│       └── templates/
 ├── changes/                    # Spec-Driven 变更
 │   ├── <change-name>/          # 单个变更
 │   │   ├── .openspec.yaml      # 变更配置
@@ -82,55 +88,110 @@ context:
 
 ### schemas/
 
-定义工作流的详细规则。
+定义工作流的详细规则。每个 schema 是一个目录，包含配置文件和模板。
 
-#### spec-driven.yaml
+#### 目录结构
+
+```
+schemas/
+├── spec-driven/              # 新功能开发工作流
+│   ├── schema.yaml           # 工作流配置
+│   └── templates/            # 产物模板
+│       ├── proposal.md.tpl
+│       ├── design.md.tpl
+│       ├── spec.md.tpl
+│       └── tasks.md.tpl
+├── bugfix/                   # Bug 修复工作流
+│   ├── schema.yaml
+│   └── templates/
+│       ├── bug-report.md.tpl
+│       └── fix.md.tpl
+└── spike/                    # 技术调研工作流
+    ├── schema.yaml
+    └── templates/
+        ├── research-question.md.tpl
+        ├── exploration-log.md.tpl
+        └── decision.md.tpl
+```
+
+#### spec-driven/schema.yaml
 
 ```yaml
 schema:
   name: spec-driven
   version: "1.0"
 
-workflow:
-  phases:
-    - id: explore
-      name: Explore
-      command: /opsx-explore
+artifacts:
+  - id: proposal
+    generates: proposal.md
+    template: templates/proposal.md.tpl
+    required_sections: [Non-goals, Acceptance Criteria]
 
-    - id: propose
-      name: Propose
-      produces: [proposal.md, design.md, specs/, tasks.md]
+  - id: design
+    generates: design.md
+    template: templates/design.md.tpl
+    requires: [proposal]
 
-    - id: apply
-      name: Apply
-      gates: [test:unit, lint, type-check]
+  - id: specs
+    generates: specs/
+    template: templates/spec.md.tpl
+    requires: [design]
 
-    - id: archive
-      name: Archive
-      trigger: post-merge
+  - id: tasks
+    generates: tasks.md
+    template: templates/tasks.md.tpl
+    requires: [specs]
+
+phases:
+  - id: explore
+    name: Explore
+    command: /opsx-explore
+
+  - id: propose
+    name: Propose
+    produces: [proposal, design, specs, tasks]
+
+  - id: apply
+    name: Apply
+    gates: [test:unit, lint, type-check]
+
+  - id: archive
+    name: Archive
+    trigger: post-merge
 ```
 
-#### bugfix.yaml
+#### bugfix/schema.yaml
 
 ```yaml
 schema:
   name: bugfix
   version: "1.0"
 
-workflow:
-  phases:
-    - id: report
-      name: Report
-      produces: [bug-report.md]
+artifacts:
+  - id: bug_report
+    generates: bug-report.md
+    template: templates/bug-report.md.tpl
+    required_sections: [Symptom, Steps_to_Reproduce]
 
-    - id: fix
-      name: Fix
-      produces: [fix.md]
-      gates: [regression-test, test:all]
+  - id: fix
+    generates: fix.md
+    template: templates/fix.md.tpl
+    requires: [bug_report]
+    required_sections: [Root_Cause, Fix_Description]
 
-    - id: archive
-      name: Archive
-      trigger: post-merge
+phases:
+  - id: report
+    name: Report
+    produces: [bug_report]
+
+  - id: fix
+    name: Fix
+    produces: [fix]
+    gates: [regression-test, test:all]
+
+  - id: archive
+    name: Archive
+    trigger: post-merge
 ```
 
 ### changes/ 目录
@@ -522,7 +583,7 @@ changes/
 ```
 AGENTS.md       → AI 行为（高层）
 config.yaml     → 项目信息（中层）
-schemas/*.yaml  → 工作流规则（底层）
+schemas/        → 工作流规则（底层）
 ```
 
 ## 文件命名规范

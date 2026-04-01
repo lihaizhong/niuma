@@ -29,11 +29,11 @@ sequenceDiagram
 
 ## 三层配置对比
 
-| 层级        | 文件                      | 面向对象   | 核心内容           | 类比           |
-| ----------- | ------------------------- | ---------- | ------------------ | -------------- |
-| **Layer 1** | `AGENTS.md`               | AI 助手    | 角色、流程、约束   | **员工手册**   |
-| **Layer 2** | `openspec/config.yaml`    | 项目/人    | 技术栈、模块、命令 | **项目说明书** |
-| **Layer 3** | `openspec/schemas/*.yaml` | 工作流引擎 | 阶段、产物、检查点 | **操作流程图** |
+| 层级        | 文件                   | 面向对象   | 核心内容           | 类比           |
+| ----------- | ---------------------- | ---------- | ------------------ | -------------- |
+| **Layer 1** | `AGENTS.md`            | AI 助手    | 角色、流程、约束   | **员工手册**   |
+| **Layer 2** | `openspec/config.yaml` | 项目/人    | 技术栈、模块、命令 | **项目说明书** |
+| **Layer 3** | `openspec/schemas/`    | 工作流引擎 | 阶段、产物、检查点 | **操作流程图** |
 
 ## Layer 1: AGENTS.md（AI 行为指南）
 
@@ -47,55 +47,178 @@ sequenceDiagram
 
 ### 内容示例
 
-```markdown
+````markdown
 ---
 target: AI Assistant
 purpose: Operational guidelines for Niuma project
+version: 1.0
 ---
 
-# AI Agent Guidelines
+# AI Agent Guidelines - Niuma Project
 
-## 角色定义
+## Context
+
+Niuma (牛马) - Multi-agent AI assistant system. TypeScript + Node.js + Next.js.
+
+See [openspec/config.yaml](./openspec/config.yaml) for detailed project configuration.
+
+## Roles
 
 ### SpecWriter
 
-- 创建 proposal.md（为什么做）
-- 创建 design.md（怎么做）
-- 创建 specs/\*.md（做什么）
+Create OpenSpec artifacts for new features.
 
-### Developer
+Artifacts to create:
 
-- 读取 specs 实现代码
-- 遵循 TDD（Red→Green→Refactor）
-- 确保通过所有检查点
+- `openspec/changes/<name>/proposal.md` — why we're doing this, what's changing
+- `openspec/changes/<name>/design.md` — technical approach
+- `openspec/changes/<name>/specs/*.md` — requirements and scenarios
+- `openspec/changes/<name>/tasks.md` — implementation checklist
+
+Requirements:
+
+- Use SHALL/MUST keywords in specs
+- Include WHEN/THEN scenarios
+- Define acceptance criteria
 
 ### Tester
 
-- 先写测试再写实现
-- 覆盖正常/边界/异常情况
+Implement tests before code exists.
 
-## 工作流程
+Workflow:
 
-| 阶段    | 命令          | 目的     |
-| ------- | ------------- | -------- |
-| Explore | /opsx-explore | 澄清需求 |
-| Propose | /opsx-propose | 创建规格 |
-| Apply   | /opsx-apply   | TDD实现  |
+1. Read specs from `openspec/changes/<name>/specs/*.md`
+2. Create tests in `src/niuma-engine/tests/` or `src/tests/`
+3. Run `pnpm test:unit` to confirm tests fail (Red)
+4. Commit tests
 
-## 约束
+Test coverage:
+
+- Normal cases
+- Edge cases
+- Error handling
+
+### Developer
+
+Implement code to pass tests.
+
+Workflow:
+
+1. Read spec.md and existing tests
+2. Implement in `src/niuma-engine/` or `src/`
+3. Run tests until pass (Green)
+4. Refactor (Refactor)
+
+Standards:
+
+- Pass `pnpm lint`
+- Pass `pnpm type-check`
+- Maintain coverage
+
+### Reviewer
+
+Validate code quality.
+
+Checklist:
+
+- [ ] TypeScript strict mode
+- [ ] All tests pass
+- [ ] No ESLint warnings
+- [ ] Formatted code
+- [ ] Updated docs
+
+## Workflow Commands
+
+| Phase    | Command                | Purpose                  | Trigger                  |
+| -------- | ---------------------- | ------------------------ | ------------------------ |
+| Explore  | `/opsx-explore`        | Clarify requirements     | Manual                   |
+| Propose  | `/opsx-propose <name>` | Create specification     | Manual                   |
+| Spike    | `/opsx-spike <name>`   | Technical research       | Manual                   |
+| Bugfix   | `/opsx-bugfix <id>`    | Fix bugs                 | Manual                   |
+| Apply    | `/opsx-apply`          | TDD implementation       | Manual                   |
+| Validate | pre-commit hook        | Machine acceptance       | Auto (git hook)          |
+| Archive  | GitHub Actions         | Archive completed change | Auto (on release/deploy) |
+
+Full workflow config: [openspec/config.yaml](./openspec/config.yaml)
+
+## TDD Cycle
+
+```
+Write Test → Red (Fail) → Implement → Green (Pass) → Refactor → Repeat
+```
+
+Phases:
+
+- **Red**: Write tests that fail
+- **Green**: Write minimal code to pass
+- **Refactor**: Improve without changing behavior
+
+## OpenSpec + TDD Integration
+
+### Workflow
+
+```
+OpenSpec Phase          TDD Cycle
+────────────────        ─────────
+specs/*.md              → Red: from scenarios write tests
+  └─ WHEN/THEN          → Green: implement code
+tasks.md                → Refactor: refactor code
+  └─ [Red] Write tests       ← each scenario maps to one test
+  └─ [Green] Implement       ← make tests pass
+  └─ [Refactor] Refactor    ← refactor
+```
+
+### Schema-Specific Workflows
+
+| Schema      | Input Artifacts                              | Output Artifacts                    | No Code Production |
+| ----------- | -------------------------------------------- | ----------------------------------- | ------------------ |
+| spec-driven | proposal, design, specs, tasks               | Implementation + tests              | No                 |
+| bugfix      | bug-report, fix                              | Fix + regression tests              | No                 |
+| spike       | research-question, exploration-log, decision | Research findings + decision record | Yes (throwaway)    |
+
+## Constraints
 
 SHALL:
 
-- 使用 TDD (Red→Green→Refactor)
-- 先写测试再写实现
-- 遵循目录约定
+- Use TDD (Red→Green→Refactor)
+- Write tests before implementation
+- Follow directory conventions
+- Use English identifiers
+- Run all gates before commit
+- Use `spec-driven` schema for new features and enhancements
+- Use `bugfix` schema for bug fixes and hotfixes
+- Use `spike` schema for technical research and feasibility studies
 
 SHALL NOT:
 
-- 跳过测试
-- 忽略类型错误
-- 直接推送到 main
-```
+- Skip tests
+- Commit failing checks
+- Push to main directly
+- Ignore type errors
+- Leave TODOs unresolved
+- Mix feature work with bugfix in the same change
+- Mix research/spike work with implementation in the same change
+
+## Communication
+
+With users:
+
+- Clarify requirements first
+- Report progress regularly
+- Propose options for problems
+- Document decisions
+
+In commits:
+
+- One logical change per commit
+- Clear commit messages
+- Reference issues when applicable
+
+## Resources
+
+- [OpenSpec Config](./openspec/config.yaml)
+- [README](./README.md)
+````
 
 ### 关键点
 
@@ -113,11 +236,27 @@ SHALL NOT:
 2. 使用什么技术栈？
 3. 项目如何组织？
 4. 常用命令有哪些？
+5. 使用哪些工作流 schema？
 
 ### 内容示例
 
 ```yaml
-schema: spec-driven # 默认工作流
+# OpenSpec Configuration for Niuma Project
+
+# Default schema for new changes
+schema: spec-driven
+
+# Available schemas in this project
+schemas:
+  spec-driven:
+    path: openspec/schemas/spec-driven
+    description: Standard spec-driven development with TDD
+  bugfix:
+    path: openspec/schemas/bugfix
+    description: Streamlined bug fix workflow
+  spike:
+    path: openspec/schemas/spike
+    description: Technical research and investigation
 
 context:
   project:
@@ -160,13 +299,23 @@ context:
     type_check: pnpm type-check
 ```
 
+### schemas 配置说明
+
+`schemas` 部分声明了项目中可用的工作流：
+
+- **key**: schema 名称（如 `spec-driven`, `bugfix`, `spike`）
+- **path**: schema 目录路径，包含 `schema.yaml` 和 `templates/`
+- **description**: schema 的用途描述
+
+这与 OpenSpec 官方 CLI 兼容，可以使用 `openspec schemas` 命令查看可用 schema。
+
 ### 关键点
 
 - **目标读者是开发者**：描述项目的基本信息
 - **供 AI 参考**：AI 会读取此文件了解项目技术栈
 - **不定义流程**：流程在 schemas 中定义
 
-## Layer 3: schemas/\*.yaml（工作流定义）
+## Layer 3: schemas/（工作流定义）
 
 ### 作用
 
@@ -176,96 +325,485 @@ context:
 2. 每个阶段产生什么产物？
 3. 阶段之间有什么检查点？
 
+### 目录结构
+
+每个 schema 是一个目录，包含配置文件和模板：
+
+```
+openspec/schemas/
+├── spec-driven/              # 新功能开发工作流
+│   ├── schema.yaml           # 工作流配置
+│   └── templates/            # 产物模板
+│       ├── proposal.md.tpl
+│       ├── design.md.tpl
+│       ├── spec.md.tpl
+│       └── tasks.md.tpl
+├── bugfix/                   # Bug 修复工作流
+│   ├── schema.yaml
+│   └── templates/
+│       ├── bug-report.md.tpl
+│       └── fix.md.tpl
+└── spike/                    # 技术调研工作流
+    ├── schema.yaml
+    └── templates/
+        ├── research-question.md.tpl
+        ├── exploration-log.md.tpl
+        └── decision.md.tpl
+```
+
 ### 内容示例
 
+#### spec-driven/schema.yaml
+
 ```yaml
-# openspec/schemas/spec-driven.yaml
+# openspec/schemas/spec-driven/schema.yaml
 
 schema:
   name: spec-driven
   version: "1.0"
-  description: Specification-driven development
+  description: Specification-driven development workflow with TDD integration
 
-workflow:
-  name: spec-driven-development
-  phases:
-    - id: explore
-      name: Explore
-      trigger: manual
-      command: /opsx-explore
+artifacts:
+  - id: proposal
+    generates: proposal.md
+    template: templates/proposal.md.tpl
+    required_sections: [Non-goals, Acceptance Criteria]
+    max_words: 500
 
-    - id: propose
-      name: Propose
-      trigger: manual
-      command: /opsx-propose
-      produces: [proposal.md, design.md, specs/, tasks.md]
+  - id: design
+    generates: design.md
+    template: templates/design.md.tpl
+    requires: [proposal]
+    content: [design decisions, trade-offs]
+    diagrams: ASCII
 
-    - id: apply
-      name: Apply
-      trigger: manual
-      command: /opsx-apply
-      gates: [test:unit, lint, type-check]
+  - id: specs
+    generates: specs/
+    template: templates/spec.md.tpl
+    requires: [design]
+    required_sections: [Purpose, Requirements]
+    keywords: [SHALL, MUST]
+    scenarios: required
 
-    - id: validate
-      name: Validate
-      trigger: pre-commit
-      blocking: true
-      gates: [test:all, type-check, lint]
+  - id: tasks
+    generates: tasks.md
+    template: templates/tasks.md.tpl
+    requires: [specs]
+    chunk_size: 30min
+    verifiable: true
+    organization: [Red, Green, Refactor]
 
-    - id: archive
-      name: Archive
-      trigger: post-merge
-      action: auto-archive
+phases:
+  - id: explore
+    name: Explore
+    trigger: manual
+    command: /opsx-explore
+
+  - id: propose
+    name: Propose
+    trigger: manual
+    command: /opsx-propose
+    produces: [proposal, design, specs, tasks]
+    internal_commands:
+      - openspec new change <name>
+      - openspec status --change <name>
+      - openspec instructions <artifact> --change <name>
+
+  - id: apply
+    name: Apply
+    trigger: manual
+    command: /opsx-apply
+    gates: [test:unit, lint, type-check]
+
+  - id: validate
+    name: Validate
+    trigger: pre-commit
+    blocking: true
+    gates: [openspec validate, test:all, type-check, lint, format-check]
+    internal_commands:
+      - openspec validate --change <name>
+      - openspec validate --all
+
+  - id: archive
+    name: Archive
+    trigger: post-merge
+    branch: main
+    action: auto-archive-with-sync
+    internal_commands:
+      - openspec archive <name>
+      - openspec list --specs
+
+tdd:
+  mapping:
+    spec_to_test: "<module>/tests/<feature>.test.ts"
+    test_to_impl: "<module>/<feature>.ts"
+
+  spec_format:
+    required_sections: [Purpose, Requirements, Scenarios]
+    keywords: [SHALL, MUST]
+    scenario_structure: [WHEN, THEN]
+
+  tasks_structure:
+    red_phase:
+      prefix: "1."
+      action: "Write test for"
+      verifiable_by: "test fails"
+    green_phase:
+      prefix: "2."
+      action: "Implement to pass"
+      verifiable_by: "test passes"
+    refactor_phase:
+      prefix: "3."
+      action: "Optimize"
+      verifiable_by: "tests still pass, code improved"
 ```
 
-#### spike.yaml
+#### bugfix/schema.yaml
 
 ```yaml
-# openspec/schemas/spike.yaml
+# openspec/schemas/bugfix/schema.yaml
+
+schema:
+  name: bugfix
+  version: "1.0"
+  description: Streamlined workflow for bug fixes with minimal overhead
+
+artifacts:
+  - id: bug_report
+    generates: bug-report.md
+    template: templates/bug-report.md.tpl
+    required_sections:
+      - Symptom
+      - Steps_to_Reproduce
+      - Expected_Behavior
+      - Actual_Behavior
+      - Environment
+    optional_sections:
+      - Root_Cause_Analysis
+      - Workaround
+    max_words: 300
+
+  - id: fix
+    generates: fix.md
+    template: templates/fix.md.tpl
+    requires: [bug_report]
+    required_sections:
+      - Root_Cause
+      - Fix_Description
+      - Files_Changed
+      - Testing_Strategy
+    optional_sections:
+      - Spec_Impact
+      - Risks
+      - Follow_Up
+
+  - id: regression_test
+    generates: regression-test.md
+    template: templates/regression-test.md.tpl
+    requires: [fix]
+    required_sections:
+      - Test_Case
+      - Coverage
+
+phases:
+  - id: triage
+    name: Triage
+    trigger: manual
+    command: /opsx-bugfix
+    description: Assess bug severity and assign owner
+    gates: [severity-assigned, owner-assigned]
+
+  - id: reproduce
+    name: Reproduce
+    trigger: manual
+    description: Create minimal reproduction case
+    produces: [bug_report]
+    gates: [reproducible]
+    internal_commands:
+      - openspec new bugfix <id>
+      - openspec status --bugfix <id>
+
+  - id: fix
+    name: Fix
+    trigger: manual
+    description: Implement fix with regression test
+    produces: [fix, regression_test]
+    gates: [fix-implemented, test-passes]
+    internal_commands:
+      - openspec instructions fix --bugfix <id>
+
+  - id: validate
+    name: Validate
+    trigger: pre-commit
+    blocking: true
+    gates: [test:all, lint, type-check, regression-test]
+    internal_commands:
+      - openspec validate --bugfix <id>
+
+  - id: close
+    name: Close
+    trigger: post-merge
+    branch: main
+    action: auto-close-with-report
+    internal_commands:
+      - openspec close <id>
+
+severity:
+  p0_critical:
+    description: System down, data loss, security breach
+    response_time: "immediate"
+    workflow: hotfix
+
+  p1_high:
+    description: Core feature broken, blocking workflow
+    response_time: "same day"
+    gates: [skip-design-review]
+
+  p2_medium:
+    description: Feature impaired, workaround exists
+    response_time: "this sprint"
+
+  p3_low:
+    description: Cosmetic, edge case, nice-to-have
+    response_time: "backlog"
+
+rules:
+  minimal_change:
+    principle: "Minimal change"
+    description: Only fix the bug, don't refactor surrounding code
+    exception: If surrounding code is clearly problematic, submit refactor separately
+
+  regression_test_required:
+    principle: "Regression test required"
+    description: |
+      Every bugfix must include a test case that:
+      1. Fails before the fix
+      2. Passes after the fix
+      3. Catches similar regressions
+
+  no_bypass_without_reason:
+    principle: "No bypass without reason"
+    description: |
+      Even for urgent fixes, document in bug_report:
+      - Why immediate fix was needed
+      - Why normal process wasn't followed
+      - Whether follow-up is needed
+
+  root_cause_tracking:
+    principle: "Track root cause"
+    description: |
+      Record the root cause of bugs for:
+      - Identifying systemic issues
+      - Improving development process
+      - Training and education
+
+integration:
+  git:
+    branch_naming: "fix/<bug-id>-<short-description>"
+    commit_prefix: "fix:"
+
+  issues:
+    link_required: true
+    auto_close: true
+
+  tests:
+    pattern: "src/tests/regression/<bug-id>.test.ts"
+    naming: "should not regress: <symptom>"
+
+hotfix_override:
+  allowed: true
+  conditions:
+    - severity: p0_critical
+    - approval: tech-lead
+  simplified_flow:
+    - reproduce (verbal/mental only)
+    - fix (direct commit to main)
+    - post-mortem (within 24h)
+```
+
+#### spike/schema.yaml
+
+```yaml
+# openspec/schemas/spike/schema.yaml
 
 schema:
   name: spike
   version: "1.0"
   description: Technical research and exploratory investigation workflow
 
-workflow:
-  name: spike-workflow
-  phases:
-    - id: define
-      name: Define
-      trigger: manual
-      command: /opsx-spike
-      produces: [research-question.md]
+artifacts:
+  - id: research_question
+    generates: research-question.md
+    template: templates/research-question.md.tpl
+    required_sections:
+      - Problem_Statement
+      - Research_Goals
+      - Scope
+    optional_sections:
+      - Constraints
+      - Success_Criteria
+      - Timebox
+    max_words: 400
 
-    - id: explore
-      name: Explore
-      trigger: manual
-      produces: [exploration-log.md, findings/]
-      gates: [timebox-respected, findings-documented]
+  - id: exploration_log
+    generates: exploration-log.md
+    template: templates/exploration-log.md.tpl
+    requires: [research_question]
+    required_sections:
+      - Approach
+      - Findings
+    optional_sections:
+      - Experiments_Conducted
+      - Tools_Evaluated
+      - Documentation_Reviewed
+      - Code_Spikes
+      - Pros_and_Cons
+    format: chronological
+    max_words: 2000
 
-    - id: conclude
-      name: Conclude
-      trigger: manual
-      produces: [decision.md]
-      gates: [decision-recorded, next-steps-defined]
+  - id: decision
+    generates: decision.md
+    template: templates/decision.md.tpl
+    requires: [exploration_log]
+    required_sections:
+      - Summary
+      - Recommendation
+      - Rationale
+    optional_sections:
+      - Alternatives_Considered
+      - Risks
+      - Next_Steps
+      - Implementation_Plan
+    max_words: 800
 
-    - id: archive
-      name: Archive
-      trigger: post-merge
-      action: auto-archive-spike
+phases:
+  - id: define
+    name: Define
+    trigger: manual
+    command: /opsx-spike
+    description: Define the research question and scope
+    produces: [research_question]
+    internal_commands:
+      - openspec new spike <name>
+      - openspec status --spike <name>
+
+  - id: explore
+    name: Explore
+    trigger: manual
+    description: Conduct research, experiments, and gather findings
+    produces: [exploration_log]
+    gates: [timebox-respected, findings-documented]
+    internal_commands:
+      - openspec instructions explore --spike <name>
+
+  - id: conclude
+    name: Conclude
+    trigger: manual
+    description: Synthesize findings and make recommendations
+    produces: [decision]
+    gates: [decision-recorded, next-steps-defined]
+    internal_commands:
+      - openspec instructions conclude --spike <name>
+
+  - id: archive
+    name: Archive
+    trigger: post-merge
+    branch: main
+    action: auto-archive-spike
+    internal_commands:
+      - openspec archive <name>
 
 timebox:
   default: 4h
   max: 2d
   warning_threshold: 80%
   enforce: soft
+
+rules:
+  timebox_respected:
+    principle: "Respect the timebox"
+    description: |
+      Spike is time-boxed research by design:
+      - Set a clear time limit upfront
+      - Document partial findings if time runs out
+      - It's OK to say "need more time" with justification
+      - Avoid gold-plating the exploration
+
+  document_as_you_go:
+    principle: "Document as you go"
+    description: |
+      Don't wait until the end to write findings:
+      - Capture findings in real-time
+      - Include failed experiments (they teach too)
+      - Link to relevant docs, code, commits
+      - Note assumptions made during exploration
+
+  code_spikes_ok:
+    principle: "Throwaway code is OK"
+    description: |
+      Spikes often involve writing experimental code:
+      - Clearly mark code as experimental
+      - Don't require tests for throwaway code
+      - Document learnings from code experiments
+      - Decide: prototype vs production-ready
+
+  decision_required:
+    principle: "Must reach a conclusion"
+    description: |
+      Every spike must produce a clear decision:
+      - Proceed with approach A
+      - Proceed with approach B
+      - Need more research (with specific questions)
+      - Don't proceed (with rationale)
+
+  no_production_code:
+    principle: "No production code in spike"
+    description: |
+      Spike findings inform implementation, but:
+      - Spike code stays in spike directory
+      - Production implementation is a separate change
+      - Use spec-driven workflow for actual implementation
+      - Spike artifacts are documentation, not deliverables
+
+integration:
+  git:
+    branch_naming: "spike/<research-name>"
+    commit_prefix: "spike:"
+
+  directory:
+    pattern: "openspec/changes/<spike-name>/"
+    structure:
+      - research-question.md
+      - exploration-log.md
+      - decision.md
+      - findings/
+      - code-spikes/
+
+  follow_up:
+    require_decision: true
+    create_implementation_ticket: optional
+    link_to_spec: recommended
+
+examples:
+  - name: evaluate-state-management
+    description: Compare Redux, Zustand, and Context API for our use case
+    timebox: 4h
+
+  - name: prototype-new-api
+    description: Explore feasibility of new third-party API integration
+    timebox: 1d
+
+  - name: performance-bottleneck
+    description: Investigate slow rendering in dashboard component
+    timebox: 2h
 ```
 
 ### 关键点
 
 - **目标读者是工作流引擎**：定义机器可解析的流程
-- **可扩展**：可以添加新的 schema（如 spike.yaml）
+- **可扩展**：可以添加新的 schema 目录（如 spike/）
 - **独立于项目**：schema 定义可以复用到不同项目
+- **模板驱动**：每个产物都有对应的模板文件
 
 ## 三层配置如何配合？
 
@@ -310,31 +848,41 @@ flowchart TD
 
 ```mermaid
 flowchart TB
-    Dev["开发者（你）"]
+    subgraph Wrapper[""]
+        direction LR
+        Dev["开发者（你）"]
 
-    subgraph Configs["配置层"]
-        A1["AGENTS.md<br/>AI 行为指南"]
-        A2["config.yaml<br/>项目配置"]
-        A3["schemas/*.yaml<br/>工作流定义"]
+        subgraph Configs["配置层"]
+            A1["AGENTS.md<br/>AI 行为指南"]
+            A2["config.yaml<br/>项目配置"]
+            A3["schemas/<br/>工作流定义"]
 
-        A1D["• 角色定义<br/>• 工作流程<br/>• 约束规则"]
-        A2D["• 技术栈<br/>• 模块划分<br/>• 命令定义"]
-        A3D["• 阶段<br/>• 产物<br/>• 检查点"]
+            A1D["• 角色定义<br/>• 工作流程<br/>• 约束规则"]
+            A2D["• 技术栈<br/>• 模块划分<br/>• 命令定义"]
+            A3D["• 阶段<br/>• 产物<br/>• 检查点"]
 
-        A1 --> A1D
-        A2 --> A2D
-        A3 --> A3D
+            A1 --> A1D
+            A2 --> A2D
+            A3 --> A3D
+        end
+
+        subgraph AI["AI 助手"]
+            direction LR
+            AI_Read["读取配置"]
+            AI_Exec["执行任务"]
+        end
+
+        Dev --> Configs
+        Configs --> AI
     end
-
-    AI["AI 助手<br/>读取配置<br/>执行任务"]
-
-    Dev --> Configs
-    Configs --> AI
 
     style A1 fill:#e1f5e1
     style A2 fill:#fff2cc
     style A3 fill:#e1e5ff
-    style AI fill:#f0f0f0
+    style AI_Read fill:#e8f4fd,stroke:#5a9fd9
+    style AI_Exec fill:#fff3e6,stroke:#e6a817
+    style AI fill:#f8f9fa,stroke:#dee2e6,stroke-width:2px
+    style Wrapper fill:none,stroke:#999,stroke-width:2px,color:#666
 ```
 
 ## 常见误解澄清
@@ -368,7 +916,7 @@ config.yaml: "test:unit = pnpm test:unit"
    - schemas：只关心工作流定义
 
 2. **可复用性**：
-   - schemas/\*.yaml 可以在不同项目间复用
+   - schemas/ 目录可以在不同项目间复用
    - AGENTS.md 可以根据项目调整，无需改引擎
 
 3. **可维护性**：
@@ -390,7 +938,7 @@ AI 的行为只由 AGENTS.md 定义
 AI 会读取所有三层配置：
 1. AGENTS.md → 了解自己的角色和行为规范
 2. config.yaml → 了解项目上下文
-3. schemas/*.yaml → 了解当前阶段的任务
+3. schemas/ → 了解当前阶段的任务
 ```
 
 ## 实际案例分析
@@ -421,7 +969,7 @@ AI 会读取所有三层配置：
 **需要修改的文件**：
 
 ```
-1. openspec/schemas/spec-driven.yaml
+1. openspec/schemas/spec-driven/schema.yaml
    添加新的 phase 定义
 
 2. .opencode/command/opsx-xxx.md
@@ -437,7 +985,7 @@ AI 会读取所有三层配置：
 **示例：添加 Spike 工作流**
 
 ```
-1. openspec/schemas/spike.yaml
+1. openspec/schemas/spike/schema.yaml
    定义 spike 工作流的阶段和产物
 
 2. .opencode/command/opsx-spike.md
@@ -463,7 +1011,7 @@ AI 会读取所有三层配置：
 ```
 优先级从高到低：
 
-1. schemas/*.yaml（最具体）
+1. schemas/（最具体）
    └── 定义当前工作流的特定规则
 
 2. openspec/config.yaml（中等）

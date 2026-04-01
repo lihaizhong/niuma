@@ -1,4 +1,20 @@
+# OpenSpec Configuration for Niuma Project
+# Schema resolution order: project > user > package
+
+# Default schema for new changes
 schema: spec-driven
+
+# Available schemas in this project
+schemas:
+  spec-driven:
+    path: openspec/schemas/spec-driven
+    description: Standard spec-driven development with TDD
+  bugfix:
+    path: openspec/schemas/bugfix
+    description: Streamlined bug fix workflow
+  spike:
+    path: openspec/schemas/spike
+    description: Technical research and investigation
 
 context:
   project:

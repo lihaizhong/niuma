@@ -58,14 +58,17 @@ B) 已有项目，想引入 Harness
 
 根据 `docs/openspec/02-config-system.md` 和 `openspec/config.yaml`，核心文件包括：
 
-| 文件路径                  | 用途            | 必须创建 |
-| ------------------------- | --------------- | -------- |
-| `openspec/config.yaml`    | 项目配置        | ✓        |
-| `AGENTS.md`               | AI 行为指南     | ✓        |
-| `.opencode/`              | AI 助手配置目录 | ✓        |
-| `.opencode/commands/`     | 斜杠命令        | ✓        |
-| `.opencode/skills/`       | 技能定义        | ✓        |
-| `.opencode/opencode.json` | OpenCode 配置   | 可选     |
+| 文件路径                            | 用途             | 必须创建 |
+| ----------------------------------- | ---------------- | -------- |
+| `openspec/config.yaml`              | 项目配置         | ✓        |
+| `openspec/schemas/spec-driven.yaml` | 新功能开发工作流 | ✓        |
+| `openspec/schemas/bugfix.yaml`      | Bug 修复工作流   | ✓        |
+| `openspec/schemas/spike.yaml`       | 技术调研工作流   | ✓        |
+| `AGENTS.md`                         | AI 行为指南      | ✓        |
+| `.opencode/`                        | AI 助手配置目录  | ✓        |
+| `.opencode/commands/`               | 斜杠命令         | ✓        |
+| `.opencode/skills/`                 | 技能定义         | ✓        |
+| `.opencode/opencode.json`           | OpenCode 配置    | 可选     |
 
 ### 2.2 创建 openspec/config.yaml
 
@@ -114,7 +117,215 @@ context:
     type_check: pnpm type-check
 ```
 
-### 2.3 创建 AGENTS.md
+### 2.3 创建 openspec/schemas/
+
+创建 `openspec/schemas/` 目录并添加以下 3 个工作流定义文件。这些 schema 定义了不同场景下的工作流程：
+
+**创建目录：**
+
+```bash
+mkdir -p openspec/schemas
+```
+
+#### 2.3.1 spec-driven.yaml（新功能开发工作流）
+
+```yaml
+schema:
+  name: spec-driven
+  version: "1.0"
+  description: Specification-driven development workflow with TDD integration
+
+workflow:
+  name: spec-driven-development
+  phases:
+    - id: explore
+      name: Explore
+      trigger: manual
+      command: /opsx-explore
+
+    - id: propose
+      name: Propose
+      trigger: manual
+      command: /opsx-propose
+      produces: [proposal.md, design.md, specs/, tasks.md]
+
+    - id: apply
+      name: Apply
+      trigger: manual
+      command: /opsx-apply
+      gates: [test:unit, lint, type-check]
+
+    - id: validate
+      name: Validate
+      trigger: pre-commit
+      blocking: true
+      gates: [test:all, type-check, lint]
+
+    - id: archive
+      name: Archive
+      trigger: post-merge
+      branch: main
+      action: auto-archive
+
+artifacts:
+  proposal:
+    max_words: 500
+    required_sections: [Non-goals, Acceptance Criteria]
+
+  specs:
+    required_sections: [Purpose, Requirements]
+    keywords: [SHALL, MUST]
+    scenarios: required
+
+  tasks:
+    organization: [Red, Green, Refactor]
+```
+
+#### 2.3.2 bugfix.yaml（Bug 修复工作流）
+
+```yaml
+schema:
+  name: bugfix
+  version: "1.0"
+  description: Streamlined workflow for bug fixes with minimal overhead
+
+workflow:
+  name: bugfix-workflow
+  phases:
+    - id: triage
+      name: Triage
+      trigger: manual
+      command: /opsx-bugfix
+      description: Assess bug severity and assign owner
+
+    - id: reproduce
+      name: Reproduce
+      trigger: manual
+      produces: [bug-report.md]
+
+    - id: fix
+      name: Fix
+      trigger: manual
+      description: Implement fix with regression test
+
+    - id: validate
+      name: Validate
+      trigger: pre-commit
+      blocking: true
+      gates: [test:all, lint, type-check]
+
+    - id: close
+      name: Close
+      trigger: post-merge
+      branch: main
+      action: auto-close
+
+artifacts:
+  bug_report:
+    required_sections:
+      - Symptom
+      - Steps_to_Reproduce
+      - Expected_Behavior
+      - Actual_Behavior
+      - Environment
+
+severity:
+  p0_critical:
+    description: System down, data loss, security breach
+    response_time: "immediate"
+
+  p1_high:
+    description: Core feature broken, blocking workflow
+    response_time: "same day"
+
+  p2_medium:
+    description: Feature impaired, workaround exists
+    response_time: "this sprint"
+
+  p3_low:
+    description: Cosmetic, edge case, nice-to-have
+    response_time: "backlog"
+
+rules:
+  minimal_change:
+    principle: "Minimal change"
+    description: Only fix the bug, don't refactor surrounding code
+
+  regression_test_required:
+    principle: "Regression test required"
+    description: Every bugfix must include a test that fails before and passes after
+```
+
+#### 2.3.3 spike.yaml（技术调研工作流）
+
+```yaml
+schema:
+  name: spike
+  version: "1.0"
+  description: Technical research and exploratory investigation workflow
+
+workflow:
+  name: spike-workflow
+  phases:
+    - id: define
+      name: Define
+      trigger: manual
+      command: /opsx-spike
+      produces: [research-question.md]
+
+    - id: explore
+      name: Explore
+      trigger: manual
+      produces: [exploration-log.md, findings/]
+
+    - id: conclude
+      name: Conclude
+      trigger: manual
+      produces: [decision.md]
+
+    - id: archive
+      name: Archive
+      trigger: post-merge
+      branch: main
+      action: auto-archive
+
+artifacts:
+  research_question:
+    required_sections:
+      - Problem_Statement
+      - Research_Goals
+      - Scope
+    max_words: 400
+
+  exploration_log:
+    required_sections:
+      - Approach
+      - Findings
+    max_words: 2000
+
+  decision:
+    required_sections:
+      - Summary
+      - Recommendation
+      - Rationale
+    max_words: 800
+
+timebox:
+  default: 4h
+  max: 2d
+  warning_threshold: 80%
+
+rules:
+  timebox_respected:
+    principle: "Respect the timebox"
+    description: Spike is time-boxed research by design
+
+  no_production_code:
+    principle: "No production code in spike"
+    description: Spike code stays in spike directory, use spec-driven for implementation
+```
+
+### 2.4 创建 AGENTS.md
 
 根据 `docs/openspec/01-overview.md` 创建 AI 行为指南：
 
@@ -250,11 +461,23 @@ E) 其他
 
 A) 开发环境 (pnpm dev)
 B) 测试环境 (pnpm test:unit)
-C) CI/CD (GitHub Actions / GitLab CI)
+C) CI/CD
 D) 全部配置
 ```
 
-### 4.2 开发环境配置
+### 4.2 平台选择（仅当选择 CI/CD 时）
+
+如果用户选择了 CI/CD，继续询问：
+
+```
+你使用哪个 Git 托管平台？
+
+A) GitHub
+B) GitLab
+C) 两者都需要（多仓库场景）
+```
+
+### 4.3 开发环境配置
 
 如果选择 A 或 D：
 
@@ -276,9 +499,20 @@ D) 全部配置
 }
 ```
 
-### 4.3 CI/CD 配置
+### 4.4 CI/CD 配置
 
-**GitHub Actions** (`.github/workflows/ci.yml`):
+根据用户在 4.2 选择的平台，提供对应配置：
+
+#### 4.4.1 GitHub Actions
+
+如果用户选择 GitHub：
+
+```
+好的，我将为你配置 GitHub Actions CI。
+这将创建 .github/workflows/ci.yml 文件。
+```
+
+配置文件：
 
 ```yaml
 name: CI
@@ -307,9 +541,19 @@ jobs:
       - run: pnpm test:unit
 ```
 
-**GitLab CI** (`.gitlab-ci.yml`):
+#### 4.4.2 GitLab CI
+
+如果用户选择 GitLab：
+
+```
+好的，我将为你配置 GitLab CI。
+这将创建 .gitlab-ci.yml 文件。
+```
+
+配置文件：
 
 ```yaml
+# .gitlab-ci.yml
 stages:
   - test
 
@@ -324,6 +568,20 @@ test:
     - pnpm type-check
     - pnpm test:unit
 ```
+
+#### 4.4.3 多平台场景
+
+如果用户选择"两者都需要"：
+
+```
+你的项目同时使用 GitHub 和 GitLab？这很常见！
+我会为你创建两套 CI 配置：
+
+✓ .github/workflows/ci.yml （用于 GitHub）
+✓ .gitlab-ci.yml （用于 GitLab）
+```
+
+两套配置内容相同，只是存放位置不同。
 
 ---
 
@@ -418,6 +676,16 @@ AI: 好的，正在为你创建 my-project 的 Harness 配置...
     ✓ 创建 openspec/config.yaml
     ✓ 创建 AGENTS.md
     ✓ 创建 .opencode/commands/
+
+    你使用哪个 Git 托管平台？
+    A) GitHub
+    B) GitLab
+    C) 两者都需要
+
+用户: A（GitHub）
+
+AI: 好的，配置 GitHub Actions CI...
+
     ✓ 创建 .github/workflows/ci.yml
 
     你使用什么 AI 代码助手？
@@ -478,10 +746,19 @@ AI: 好的，正在分析你的项目结构...
 
 用户: 好
 
-AI: ✓ 创建 openspec/config.yaml
+AI: 你使用哪个 Git 托管平台？
+    A) GitHub
+    B) GitLab
+    C) 两者都需要
+
+用户: B（GitLab）
+
+AI: 好的，配置 GitLab CI...
+
+    ✓ 创建 openspec/config.yaml
     ✓ 创建 AGENTS.md
     ✓ 创建 .opencode/commands/
-    ✓ 创建 .github/workflows/ci.yml
+    ✓ 创建 .gitlab-ci.yml
 
     现在你需要：
     1. 阅读 docs/openspec/00-quick-start.md 了解 Harness

@@ -146,20 +146,22 @@ git push origin feature/add-welcome-message
 你已经完成了一个完整的 Harness 工作流：
 
 ```mermaid
-flowchart TB
-    subgraph main[" "]
-        direction TB
-        A[探索需求] --> B[创建提案]
-        B --> C[审阅设计]
-        C --> D[实施任务]
-        D --> E[提交验证]
-        E --> F[代码合并]
-        F --> G[自动归档]
-    end
+flowchart LR
+    direction TB
+    A[探索需求] --> B[创建提案]
+    B --> C[审阅设计]
+    C --> D[实施任务]
+    D --> E[提交验证]
+    E --> F[代码合并]
+    F --> G[自动归档]
 
-    B -.-> B1[proposal.md + design.md + specs/ + tasks.md]
-    C -.-> C1[设计方案 + 技术选型]
-    D -.-> D1[TDD循环: Red→Green→Refactor]
+    B1[proposal.md + design.md + specs/ + tasks.md]
+    C1[设计方案 + 技术选型]
+    D1[TDD循环: Red→Green→Refactor]
+
+    B -.-> B1
+    C -.-> C1
+    D -.-> D1
 
     style A fill:#e1f5e1
     style G fill:#e1f5e1
@@ -167,7 +169,6 @@ flowchart TB
     style B1 fill:none,stroke:#999,stroke-dasharray: 5 5
     style C1 fill:none,stroke:#999,stroke-dasharray: 5 5
     style D1 fill:none,stroke:#999,stroke-dasharray: 5 5
-    style main fill:none,stroke:none
 ```
 
 ## 下一步
