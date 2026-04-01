@@ -7,7 +7,7 @@
 ```
 project-root/
 ├── openspec/                   # OpenSpec 配置和变更
-├── .opencode/                  # AI 助手配置
+├── {{AI_CONFIG_DIR}}/          # AI 助手配置
 ├── docs/                       # 文档
 ├── src/                        # 源代码
 ├── AGENTS.md                   # AI 行为指南
@@ -402,119 +402,208 @@ bugs/
 添加了回归测试
 ```
 
-## .opencode/ 目录
+## {{AI_CONFIG_DIR}}/ 目录
 
-AI 助手的配置目录。
+AI 助手的配置目录，定义所有 `/opsx-*` 命令和对应的技能逻辑。
 
 ```
-.opencode/
-├── opencode.json               # 插件配置
-├── command/                    # 斜杠命令定义
-│   ├── opsx-explore.md
-│   ├── opsx-spike.md
-│   ├── opsx-propose.md
-│   ├── opsx-bugfix.md
-│   ├── opsx-apply.md
-│   └── opsx-archive.md
+{{AI_CONFIG_DIR}}/
+├── commands/                   # 斜杠命令定义
+│   ├── opsx-explore.md         # 探索模式命令
+│   ├── opsx-spike.md           # 技术调研命令
+│   ├── opsx-propose.md         # 创建提案命令
+│   ├── opsx-bugfix.md          # Bug 修复命令
+│   ├── opsx-apply.md           # 实施任务命令
+│   └── opsx-archive.md         # 归档变更命令
 └── skills/                     # 技能定义
     ├── openspec-explore/
-    │   └── SKILL.md
+    │   └── SKILL.md            # 探索技能
     ├── openspec-spike/
-    │   └── SKILL.md
+    │   └── SKILL.md            # 技术调研技能
     ├── openspec-propose/
-    │   └── SKILL.md
+    │   └── SKILL.md            # 提案创建技能
     ├── openspec-bugfix/
-    │   └── SKILL.md
+    │   └── SKILL.md            # Bug 修复技能
     ├── openspec-apply-change/
-    │   └── SKILL.md
+    │   └── SKILL.md            # 变更实施技能
     └── openspec-archive-change/
-        └── SKILL.md
+        └── SKILL.md            # 变更归档技能
 ```
 
-### opencode.json
+### commands/
 
-插件配置：
+斜杠命令的定义文件。每个命令文件描述命令的用途和基本流程。
 
-```json
-{
-  "$schema": "https://opencode.ai/config.json",
-  "plugin": ["opencode-vibeguard@latest"]
-}
-```
-
-### command/
-
-斜杠命令的定义文件。
-
-#### opsx-propose.md
+#### 命令文件结构
 
 ```markdown
 ---
-description: Propose a new change
+description: 命令的简短描述
 ---
 
-Propose a new change with artifacts.
+命令的详细说明...
 
-## Steps
+**Input**: 输入参数说明
 
-1. Create change directory
-2. Generate proposal.md
-3. Generate design.md
-4. Generate specs/
-5. Generate tasks.md
+**Steps**
+
+1. 步骤一
+2. 步骤二
+3. 步骤三
+
+**Output**
+
+命令的输出格式
+
+**Guardrails**
+
+- 约束规则一
+- 约束规则二
 ```
+
+#### 示例：opsx-propose.md
+
+````markdown
+---
+description: Propose a new change - create it and generate all artifacts in one step
+---
+
+Propose a new change - create the change and generate all artifacts in one step.
+
+I'll create a change with artifacts:
+
+- proposal.md (what & why)
+- design.md (how)
+- tasks.md (implementation steps)
+
+When ready to implement, run /opsx-apply
+
+---
+
+**Input**: The argument after `/opsx-propose` is the change name (kebab-case),
+OR a description of what the user wants to build.
+
+**Steps**
+
+1. **If no input provided, ask what they want to build**
+   ...
+
+2. **Create the change directory**
+   ```bash
+   openspec new change "<name>"
+   ```
+````
+
+...
+
+**Guardrails**
+
+- Create ALL artifacts needed for implementation
+- Always read dependency artifacts before creating a new one
+- ...
+
+````
 
 ### skills/
 
-技能定义目录，包含 AI 执行命令的具体逻辑。
+技能定义目录，包含 AI 执行命令的具体逻辑。每个技能对应一个命令，但包含更详细的实现指令。
 
-#### SKILL.md 结构
+#### 技能文件结构
 
 ```markdown
 ---
 name: openspec-propose
+description: 技能描述
+license: MIT
+compatibility: 兼容性说明
+metadata:
+  author: openspec
+  version: "1.0"
+  generatedBy: "1.2.0"
 ---
 
-Skill for proposing changes.
+技能的详细实现说明...
 
-## Steps
+**Steps**
 
-1. Ask user what to build
-2. Run `openspec new change <name>`
-3. Create artifacts in order:
-   - proposal.md
-   - design.md
-   - specs/
-   - tasks.md
-4. Show completion status
+1. **步骤名称**
+   详细说明...
 
-## Guardrails
+   ```bash
+   # 示例命令
+   openspec new change "<name>"
+````
 
-- Always ask before proceeding
-- Verify files created
-- Follow schema rules
+**Output**
+
 ```
+预期的输出格式
+```
+
+**Guardrails**
+
+- 约束规则
+
+```
+
+#### 技能与命令的区别
+
+| 对比项 | Command (命令) | Skill (技能) |
+|--------|---------------|--------------|
+| **位置** | `{{AI_CONFIG_DIR}}/commands/` | `{{AI_CONFIG_DIR}}/skills/` |
+| **用途** | 用户可见的命令定义 | AI 执行的详细逻辑 |
+| **详细程度** | 高层次的流程概述 | 逐步的具体指令 |
+| **读者** | 用户和 AI | 主要是 AI |
+| **示例** | "创建提案" | "运行 openspec new，然后按依赖顺序创建 artifacts" |
+
+### {{AI_CONFIG_DIR}}/ 与 openspec/ 的关系
+
+```
+
+┌─────────────────────────────────────────────────────────────┐
+│ 四层配置体系 │
+├─────────────────────────────────────────────────────────────┤
+│ │
+│ Layer 1: AGENTS.md → AI 行为指南（角色、约束） │
+│ ↓ │
+│ Layer 2: openspec/config.yaml → 项目配置（技术栈、命令） │
+│ ↓ │
+│ Layer 3: openspec/schemas/ → 工作流定义（阶段、产物） │
+│ ↓ │
+│ Layer 4: {{AI_CONFIG_DIR}}/ → AI 执行层（命令、技能） │
+│ ├── commands/ → 用户命令入口 │
+│ └── skills/ → AI 执行逻辑 │
+│ │
+└─────────────────────────────────────────────────────────────┘
+
+```
+
+- **commands/**: 定义用户可用的 `/opsx-*` 命令
+- **skills/**: 定义 AI 执行命令时的具体行为
+- 两者配合：用户输入命令 → AI 读取对应的 skill → 执行具体操作
 
 ## src/ 目录
 
 源代码（根据项目类型不同而异）。
 
 ```
+
 src/
-├── app/                        # Next.js App Router
-│   ├── layout.tsx
-│   ├── page.tsx
-│   └── globals.css
-├── components/                 # 组件
-│   └── ui/
-├── lib/                        # 工具函数
-├── niuma-engine/               # Agent 核心
-│   ├── index.ts
-│   ├── types.ts
-│   └── tests/
-└── tests/                      # 测试
-    └── unit/
-```
+├── app/ # Next.js App Router
+│ ├── layout.tsx
+│ ├── page.tsx
+│ └── globals.css
+├── components/ # 组件
+│ └── ui/
+├── lib/ # 工具函数
+├── niuma-engine/ # Agent 核心
+│ ├── index.ts
+│ ├── types.ts
+│ └── tests/
+└── tests/ # 测试
+└── unit/
+
+````
 
 ## AGENTS.md
 
@@ -550,7 +639,7 @@ SHALL NOT:
 
 - Skip tests
 - Ignore type errors
-```
+````
 
 ## 目录组织原则
 
@@ -558,7 +647,7 @@ SHALL NOT:
 
 ```
 openspec/     → 工作流和变更管理
-.opencode/    → AI 助手配置
+{{AI_CONFIG_DIR}}/     → AI 助手配置
 docs/         → 人类可读文档
 src/          → 源代码
 ```

@@ -13,7 +13,7 @@
 
 ## 核心概念
 
-### 三层配置体系
+### 四层配置体系
 
 ```mermaid
 flowchart TB
@@ -42,28 +42,39 @@ flowchart TB
             L3A --> L3D["• spike<br/>技术调研 (问题→探索→结论)"]
         end
 
+        subgraph Layer4["Layer 4: AI 执行层"]
+            L4A(("定义命令如何<br/>被 AI 执行"))
+            L4A --> L4B["• 命令定义<br/>(opsx-propose, opsx-apply...)"]
+            L4A --> L4C["• 执行逻辑<br/>(具体步骤、工具调用)"]
+            L4A --> L4D["• Guardrails<br/>(约束和检查点)"]
+        end
+
         Layer1 --> Layer2
         Layer2 --> Layer3
+        Layer3 --> Layer4
     end
 
     style Layer1 fill:#e1f5e1
     style Layer2 fill:#fff2cc
     style Layer3 fill:#e1e5ff
+    style Layer4 fill:#ffe1f0
     style Wrapper fill:none,stroke:none
 
     %% 中心节点样式
     style L1A fill:#4a9c4a,stroke:#2d6a2d,stroke-width:3px,color:#fff
     style L2A fill:#e6a817,stroke:#b3820d,stroke-width:3px,color:#333
     style L3A fill:#5a6fd6,stroke:#3d4fa3,stroke-width:3px,color:#fff
+    style L4A fill:#d65a9c,stroke:#a33d73,stroke-width:3px,color:#fff
 ```
 
 **关键区别**：
 
-| 文件                | 面向对象   | 内容               | 作用               |
-| ------------------- | ---------- | ------------------ | ------------------ |
-| **AGENTS.md**       | AI 助手    | 角色、流程、约束   | 告诉 AI "怎么工作" |
-| **config.yaml**     | 项目/人    | 技术栈、模块、命令 | 定义 "项目是什么"  |
-| **schemas/\*.yaml** | 工作流引擎 | 阶段、产物、检查点 | 定义 "任务怎么做"  |
+| 文件                   | 面向对象   | 内容               | 作用                |
+| ---------------------- | ---------- | ------------------ | ------------------- |
+| **AGENTS.md**          | AI 助手    | 角色、流程、约束   | 告诉 AI "怎么工作"  |
+| **config.yaml**        | 项目/人    | 技术栈、模块、命令 | 定义 "项目是什么"   |
+| **schemas/\*.yaml**    | 工作流引擎 | 阶段、产物、检查点 | 定义 "任务怎么做"   |
+| **{{AI_CONFIG_DIR}}/** | AI 执行层  | 命令定义、执行逻辑 | 定义 "命令如何执行" |
 
 ## 文档导航
 
@@ -234,6 +245,8 @@ AI 通过读取：
 - `openspec/config.yaml` → 了解项目技术栈
 - `openspec/changes/<name>/` → 了解当前任务规格
 - `AGENTS.md` → 了解自己的角色和约束
+- `{{AI_CONFIG_DIR}}/commands/` → 了解命令定义
+- `{{AI_CONFIG_DIR}}/skills/` → 了解具体执行步骤
 
 ## 下一步
 

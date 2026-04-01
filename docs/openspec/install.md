@@ -194,7 +194,7 @@ openspec/
 ├── schemas/
 └── changes/
 
-.opencode/
+{{AI_CONFIG_DIR}}/
 ├── commands/
 └── skills/
 ```
@@ -203,13 +203,13 @@ openspec/
 
 AI 从 `docs/openspec/.template/` 读取模板并填充：
 
-| 源文件                           | 目标文件               | 操作           |
-| -------------------------------- | ---------------------- | -------------- |
-| `.template/openspec/config.yaml` | `openspec/config.yaml` | 填充变量后写入 |
-| `.template/openspec/schemas/*`   | `openspec/schemas/*`   | 直接复制       |
-| `.template/AGENTS.md`            | `AGENTS.md`            | 填充变量后写入 |
-| `.template/opencode/commands/*`  | `.opencode/commands/*` | 直接复制       |
-| `.template/opencode/skills/*`    | `.opencode/skills/*`   | 直接复制       |
+| 源文件                           | 目标文件                       | 操作           |
+| -------------------------------- | ------------------------------ | -------------- |
+| `.template/openspec/config.yaml` | `openspec/config.yaml`         | 填充变量后写入 |
+| `.template/openspec/schemas/*`   | `openspec/schemas/*`           | 直接复制       |
+| `.template/AGENTS.md`            | `AGENTS.md`                    | 填充变量后写入 |
+| `.template/custom/commands/*`    | `{{AI_CONFIG_DIR}}/commands/*` | 直接复制       |
+| `.template/custom/skills/*`      | `{{AI_CONFIG_DIR}}/skills/*`   | 直接复制       |
 
 ### 4.3 配置变量填充
 
@@ -254,19 +254,19 @@ AI 从 `docs/openspec/.template/` 读取模板并填充：
 判断 "与 openspec 相关" 的文件：
 ✓ openspec/ 目录下的所有文件
 ✓ AGENTS.md
-✓ .opencode/commands/opsx-propose.md（标准命令）
-✓ .opencode/commands/opsx-apply.md（标准命令）
-✓ .opencode/commands/opsx-explore.md（标准命令）
-✓ .opencode/commands/opsx-archive.md（标准命令）
-✓ .opencode/skills/openspec-propose/（标准技能）
-✓ .opencode/skills/openspec-apply-change/（标准技能）
-✓ .opencode/skills/openspec-archive-change/（标准技能）
-✓ .opencode/skills/openspec-explore/（标准技能）
+✓ {{AI_CONFIG_DIR}}/commands/opsx-propose.md（标准命令）
+✓ {{AI_CONFIG_DIR}}/commands/opsx-apply.md（标准命令）
+✓ {{AI_CONFIG_DIR}}/commands/opsx-explore.md（标准命令）
+✓ {{AI_CONFIG_DIR}}/commands/opsx-archive.md（标准命令）
+✓ {{AI_CONFIG_DIR}}/skills/openspec-propose/（标准技能）
+✓ {{AI_CONFIG_DIR}}/skills/openspec-apply-change/（标准技能）
+✓ {{AI_CONFIG_DIR}}/skills/openspec-archive-change/（标准技能）
+✓ {{AI_CONFIG_DIR}}/skills/openspec-explore/（标准技能）
 
-✗ .opencode/commands/opsx-bugfix.md（自定义命令）
-✗ .opencode/commands/opsx-spike.md（自定义命令）
-✗ .opencode/skills/openspec-bugfix/（自定义技能）
-✗ .opencode/skills/openspec-spike/（自定义技能）
+✗ {{AI_CONFIG_DIR}}/commands/opsx-bugfix.md（自定义命令）
+✗ {{AI_CONFIG_DIR}}/commands/opsx-spike.md（自定义命令）
+✗ {{AI_CONFIG_DIR}}/skills/openspec-bugfix/（自定义技能）
+✗ {{AI_CONFIG_DIR}}/skills/openspec-spike/（自定义技能）
 ✗ 用户自己的其他配置文件
 ```
 
@@ -280,8 +280,8 @@ AI 从 `docs/openspec/.template/` 读取模板并填充：
 ✓ openspec/config.yaml 存在且格式正确
 ✓ openspec/schemas/ 包含 spec-driven、bugfix、spike
 ✓ AGENTS.md 存在
-✓ .opencode/commands/ 包含必要命令
-✓ .opencode/skills/ 包含必要技能
+✓ {{AI_CONFIG_DIR}}/commands/ 包含必要命令
+✓ {{AI_CONFIG_DIR}}/skills/ 包含必要技能
 ```
 
 并提示用户：
@@ -313,7 +313,7 @@ docs/openspec/.template/
 │       ├── spec-driven/         # 新功能开发工作流
 │       ├── bugfix/              # Bug 修复工作流
 │       └── spike/               # 技术调研工作流
-└── opencode/                    # OpenCode 配置
+└── {{AI_CONFIG_DIR}}/                         # AI 助手配置（通用，支持多种 AI 工具）
     ├── commands/                # 斜杠命令
     │   ├── opsx-explore.md      # 标准：探索模式
     │   ├── opsx-propose.md      # 标准：创建提案

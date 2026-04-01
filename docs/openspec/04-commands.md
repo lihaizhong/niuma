@@ -2,6 +2,18 @@
 
 > 所有 `/opsx-*` 命令的详细用法速查
 
+## 命令定义位置
+
+所有命令定义存储在 `{{AI_CONFIG_DIR}}/` 目录中：
+
+- **命令入口**：`{{AI_CONFIG_DIR}}/commands/*.md` - 用户可见的命令描述
+- **执行逻辑**：`{{AI_CONFIG_DIR}}/skills/openspec-*/SKILL.md` - AI 执行的详细步骤
+
+完整命令定义可参考：
+
+- `.template/custom/commands/` - 命令模板
+- `.template/custom/skills/` - 技能模板
+
 ## 命令总览
 
 | 命令            | 功能     | 适用场景             | 对应工作流         |
@@ -82,6 +94,12 @@ AI 列出风险：
 
 - 说"结束探索"或"开始实施"
 - AI 会询问是否要创建正式变更
+
+### 命令定义
+
+- **命令定义**：`{{AI_CONFIG_DIR}}/commands/opsx-explore.md`
+- **执行逻辑**：`{{AI_CONFIG_DIR}}/skills/openspec-explore/SKILL.md`
+- **模板参考**：`.template/custom/commands/opsx-explore.md`
 
 ## /opsx-spike
 
@@ -229,6 +247,12 @@ AI 协助撰写 decision.md：
 - **到期**: 必须下结论（即使是不完整的）
 - **延期**: 需要明确理由和新的时间盒
 
+### 命令定义
+
+- **命令定义**：`{{AI_CONFIG_DIR}}/commands/opsx-spike.md`
+- **执行逻辑**：`{{AI_CONFIG_DIR}}/skills/openspec-spike/SKILL.md`
+- **模板参考**：`.template/custom/commands/opsx-spike.md`
+
 ## /opsx-propose
 
 ### 功能
@@ -330,6 +354,12 @@ AI: 提案阶段完成！
 - 变更名称唯一，不能重复
 - 可以多次运行来更新文档
 - 确认完成后才能进入 Apply 阶段
+
+### 命令定义
+
+- **命令定义**：`{{AI_CONFIG_DIR}}/commands/opsx-propose.md`
+- **执行逻辑**：`{{AI_CONFIG_DIR}}/skills/openspec-propose/SKILL.md`
+- **模板参考**：`.template/custom/commands/opsx-propose.md`
 
 ## /opsx-bugfix
 
@@ -518,6 +548,12 @@ P2 - Medium: 非核心功能问题
 P3 - Low: 轻微问题
 ```
 
+### 命令定义
+
+- **命令定义**：`{{AI_CONFIG_DIR}}/commands/opsx-bugfix.md`
+- **执行逻辑**：`{{AI_CONFIG_DIR}}/skills/openspec-bugfix/SKILL.md`
+- **模板参考**：`.template/custom/commands/opsx-bugfix.md`
+
 ## /opsx-apply
 
 ### 功能
@@ -647,6 +683,12 @@ AI: 所有任务完成！
 - 每个任务必须完成 Red→Green→Refactor
 - 可以随时中断，下次继续
 
+### 命令定义
+
+- **命令定义**：`{{AI_CONFIG_DIR}}/commands/opsx-apply.md`
+- **执行逻辑**：`{{AI_CONFIG_DIR}}/skills/openspec-apply-change/SKILL.md`
+- **模板参考**：`.template/custom/commands/opsx-apply.md`
+
 ## /opsx-archive
 
 ### 功能
@@ -700,6 +742,12 @@ ls openspec/changes/archive/
 
 - 放弃变更时
 - 手动清理旧变更时
+
+### 命令定义
+
+- **命令定义**：`{{AI_CONFIG_DIR}}/commands/opsx-archive.md`
+- **执行逻辑**：`{{AI_CONFIG_DIR}}/skills/openspec-archive-change/SKILL.md`
+- **模板参考**：`.template/custom/commands/opsx-archive.md`
 
 ## 命令组合使用
 

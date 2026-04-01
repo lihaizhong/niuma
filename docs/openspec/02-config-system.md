@@ -27,13 +27,14 @@ sequenceDiagram
 
 这就是三层配置存在的意义。
 
-## 三层配置对比
+## 四层配置对比
 
-| 层级        | 文件                   | 面向对象   | 核心内容           | 类比           |
-| ----------- | ---------------------- | ---------- | ------------------ | -------------- |
-| **Layer 1** | `AGENTS.md`            | AI 助手    | 角色、流程、约束   | **员工手册**   |
-| **Layer 2** | `openspec/config.yaml` | 项目/人    | 技术栈、模块、命令 | **项目说明书** |
-| **Layer 3** | `openspec/schemas/`    | 工作流引擎 | 阶段、产物、检查点 | **操作流程图** |
+| 层级        | 文件                                   | 面向对象   | 核心内容           | 类比           |
+| ----------- | -------------------------------------- | ---------- | ------------------ | -------------- |
+| **Layer 1** | `AGENTS.md`                            | AI 助手    | 角色、流程、约束   | **员工手册**   |
+| **Layer 2** | `openspec/config.yaml`                 | 项目/人    | 技术栈、模块、命令 | **项目说明书** |
+| **Layer 3** | `openspec/schemas/`                    | 工作流引擎 | 阶段、产物、检查点 | **操作流程图** |
+| **Layer 4** | `{{AI_CONFIG_DIR}}/commands/, skills/` | AI 执行层  | 命令定义、执行逻辑 | **操作手册**   |
 
 ## Layer 1: AGENTS.md（AI 行为指南）
 
@@ -805,7 +806,115 @@ examples:
 - **独立于项目**：schema 定义可以复用到不同项目
 - **模板驱动**：每个产物都有对应的模板文件
 
-## 三层配置如何配合？
+## Layer 4: {{AI_CONFIG_DIR}}/（AI 执行层）
+
+### 作用
+
+定义 AI 助手如何执行命令：
+
+1. 有哪些用户命令可用？
+2. 每个命令的具体执行步骤是什么？
+3. 执行时的约束和 guardrails 是什么？
+
+### 目录结构
+
+```
+{{AI_CONFIG_DIR}}/
+├── commands/                   # 斜杠命令定义
+│   ├── opsx-explore.md         # 探索模式
+│   ├── opsx-spike.md           # 技术调研
+│   ├── opsx-propose.md         # 创建提案
+│   ├── opsx-bugfix.md          # Bug 修复
+│   ├── opsx-apply.md           # 实施任务
+│   └── opsx-archive.md         # 归档变更
+└── skills/                     # 技能定义（执行逻辑）
+    ├── openspec-explore/SKILL.md
+    ├── openspec-spike/SKILL.md
+    ├── openspec-propose/SKILL.md
+    ├── openspec-bugfix/SKILL.md
+    ├── openspec-apply-change/SKILL.md
+    └── openspec-archive-change/SKILL.md
+```
+
+### commands/ vs skills/
+
+| 对比项       | commands/                    | skills/                    |
+| ------------ | ---------------------------- | -------------------------- |
+| **用途**     | 用户可见的命令描述           | AI 执行的详细逻辑          |
+| **详细程度** | 高层次的流程概述             | 逐步的具体指令             |
+| **内容**     | 命令目的、输入输出、基本流程 | 具体步骤、命令、guardrails |
+| **读者**     | 用户和 AI                    | 主要是 AI                  |
+
+### 内容示例
+
+#### commands/opsx-propose.md
+
+```markdown
+---
+description: Propose a new change - create it and generate all artifacts in one step
+---
+
+Propose a new change - create the change and generate all artifacts in one step.
+
+**Input**: The argument after `/opsx-propose` is the change name...
+
+**Steps**
+
+1. **If no input provided, ask what they want to build**
+2. **Create the change directory**
+3. **Get the artifact build order**
+   ...
+
+**Guardrails**
+
+- Create ALL artifacts needed for implementation
+- Always read dependency artifacts before creating a new one
+```
+
+#### skills/openspec-propose/SKILL.md
+
+````markdown
+---
+name: openspec-propose
+description: Propose a new change - create it and generate all artifacts in one step
+license: MIT
+compatibility: Requires openspec CLI
+metadata:
+  author: openspec
+  version: "1.0"
+---
+
+Propose a new change - create the change and generate all artifacts in one step.
+
+**Steps**
+
+1. **If no input provided, ask what they want to build**
+
+   Use the **AskUserQuestion tool** to ask...
+
+2. **Create the change directory**
+   ```bash
+   openspec new change "<name>"
+   ```
+````
+
+This creates a scaffolded change at `openspec/changes/<name>/`...
+
+**Guardrails**
+
+- Create ALL artifacts needed for implementation (as defined by schema's `apply.requires`)
+- Always read dependency artifacts before creating a new one
+
+````
+
+### 关键点
+
+- **命令与技能分离**：commands/ 面向用户，skills/ 面向 AI 实现
+- **详细执行指令**：skills/ 包含具体的工具调用、文件操作等
+- **可独立更新**：可以只改命令描述，或只改执行逻辑
+- **支持多个 AI 助手**：不同 AI 可以使用相同的 commands，但不同的 skills
+
+## 四层配置如何配合？
 
 ### 场景：执行 `/opsx-propose add-auth`
 
@@ -824,25 +933,32 @@ flowchart TD
     S3 --> S3B["了解: apply 需通过 3 检查点"]
     S3 --> S3C["了解: validate pre-commit 触发"]
 
-    S4["Step 4: AI 执行 propose"] --> S4A["按 AGENTS 角色创建文档"]
-    S4 --> S4B["按 config 技术栈写 design.md"]
-    S4 --> S4C["按 schema 产物列表生成文件"]
+    S4["Step 4: AI 读取 {{AI_CONFIG_DIR}}/"] --> S4A["了解: propose 命令步骤"]
+    S4 --> S4B["了解: artifact 创建顺序"]
+    S4 --> S4C["了解: 具体工具调用方法"]
 
-    S5["Step 5: 检查点验证"] --> S5A["按 schema 检查点验证"]
-    S5 --> S5B["使用 config 定义的命令"]
-    S5 --> S5C["按 AGENTS 约束决定是否继续"]
+    S5["Step 5: AI 执行 propose"] --> S5A["按 AGENTS 角色创建文档"]
+    S5 --> S5B["按 config 技术栈写 design.md"]
+    S5 --> S5C["按 schema 产物列表生成文件"]
+    S5 --> S5D["按 {{AI_CONFIG_DIR}}/ 步骤执行命令"]
+
+    S6["Step 6: 检查点验证"] --> S6A["按 schema 检查点验证"]
+    S6 --> S6B["使用 config 定义的命令"]
+    S6 --> S6C["按 AGENTS 约束决定是否继续"]
 
     S1 --> S2
     S2 --> S3
     S3 --> S4
     S4 --> S5
+    S5 --> S6
 
     style S1 fill:#e1f5e1
     style S2 fill:#fff2cc
     style S3 fill:#e1e5ff
-    style S4 fill:#e1f5e1
-    style S5 fill:#fff2cc
-```
+    style S4 fill:#ffe1f0
+    style S5 fill:#e1f5e1
+    style S6 fill:#fff2cc
+````
 
 ## 配置层级关系图
 
@@ -856,14 +972,17 @@ flowchart TB
             A1["AGENTS.md<br/>AI 行为指南"]
             A2["config.yaml<br/>项目配置"]
             A3["schemas/<br/>工作流定义"]
+            A4["{{AI_CONFIG_DIR}}/<br/>AI 执行层"]
 
             A1D["• 角色定义<br/>• 工作流程<br/>• 约束规则"]
             A2D["• 技术栈<br/>• 模块划分<br/>• 命令定义"]
             A3D["• 阶段<br/>• 产物<br/>• 检查点"]
+            A4D["• 命令定义<br/>• 执行步骤<br/>• 工具调用"]
 
             A1 --> A1D
             A2 --> A2D
             A3 --> A3D
+            A4 --> A4D
         end
 
         subgraph AI["AI 助手"]
@@ -879,6 +998,7 @@ flowchart TB
     style A1 fill:#e1f5e1
     style A2 fill:#fff2cc
     style A3 fill:#e1e5ff
+    style A4 fill:#ffe1f0
     style AI_Read fill:#e8f4fd,stroke:#5a9fd9
     style AI_Exec fill:#fff3e6,stroke:#e6a817
     style AI fill:#f8f9fa,stroke:#dee2e6,stroke-width:2px
@@ -972,11 +1092,11 @@ AI 会读取所有三层配置：
 1. openspec/schemas/spec-driven/schema.yaml
    添加新的 phase 定义
 
-2. .opencode/command/opsx-xxx.md
-   添加新的命令定义
+2. {{AI_CONFIG_DIR}}/commands/opsx-xxx.md
+    添加新的命令定义
 
-3. .opencode/skills/openspec-xxx/SKILL.md
-   添加新的技能定义
+3. {{AI_CONFIG_DIR}}/skills/openspec-xxx/SKILL.md
+    添加新的技能定义
 
 4. 可选：AGENTS.md
    如果新阶段需要新的 AI 行为，才需要更新
@@ -988,11 +1108,11 @@ AI 会读取所有三层配置：
 1. openspec/schemas/spike/schema.yaml
    定义 spike 工作流的阶段和产物
 
-2. .opencode/command/opsx-spike.md
-   定义 /opsx-spike 命令
+2. {{AI_CONFIG_DIR}}/commands/opsx-spike.md
+    定义 /opsx-spike 命令的用户界面
 
-3. .opencode/skills/openspec-spike/SKILL.md
-   定义 spike 技能逻辑
+3. {{AI_CONFIG_DIR}}/skills/openspec-spike/SKILL.md
+    定义 spike 技能的详细执行逻辑
 
 4. docs/openspec/03-workflows.md
    添加 spike 工作流文档
@@ -1002,6 +1122,7 @@ AI 会读取所有三层配置：
 
 - 流程变化不影响项目配置
 - 项目配置变化不影响 AI 行为规范
+- 命令定义（commands/）与执行逻辑（skills/）分离，可独立更新
 - 各层独立演进
 
 ## 配置优先级
@@ -1011,13 +1132,16 @@ AI 会读取所有三层配置：
 ```
 优先级从高到低：
 
-1. schemas/（最具体）
+1. {{AI_CONFIG_DIR}}/（最具体）
+   └── 定义命令执行的具体步骤
+
+2. schemas/（具体）
    └── 定义当前工作流的特定规则
 
-2. openspec/config.yaml（中等）
+3. openspec/config.yaml（中等）
    └── 定义项目级别的通用配置
 
-3. AGENTS.md（最通用）
+4. AGENTS.md（最通用）
    └── 定义跨项目的 AI 行为准则
 ```
 
@@ -1027,11 +1151,13 @@ AI 会读取所有三层配置：
 AGENTS.md: "必须写测试"
 config.yaml: "测试框架是 vitest"
 schemas: "此阶段运行 pnpm test:unit"
+{{AI_CONFIG_DIR}}/: "使用 pnpm test:unit 命令运行测试"
 
 执行顺序：
-1. 引擎读取 schema："运行 test:unit"
+1. AI 读取 {{AI_CONFIG_DIR}}/："使用 pnpm test:unit 命令"
 2. 解析 config："test:unit = pnpm vitest run"
-3. AI 确认 AGENTS："符合'必须写测试'原则"
+3. 引擎读取 schema："此阶段需要运行测试"
+4. AI 确认 AGENTS："符合'必须写测试'原则"
 ```
 
 ## 下一步

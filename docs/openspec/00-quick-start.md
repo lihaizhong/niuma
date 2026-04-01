@@ -48,9 +48,9 @@ ls -la
 │   │   └── bugfix.yaml      # Bug 修复
 │   └── changes/             # 变更目录（你的工作）
 │
-├── .opencode/               # AI 助手配置
-│   ├── command/             # 斜杠命令
-│   └── skills/              # 技能定义
+├── {{AI_CONFIG_DIR}}/          # AI 助手配置
+│   ├── commands/             # 斜杠命令
+│   └── skills/               # 技能定义
 │
 ├── AGENTS.md               # AI 行为指南
 ├── docs/                   # 文档
@@ -204,7 +204,7 @@ flowchart LR
 ```bash
 # 检查配置文件是否存在
 ls openspec/config.yaml
-ls .opencode/command/opsx-propose.md
+ls {{AI_CONFIG_DIR}}/commands/opsx-propose.md
 
 # 如果不存在，需要初始化 OpenSpec
 # （参见项目初始化文档）
