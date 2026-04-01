@@ -69,59 +69,14 @@ AI 自动检测技术栈 → 展示检测报告 → 用户确认/修改
 
 ## 阶段 2：项目类型专属问题
 
-根据项目类型，询问以下必要问题：
+根据项目类型询问关键信息：
 
-### Web 前端项目
-
-| 问题                    | 选项                                                                              |
-| ----------------------- | --------------------------------------------------------------------------------- |
-| **2.1 框架**            | □ React<br>□ Vue<br>□ Angular<br>□ Svelte<br>□ Solid<br>□ 其他                    |
-| **2.2 如果选 React**    | □ Next.js<br>□ Remix<br>□ 纯 React + Vite<br>□ 纯 React + CRA                     |
-| **2.3 构建工具**        | □ Vite<br>□ Webpack<br>□ Parcel<br>□ 框架自带                                     |
-| **2.4 包管理器**        | □ pnpm<br>□ npm<br>□ yarn<br>□ bun                                                |
-| **2.5 测试框架**        | □ Vitest<br>□ Jest<br>□ Cypress<br>□ Playwright<br>□ 无                           |
-| **2.6 UI 方案**         | □ Tailwind CSS<br>□ CSS Modules<br>□ Styled Components<br>□ UI 库 (AntD/Material) |
-| **2.7 使用 TypeScript** | □ 是<br>□ 否                                                                      |
-| **2.8 项目名称**        | 输入：**\_\_\_\_**（. 或空 = 当前目录）                                           |
-
-### 客户端项目
-
-| 问题                 | 选项                                            |
-| -------------------- | ----------------------------------------------- |
-| **2.1 平台类型**     | □ 桌面端<br>□ 移动端<br>□ 跨平台                |
-| **2.2 桌面端框架**   | □ Electron<br>□ Tauri<br>□ Flutter Desktop      |
-| **2.3 移动端框架**   | □ React Native<br>□ Flutter<br>□ 原生           |
-| **2.4 如果选 Tauri** | □ Rust（默认）<br>□ Go                          |
-| **2.5 状态管理**     | □ Redux/Zustand<br>□ MobX<br>□ Context/Provider |
-| **2.6 包管理器**     | □ pnpm<br>□ npm<br>□ yarn<br>□ bun              |
-| **2.7 项目名称**     | 输入：**\_\_\_\_**                              |
-
-### 服务端项目
-
-| 问题                   | 选项                                                                |
-| ---------------------- | ------------------------------------------------------------------- |
-| **2.1 语言/运行时**    | □ Node.js<br>□ Go<br>□ Java<br>□ Python<br>□ Rust<br>□ 其他         |
-| **2.2 如果选 Node.js** | □ Express<br>□ Fastify<br>□ NestJS<br>□ Koa                         |
-| **2.3 API 类型**       | □ REST<br>□ GraphQL<br>□ gRPC<br>□ tRPC                             |
-| **2.4 数据库**         | □ PostgreSQL<br>□ MySQL<br>□ MongoDB<br>□ Redis<br>□ SQLite<br>□ 无 |
-| **2.5 ORM/数据层**     | □ Prisma<br>□ TypeORM<br>□ Drizzle<br>□ 原生 SQL<br>□ 无            |
-| **2.6 认证方案**       | □ JWT<br>□ Session<br>□ OAuth2<br>□ 无                              |
-| **2.7 部署目标**       | □ Docker<br>□ Serverless<br>□ K8s<br>□ 传统服务器                   |
-| **2.8 项目名称**       | 输入：**\_\_\_\_**                                                  |
-
-### 全栈项目
-
-| 问题                   | 选项                                                      |
-| ---------------------- | --------------------------------------------------------- |
-| **2.1 全栈框架**       | □ Next.js<br>□ Nuxt<br>□ SvelteKit<br>□ Remix<br>□ Django |
-| **2.2 如果选 Next.js** | □ App Router<br>□ Pages Router                            |
-| **2.3 渲染模式**       | □ SSR<br>□ SSG<br>□ ISR<br>□ 混合                         |
-| **2.4 数据库位置**     | □ Serverless/云<br>□ 自托管<br>□ SQLite                   |
-| **2.5 ORM**            | □ Drizzle<br>□ Prisma<br>□ TypeORM<br>□ 原生 SQL          |
-| **2.6 认证方案**       | □ NextAuth.js/Auth.js<br>□ Clerk<br>□ Lucia<br>□ 自建 JWT |
-| **2.7 部署平台**       | □ Vercel<br>□ Netlify<br>□ Railway<br>□ 自托管            |
-| **2.8 包管理器**       | □ pnpm<br>□ npm<br>□ yarn<br>□ bun                        |
-| **2.9 项目名称**       | 输入：**\_\_\_\_**                                        |
+| 项目类型     | 必问问题                                                                     |
+| ------------ | ---------------------------------------------------------------------------- |
+| **Web 前端** | 框架(React/Vue/Angular)、构建工具、包管理器、测试框架、TypeScript?、项目名称 |
+| **客户端**   | 平台(桌面/移动/跨平台)、框架(Electron/Tauri/Flutter)、包管理器、项目名称     |
+| **服务端**   | 语言/运行时、Web框架、数据库、ORM、认证方案、部署目标、项目名称              |
+| **全栈**     | 全栈框架(Next.js/Nuxt等)、渲染模式、数据库、ORM、认证、部署平台、项目名称    |
 
 ---
 
@@ -185,102 +140,37 @@ AI 自动检测技术栈 → 展示检测报告 → 用户确认/修改
 
 ## 阶段 3.5：AI 配置目录检测与选择
 
-在安装 AI 助手配置之前，AI 需要检测当前环境并确定目标配置目录。
-
 ### 3.5.1 检测已存在的 AI 配置目录
 
-AI 扫描项目根目录，检查以下 AI 工具配置目录是否存在：
+扫描项目根目录，检测以下 AI 工具配置：
 
-| AI 工具        | 配置目录           | 检测标志                                       |
-| -------------- | ------------------ | ---------------------------------------------- |
-| OpenCode       | `.opencode/`       | `opencode.json` 或 `.opencode/skills/`         |
-| Claude Code    | `.claude/`         | `.claude/commands/` 或 `.claude/settings.json` |
-| Cursor         | `.cursor/`         | `.cursor/rules/` 或 `.cursor/settings.json`    |
-| GitHub Copilot | `.github/copilot/` | `.github/copilot/instructions.md`              |
-| VS Code        | `.vscode/`         | `.vscode/settings.json`                        |
-| Windsurf       | `.windsurf/`       | `.windsurf/rules/`                             |
-| 其他工具       | 用户指定           | -                                              |
+| AI 工具     | 配置目录           | 检测标志                |
+| ----------- | ------------------ | ----------------------- |
+| OpenCode    | `.opencode/`       | `opencode.json`         |
+| Claude Code | `.claude/`         | `.claude/settings.json` |
+| Cursor      | `.cursor/`         | `.cursor/rules/`        |
+| Copilot     | `.github/copilot/` | `instructions.md`       |
+| VS Code     | `.vscode/`         | `settings.json`         |
 
-**检测逻辑：**
+**处理逻辑：**
 
-```
-扫描项目根目录
-  ├─ 发现 0 个 AI 配置目录 → 进入 3.5.2（检测当前运行的 AI 工具）
-  ├─ 发现 1 个 AI 配置目录 → 提示用户确认
-  │   "检测到 [工具名] 配置目录 ([路径])，是否在此目录更新配置？"
-  │   [是] → 使用该目录
-  │   [否] → 进入 3.5.2
-  └─ 发现 2+ 个 AI 配置目录 → 提示用户选择
-      "检测到多个 AI 配置目录："
-      □ [工具A] ([路径])
-      □ [工具B] ([路径])
-      □ [工具C] ([路径])
-
-      请选择要更新的目录（可多选）：
-      [确认] [全部更新] [跳过]
-```
+- 0 个目录 → 检测当前运行的 AI 工具
+- 1 个目录 → 询问是否使用
+- 2+ 个目录 → 多选更新
 
 ### 3.5.2 检测当前运行的 AI 工具
 
-如果用户未选择现有目录，或需要添加新的 AI 工具支持，AI 检测当前正在运行的 AI 助手：
+通过环境变量和进程检测当前 AI：
 
-**检测方法：**
+- `OPENCODE_SESSION_ID` → OpenCode
+- `CLAUDE_CODE_VERSION` → Claude Code
+- `CURSOR_VERSION` → Cursor
 
-```
-1. 检查环境变量
-   - OPENCODE_SESSION_ID → 当前使用 OpenCode
-   - CLAUDE_CODE_VERSION → 当前使用 Claude Code
-   - CURSOR_VERSION → 当前使用 Cursor
-
-2. 检查运行时特征
-   - 进程树中包含 "opencode" → OpenCode
-   - 进程树中包含 "claude" → Claude Code
-   - 进程树中包含 "cursor" → Cursor
-
-3. 检查上下文信息
-   - 系统提示词或上下文中包含特定标识
-```
-
-**检测后处理：**
-
-```
-当前运行的 AI 工具：[工具名]
-
-该工具是否在已检测到的列表中？
-  ├─ 是 → 询问："当前使用 [工具名]，是否更新其配置目录？"
-  └─ 否 → 询问：
-      "检测到您当前使用 [工具名]，但该工具不在标准支持列表中。
-
-       是否需要为此工具创建配置目录？
-       [是] → 请输入配置目录名称（默认：.[工具名小写]/）：
-       [否] → 请手动选择或输入目标配置目录："
-```
+检测到新工具时，询问是否创建配置目录。
 
 ### 3.5.3 目标配置目录确认
 
-最终确认目标配置目录：
-
-```
-📁 目标 AI 配置目录：[路径]
-
-将在此目录下创建：
-  ├── commands/
-  │   ├── opsx-explore.md
-  │   ├── opsx-propose.md
-  │   ├── opsx-apply.md
-  │   ├── opsx-archive.md
-  │   ├── opsx-bugfix.md
-  │   └── opsx-spike.md
-  └── skills/
-      ├── openspec-explore/
-      ├── openspec-propose/
-      ├── openspec-apply-change/
-      ├── openspec-archive-change/
-      ├── openspec-bugfix/
-      └── openspec-spike/
-
-[确认安装] [更换目录] [取消]
-```
+显示目标路径和将创建的文件结构，用户确认后继续。
 
 ---
 
@@ -342,43 +232,13 @@ AI 从 `docs/openspec/.template/` 读取模板并填充：
 | 目录                       | 用途             | 是否必须 |
 | -------------------------- | ---------------- | -------- |
 | `openspec-explore/`        | 探索模式技能实现 | 是       |
-| `openspec-propose/`        | 创建提案技能实现 | 是       |
-| `openspec-apply-change/`   | 实施变更技能实现 | 是       |
-| `openspec-archive-change/` | 归档变更技能实现 | 是       |
-| `openspec-bugfix/`         | Bug 修复技能实现 | 是       |
-| `openspec-spike/`          | 技术调研技能实现 | 是       |
+| `openspec-propose/`        | 创建提案技能     | 是       |
+| `openspec-apply-change/`   | 实施变更技能     | 是       |
+| `openspec-archive-change/` | 归档变更技能     | 是       |
+| `openspec-bugfix/`         | Bug修复技能      | 是       |
+| `openspec-spike/`          | 技术调研技能     | 是       |
 
-**注意：** 每个技能目录包含 `SKILL.md` 文件，定义了 AI 执行命令的具体步骤和逻辑。
-
-##### 复制操作确认
-
-复制完成后，验证以下内容：
-
-```
-{{AI_CONFIG_DIR}}/
-├── commands/
-│   ├── opsx-explore.md      ✓
-│   ├── opsx-propose.md      ✓
-│   ├── opsx-apply.md        ✓
-│   ├── opsx-archive.md      ✓
-│   ├── opsx-bugfix.md       ✓
-│   └── opsx-spike.md        ✓
-└── skills/
-    ├── openspec-explore/          ✓
-    ├── openspec-propose/          ✓
-    ├── openspec-apply-change/     ✓
-    ├── openspec-archive-change/   ✓
-    ├── openspec-bugfix/           ✓
-    └── openspec-spike/            ✓
-```
-
-**常见问题：**
-
-Q: 能否使用 `openspec init` 生成的 commands/skills？  
-A: **不能。** `openspec init` 生成的是通用模板，不包含 OpenSpec Harness 特有的斜杠命令（/opsx-\*）定义。
-
-Q: 目标目录已存在 commands/skills 怎么办？  
-A: 按照阶段 5 的合并规则处理。如果是 `openspec init` 生成的默认内容，用模板内容覆盖。
+**注意：** `openspec init` 生成的默认内容**不能**使用，必须用模板内容覆盖。
 
 ---
 
@@ -386,103 +246,62 @@ A: 按照阶段 5 的合并规则处理。如果是 `openspec init` 生成的默
 
 **生成流程：**
 
-```
-1. 读取模板 .template/AGENTS.md
-2. 替换变量占位符：
-   - {{PROJECT_NAME}} → 项目名称
-   - {{PROJECT_DESCRIPTION}} → 项目描述
-   - {{PACKAGE_MANAGER}} → 包管理器
-   - {{TEST_DIR}} → 测试目录
-   - {{SRC_DIR}} → 源码目录
-3. 检查目标路径是否已存在 AGENTS.md
-4. 如果存在 → 进入冲突处理流程
-5. 如果不存在 → 直接写入
-```
+1. 读取模板 `.template/AGENTS.md`
+2. 替换变量（PROJECT_NAME, PACKAGE_MANAGER 等）
+3. 检查目标文件是否存在 → 冲突处理或直接写入
 
-**冲突处理（目标文件已存在）：**
+**冲突处理：**
 
-```
-检测到项目根目录已存在 AGENTS.md
+- 旧版 OpenSpec → 询问是否更新
+- 专属 AI 文档（IFLOW.md, CLAUDE.md 等）→ 询问是否同时生成 AGENTS.md 或合并
+- 其他配置 → 备份后创建
 
-可能的情况：
-├─ 旧版 OpenSpec 的 AI 行为指南
-├─ 其他 AI 工具的配置文件
-└─ 用户自定义的 AI 指南
-
-处理方式：
-1. 检查文件头部是否有 OpenSpec 标识（target: AI Assistant）
-   ├─ 是 → 这是旧版 OpenSpec 配置，询问是否覆盖
-   │       "检测到旧版 OpenSpec AGENTS.md，是否更新到最新版本？"
-   │       [更新] [保留现有] [对比差异]
-   └─ 否 → 进入步骤 2
-
-2. 检查是否为其他工具专属配置
-   ├─ 是 → 进入步骤 3
-   └─ 否 → 进入步骤 4
-
-3. 其他情况（可能是用户自定义或其他工具配置）
-       "检测到已存在的 AI 配置文件，可能与其他 AI 工具冲突。"
-       [备份并创建新的 AGENTS.md] [重命名为 AGENTS.md.bak 并创建] [跳过]
-```
-
-**专属 AI 文档检测与处理：**
-
-在安装 AGENTS.md（通用 AI 文档）之前，先检测是否存在专属 AI 文档：
-
-| 专属文档 | 文件名模式                                    | 说明                    |
-| -------- | --------------------------------------------- | ----------------------- |
-| IFLOW    | `IFLOW.md`, `iflow.md`                        | iFlow 专属配置          |
-| Claude   | `CLAUDE.md`, `claude.md`, `.claude/CLAUDE.md` | Claude Code 专属配置    |
-| Cursor   | `CURSOR.md`, `cursor.md`, `.cursor/CURSOR.md` | Cursor 专属配置         |
-| OpenCode | `OPENCODE.md`, `opencode.md`                  | OpenCode 专属配置       |
-| Copilot  | `COPILOT.md`, `copilot.md`                    | GitHub Copilot 专属配置 |
-
-**检测逻辑：**
-
-```
-扫描项目根目录及 AI 配置目录，查找专属 AI 文档：
+**专属 AI 文档检测：**
 
 发现 0 个专属文档 → 直接生成 AGENTS.md
 
 发现 1+ 个专属文档 → 提示用户：
 "检测到项目中已存在专属 AI 配置文件：
-   • [IFLOW.md] - iFlow 专属配置
-   • [CLAUDE.md] - Claude Code 专属配置
+• [IFLOW.md] - iFlow 专属配置
+• [CLAUDE.md] - Claude Code 专属配置
 
-   AGENTS.md 是通用 AI 行为指南，可被所有 AI 工具读取。
-   专属 AI 文档仅对特定 AI 工具有效。
+AGENTS.md 是通用 AI 行为指南，可被所有 AI 工具读取。
+专属 AI 文档仅对特定 AI 工具有效。
 
-   请选择操作：
-   □ 同时生成 AGENTS.md（推荐，作为通用指南）
-   □ 将专属文档内容合并到 AGENTS.md
-   □ 跳过，保留现有专属文档（不推荐，其他 AI 工具无法读取）"
+请选择操作：
+□ 同时生成 AGENTS.md（推荐，作为通用指南）
+□ 将专属文档内容合并到 AGENTS.md
+□ 跳过，保留现有专属文档（不推荐，其他 AI 工具无法读取）"
+
 ```
 
 **处理方式：**
 
 ```
+
 用户选择：
 
 [A] 同时生成 AGENTS.md
-    → 保留现有专属文档
-    → 生成新的 AGENTS.md
-    → 在 AGENTS.md 顶部添加注释：
-      "注意：本项目同时存在 [工具名] 专属配置 [文件名]，
-       当冲突时，专属配置优先于本通用配置"
+→ 保留现有专属文档
+→ 生成新的 AGENTS.md
+→ 在 AGENTS.md 顶部添加注释：
+"注意：本项目同时存在 [工具名] 专属配置 [文件名]，
+当冲突时，专属配置优先于本通用配置"
 
 [B] 将专属文档内容合并到 AGENTS.md
-    → 解析专属文档内容
-    → 提取关键配置（角色定义、工作流程、约束等）
-    → 合并到 AGENTS.md 模板中
-    → 备份原专属文档为 [原文件名].bak
-    → 生成合并后的 AGENTS.md
+→ 解析专属文档内容
+→ 提取关键配置（角色定义、工作流程、约束等）
+→ 合并到 AGENTS.md 模板中
+→ 备份原专属文档为 [原文件名].bak
+→ 生成合并后的 AGENTS.md
 
 [C] 跳过生成
-    → 保留现有专属文档
-    → 给出警告：
-      "警告：未生成 AGENTS.md，其他 AI 工具可能无法正确理解项目规范。
-       如需通用 AI 支持，可稍后手动运行安装流程。"
-```
+→ 保留现有专属文档
+→ 给出警告：
+"警告：未生成 AGENTS.md，其他 AI 工具可能无法正确理解项目规范。
+如需通用 AI 支持，可稍后手动运行安装流程。"
+
+````
 
 **注意事项：**
 
@@ -516,7 +335,7 @@ A: 按照阶段 5 的合并规则处理。如果是 `openspec init` 生成的默
 {{HAS_TEST_UNIT_COMMAND}}→ true/false
 {{HAS_LINT_COMMAND}}     → true/false
 {{HAS_TYPE_CHECK_COMMAND}}→ true/false
-```
+````
 
 ---
 
