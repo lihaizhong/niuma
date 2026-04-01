@@ -1,699 +1,345 @@
-# Install Guide: 个人 Harness 环境搭建
+# OpenSpec Harness 安装指南
 
-> AI 助手通过与用户对话，引导完成 OpenSpec Harness 环境搭建
+> AI 助手读取此文件，引导用户完成 Harness 环境搭建
 
-## 概述
+## 前置要求
 
-本指南用于 AI 引导用户从零搭建个人 Harness 环境。AI 应阅读 `docs/openspec/` 下的文档来理解 Harness 的设计理念和配置方式，然后通过与用户对话，逐步完成环境搭建。
-
-**快速开始：** 所有配置文件模板位于 `docs/openspec/template/` 目录，可直接复制使用：
+**必须全局安装 openspec CLI**，否则无法继续：
 
 ```bash
-# 一键复制所有模板
-cp -r docs/openspec/template/openspec ./
-cp docs/openspec/template/AGENTS.md ./
-# 然后编辑文件替换占位符
+npm install -g @openspec/cli
+
+# 验证安装
+openspec --version
 ```
 
-详见 `docs/openspec/template/README.md`
-
-**核心原则：**
-
-- AI 是引导者，用户是决策者
-- 每一步都询问用户偏好，而不是强行指定
-- 参考 `docs/openspec/` 中的文档来解答用户疑问
+如果未安装，AI 将退出并提示用户先安装。
 
 ---
 
-## 阶段 1：确认项目状态
-
-### 1.1 检查现有项目
-
-首先询问用户是否已有项目：
+## 安装流程概览
 
 ```
-你好！我可以帮你搭建 OpenSpec Harness 环境。
+┌──────────────────────────────────────────────────────────────┐
+│  1. 检查 openspec CLI 安装                                   │
+├──────────────────────────────────────────────────────────────┤
+│  2. 收集项目信息（新项目/老项目 + 项目类型）                  │
+├──────────────────────────────────────────────────────────────┤
+│  3. 执行 openspec init（仅创建目录结构）                     │
+├──────────────────────────────────────────────────────────────┤
+│  4. AI 从 .template 拷贝并填充配置                           │
+├──────────────────────────────────────────────────────────────┤
+│  5. 完成验证                                                 │
+└──────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 阶段 1：收集项目信息
+
+AI 将通过对话询问以下信息：
+
+### Q1：新项目 or 老项目？
+
+```
+你好！我来帮你搭建 OpenSpec Harness 环境。
 
 请告诉我你的情况：
 A) 从零创建新项目
 B) 已有项目，想引入 Harness
-
-如果选 B，请告诉我项目的基本情况：
-- 使用什么框架？（Next.js / Node.js / 其他）
-- 使用什么包管理器？（pnpm / npm / yarn）
-- 主要编程语言？（TypeScript / JavaScript）
 ```
 
-### 1.2 从零创建项目
+### Q2：项目类型
 
-如果用户选择 A，继续询问：
+**如果选 A（新项目）：**
 
 ```
-好的，从零开始！请告诉我：
+请选择项目类型：
+1) Web 前端项目（React/Vue/Angular 等）
+2) 客户端项目（Electron/Tauri/React Native 等）
+3) 服务端项目（Node.js/Go/Java 等）
+4) 全栈项目（Next.js/Nuxt 等）
+```
 
-1. 项目名称是什么？
-2. 使用什么框架？
-   - Next.js 15 (React 19 + Tailwind CSS)
-   - 纯 Node.js (TypeScript)
-   - 其他（请说明）
+**如果选 B（老项目）：**
 
-3. 使用什么包管理器？（pnpm / npm / yarn）
-4. 是否需要 Next.js Web UI？（是 / 否）
+AI 自动检测技术栈 → 展示检测报告 → 用户确认/修改
+
+---
+
+## 阶段 2：项目类型专属问题
+
+根据项目类型，询问以下必要问题：
+
+### Web 前端项目
+
+| 问题                    | 选项                                                                              |
+| ----------------------- | --------------------------------------------------------------------------------- |
+| **2.1 框架**            | □ React<br>□ Vue<br>□ Angular<br>□ Svelte<br>□ Solid<br>□ 其他                    |
+| **2.2 如果选 React**    | □ Next.js<br>□ Remix<br>□ 纯 React + Vite<br>□ 纯 React + CRA                     |
+| **2.3 构建工具**        | □ Vite<br>□ Webpack<br>□ Parcel<br>□ 框架自带                                     |
+| **2.4 包管理器**        | □ pnpm<br>□ npm<br>□ yarn<br>□ bun                                                |
+| **2.5 测试框架**        | □ Vitest<br>□ Jest<br>□ Cypress<br>□ Playwright<br>□ 无                           |
+| **2.6 UI 方案**         | □ Tailwind CSS<br>□ CSS Modules<br>□ Styled Components<br>□ UI 库 (AntD/Material) |
+| **2.7 使用 TypeScript** | □ 是<br>□ 否                                                                      |
+| **2.8 项目名称**        | 输入：**\_\_\_\_**（. 或空 = 当前目录）                                           |
+
+### 客户端项目
+
+| 问题                 | 选项                                            |
+| -------------------- | ----------------------------------------------- |
+| **2.1 平台类型**     | □ 桌面端<br>□ 移动端<br>□ 跨平台                |
+| **2.2 桌面端框架**   | □ Electron<br>□ Tauri<br>□ Flutter Desktop      |
+| **2.3 移动端框架**   | □ React Native<br>□ Flutter<br>□ 原生           |
+| **2.4 如果选 Tauri** | □ Rust（默认）<br>□ Go                          |
+| **2.5 状态管理**     | □ Redux/Zustand<br>□ MobX<br>□ Context/Provider |
+| **2.6 包管理器**     | □ pnpm<br>□ npm<br>□ yarn<br>□ bun              |
+| **2.7 项目名称**     | 输入：**\_\_\_\_**                              |
+
+### 服务端项目
+
+| 问题                   | 选项                                                                |
+| ---------------------- | ------------------------------------------------------------------- |
+| **2.1 语言/运行时**    | □ Node.js<br>□ Go<br>□ Java<br>□ Python<br>□ Rust<br>□ 其他         |
+| **2.2 如果选 Node.js** | □ Express<br>□ Fastify<br>□ NestJS<br>□ Koa                         |
+| **2.3 API 类型**       | □ REST<br>□ GraphQL<br>□ gRPC<br>□ tRPC                             |
+| **2.4 数据库**         | □ PostgreSQL<br>□ MySQL<br>□ MongoDB<br>□ Redis<br>□ SQLite<br>□ 无 |
+| **2.5 ORM/数据层**     | □ Prisma<br>□ TypeORM<br>□ Drizzle<br>□ 原生 SQL<br>□ 无            |
+| **2.6 认证方案**       | □ JWT<br>□ Session<br>□ OAuth2<br>□ 无                              |
+| **2.7 部署目标**       | □ Docker<br>□ Serverless<br>□ K8s<br>□ 传统服务器                   |
+| **2.8 项目名称**       | 输入：**\_\_\_\_**                                                  |
+
+### 全栈项目
+
+| 问题                   | 选项                                                      |
+| ---------------------- | --------------------------------------------------------- |
+| **2.1 全栈框架**       | □ Next.js<br>□ Nuxt<br>□ SvelteKit<br>□ Remix<br>□ Django |
+| **2.2 如果选 Next.js** | □ App Router<br>□ Pages Router                            |
+| **2.3 渲染模式**       | □ SSR<br>□ SSG<br>□ ISR<br>□ 混合                         |
+| **2.4 数据库位置**     | □ Serverless/云<br>□ 自托管<br>□ SQLite                   |
+| **2.5 ORM**            | □ Drizzle<br>□ Prisma<br>□ TypeORM<br>□ 原生 SQL          |
+| **2.6 认证方案**       | □ NextAuth.js/Auth.js<br>□ Clerk<br>□ Lucia<br>□ 自建 JWT |
+| **2.7 部署平台**       | □ Vercel<br>□ Netlify<br>□ Railway<br>□ 自托管            |
+| **2.8 包管理器**       | □ pnpm<br>□ npm<br>□ yarn<br>□ bun                        |
+| **2.9 项目名称**       | 输入：**\_\_\_\_**                                        |
+
+---
+
+## 阶段 3：老项目自动检测
+
+对于老项目，AI 将自动检测技术栈：
+
+### 检测逻辑
+
+```
+1. 检查 package.json 是否存在 → Node.js 项目
+2. 解析 dependencies：
+   - next → Next.js
+   - react → React
+   - vue → Vue
+   - @angular/core → Angular
+3. 解析 devDependencies：
+   - vitest → Vitest
+   - jest → Jest
+   - cypress → Cypress
+4. 检查 lock 文件：
+   - pnpm-lock.yaml → pnpm
+   - yarn.lock → yarn
+   - package-lock.json → npm
+5. 检查配置文件：
+   - next.config.js → Next.js 确认
+   - tailwind.config.js → Tailwind CSS
+   - vite.config.ts → Vite
+```
+
+### 检测报告示例
+
+```
+🔍 技术栈检测报告
+
+检测依据：
+• package.json 存在 → Node.js 项目
+• dependencies 中发现 next → Next.js 框架
+• devDependencies 中发现 vitest → Vitest 测试框架
+• 存在 tailwind.config.js → Tailwind CSS
+• 存在 pnpm-lock.yaml → pnpm 包管理器
+
+📋 检测结果：
+├─ 项目类型: Web 前端（Next.js 全栈）
+├─ 框架: Next.js 15
+├─ 渲染模式: [未检测，请确认]
+├─ 语言: TypeScript
+├─ 包管理器: pnpm
+├─ 测试框架: Vitest
+├─ UI: Tailwind CSS
+└─ 运行时: Node.js >=18.0.0
+
+⚠️ 以下项需要确认：
+  • 渲染模式 (SSR/SSG/SPA)
+  • 数据库 (如果有使用)
+
+[确认无误] [修改配置]
 ```
 
 ---
 
-## 阶段 2：创建核心文件
+## 阶段 4：执行安装
 
-### 2.1 必要文件清单
+### 4.1 创建目录结构
 
-根据 `docs/openspec/02-config-system.md` 和 `openspec/config.yaml`，核心文件包括：
+AI 执行 `openspec init` 创建基础目录：
 
-| 文件路径                        | 用途             | 必须创建 |
-| ------------------------------- | ---------------- | -------- |
-| `openspec/config.yaml`          | 项目配置         | ✓        |
-| `openspec/schemas/spec-driven/` | 新功能开发工作流 | ✓        |
-| `openspec/schemas/bugfix/`      | Bug 修复工作流   | ✓        |
-| `openspec/schemas/spike/`       | 技术调研工作流   | ✓        |
-| `AGENTS.md`                     | AI 行为指南      | ✓        |
-| `.opencode/`                    | AI 助手配置目录  | ✓        |
-| `.opencode/commands/`           | 斜杠命令         | ✓        |
-| `.opencode/skills/`             | 技能定义         | ✓        |
-| `.opencode/opencode.json`       | OpenCode 配置    | 可选     |
+```
+openspec/
+├── schemas/
+└── changes/
 
-**模板位置：** 所有配置文件模板位于 `docs/openspec/template/` 目录，可直接复制使用：
-
-```bash
-# 复制模板到项目
-cp -r docs/openspec/template/openspec ./
-cp docs/openspec/template/AGENTS.md ./
+.opencode/
+├── commands/
+└── skills/
 ```
 
-然后编辑文件替换 `{{PLACEHOLDER}}` 占位符（详见 `docs/openspec/template/README.md`）。
+### 4.2 从 .template 拷贝配置
 
-### 2.2 创建 openspec/config.yaml
+AI 从 `docs/openspec/.template/` 读取模板并填充：
 
-**方法 1：从模板复制（推荐）**
+| 源文件                           | 目标文件               | 操作           |
+| -------------------------------- | ---------------------- | -------------- |
+| `.template/openspec/config.yaml` | `openspec/config.yaml` | 填充变量后写入 |
+| `.template/openspec/schemas/*`   | `openspec/schemas/*`   | 直接复制       |
+| `.template/AGENTS.md`            | `AGENTS.md`            | 填充变量后写入 |
+| `.template/opencode/commands/*`  | `.opencode/commands/*` | 直接复制       |
+| `.template/opencode/skills/*`    | `.opencode/skills/*`   | 直接复制       |
 
-```bash
-cp docs/openspec/template/openspec/config.yaml ./openspec/
-# 编辑 openspec/config.yaml，替换 {{PLACEHOLDER}} 占位符
-```
+### 4.3 配置变量填充
 
-**方法 2：手动创建**
-
-根据用户选择的技术栈生成配置文件：
+根据用户回答，填充以下变量：
 
 ```yaml
-schema: spec-driven
-
-context:
-  project:
-    name: <项目名称>
-    description: <项目描述>
-    language: TypeScript
-    runtime: Node.js >=22.0.0
-    package_manager: pnpm
-
-  tech_stack:
-    language: TypeScript 5.9+
-    test_framework: vitest
-    web_framework: Next.js 15
-    ui: React 19 + Tailwind CSS
-    runtime: Node.js >=22.0.0
-
-  modules:
-    src:
-      purpose: Main source code
-      scope: Application logic
-
-  conventions:
-    - ES Module syntax
-    - Strict TypeScript
-    - Async/await
-    - Identifiers in English
-    - Comments can be Chinese
-
-  commands:
-    install: pnpm install
-    dev: pnpm dev
-    build: pnpm build
-    test: pnpm test
-    test_unit: pnpm test:unit
-    lint: pnpm lint
-    type_check: pnpm type-check
-```
-
-详见完整模板：`docs/openspec/template/openspec/config.yaml`
-
-### 2.3 创建 openspec/schemas/
-
-创建 `openspec/schemas/` 目录并添加 3 个工作流定义。这些 schema 定义了不同场景下的工作流程：
-
-**方法 1：从模板复制（推荐）**
-
-```bash
-# 复制完整的 schemas 目录结构
-cp -r docs/openspec/template/openspec/schemas ./openspec/
-```
-
-模板包含以下工作流：
-
-| Schema      | 路径                            | 用途       |
-| ----------- | ------------------------------- | ---------- |
-| spec-driven | `openspec/schemas/spec-driven/` | 新功能开发 |
-| bugfix      | `openspec/schemas/bugfix/`      | Bug 修复   |
-| spike       | `openspec/schemas/spike/`       | 技术调研   |
-
-每个 schema 目录包含：
-
-- `schema.yaml` - 工作流定义
-- `templates/` - Markdown 模板文件
-
-**方法 2：使用 OpenSpec CLI 创建**
-
-```bash
-# 创建自定义 schema
-openspec schema init spec-driven --artifacts "proposal,specs,design,tasks"
-openspec schema init bugfix --artifacts "bug-report,fix,regression-test"
-openspec schema init spike --artifacts "research-question,exploration-log,decision"
-```
-
-**方法 3：手动创建**
-
-详见完整模板文件：
-
-- `docs/openspec/template/openspec/schemas/spec-driven/schema.yaml`
-- `docs/openspec/template/openspec/schemas/bugfix/schema.yaml`
-- `docs/openspec/template/openspec/schemas/spike/schema.yaml`
-
-### 2.4 创建 AGENTS.md
-
-**方法 1：从模板复制（推荐）**
-
-```bash
-cp docs/openspec/template/AGENTS.md ./
-# 编辑 AGENTS.md，替换 {{PLACEHOLDER}} 占位符
-```
-
-**方法 2：手动创建**
-
-根据 `docs/openspec/01-overview.md` 创建 AI 行为指南：
-
-```markdown
-# AI Agent Guidelines
-
-## Context
-
-<项目名称> - <项目描述>
-
-## Roles
-
-### SpecWriter
-
-创建 OpenSpec artifacts。
-
-### Developer
-
-按照 specs 实现代码。
-
-### Tester
-
-先写测试，再实现。
-
-## Workflow
-
-1. **探索** (`/opsx-explore`) - 自由讨论，澄清需求
-2. **调研** (`/opsx-spike`) - 技术选型，时间盒研究
-3. **提案** (`/opsx-propose`) - 创建完整设计方案
-4. **修复** (`/opsx-bugfix`) - Bug 修复流程
-5. **实施** (`/opsx-apply`) - TDD 循环实现
-6. **归档** (`/opsx-archive`) - 完成后归档变更
-
-## TDD Cycle
-
-Red → Green → Refactor
-
-## Commands
-
-| Phase | Command              | 用途                 |
-| ----- | -------------------- | -------------------- |
-| 探索  | /opsx-explore        | 自由讨论，澄清需求   |
-| 调研  | /opsx-spike <name>   | 技术选型，可行性研究 |
-| 提案  | /opsx-propose <name> | 新功能、架构改动     |
-| 修复  | /opsx-bugfix <id>    | Bug 修复             |
-| 实施  | /opsx-apply          | TDD 实现             |
-| 归档  | /opsx-archive        | 手动归档（通常自动） |
-```
-
-详见完整模板：`docs/openspec/template/AGENTS.md`
-
----
-
-## 阶段 3：配置 AI 助手
-
-### 3.1 询问使用的开发工具
-
-```
-你使用什么 AI 代码助手？
-
-A) OpenCode (本项目使用)
-B) Cursor
-C) Claude (Claude.ai / Claude Desktop)
-D) VS Code + Copilot
-E) 其他
-```
-
-根据用户选择，提供对应的配置方式。
-
-### 3.2 OpenCode 配置
-
-如果是 OpenCode，配置 `.opencode/opencode.json`：
-
-```json
-{
-  "skills": [
-    "openspec-propose",
-    "openspec-apply",
-    "openspec-explore",
-    "openspec-spike",
-    "openspec-bugfix"
-  ],
-  "commands": {
-    "opsx-explore": "自由探索，澄清需求",
-    "opsx-spike": "技术调研，时间盒研究",
-    "opsx-propose": "创建新功能提案",
-    "opsx-bugfix": "Bug 修复流程",
-    "opsx-apply": "开始实施当前变更",
-    "opsx-archive": "归档已完成变更"
-  }
-}
-```
-
-### 3.3 创建斜杠命令
-
-在 `.opencode/commands/` 下创建命令文件：
-
-| 命令文件          | 对应操作 | 参考文档                            |
-| ----------------- | -------- | ----------------------------------- |
-| `opsx-explore.md` | 自由探索 | `docs/openspec/spike-vs-explore.md` |
-| `opsx-spike.md`   | 技术调研 | `docs/openspec/03-workflows.md`     |
-| `opsx-propose.md` | 创建提案 | `docs/openspec/03-workflows.md`     |
-| `opsx-bugfix.md`  | Bug 修复 | `docs/openspec/03-workflows.md`     |
-| `opsx-apply.md`   | 开始实施 | `docs/openspec/03-workflows.md`     |
-| `opsx-archive.md` | 归档变更 | `docs/openspec/04-commands.md`      |
-
-### 3.4 其他工具的配置提示
-
-**Cursor (Cursor Rules):**
-
-```
-在 Cursor 项目设置中添加 .cursorrules 文件，引用 AGENTS.md
-```
-
-**Claude (claude.ai):**
-
-```
-将 AGENTS.md 内容作为 Project Instructions 或上传为附件
-```
-
-**VS Code + Copilot:**
-
-```
-将 AGENTS.md 内容添加到 GitHub Copilot Custom Instructions
+# config.yaml 中的变量
+{{PROJECT_NAME}}         → 用户输入的项目名
+{{PROJECT_DESCRIPTION}}  → 根据类型自动生成
+{{PROJECT_TYPE}}         → web-frontend/client/backend/fullstack
+{{LANGUAGE}}             → TypeScript/JavaScript/Go/Java/Python
+{{LANGUAGE_VERSION}}     → 根据类型推断
+{{RUNTIME}}              → Node.js >=22.0.0/Go 1.21+/等
+{{RUNTIME_VERSION}}      → 具体版本
+{{PACKAGE_MANAGER}}      → pnpm/npm/yarn/bun
+{{TEST_FRAMEWORK}}       → vitest/jest/cypress/playwright
+{{WEB_FRAMEWORK}}        → Next.js/Vue/Express/等
+{{UI_FRAMEWORK}}         → Tailwind CSS/等
+{{BUILD_TOOL}}           → Vite/Webpack/等
+{{MODULE_NAME}}          → src/app/lib
+{{HAS_DEV_COMMAND}}      → true/false
+{{HAS_BUILD_COMMAND}}    → true/false
+{{HAS_TEST_COMMAND}}     → true/false
+{{HAS_TEST_UNIT_COMMAND}}→ true/false
+{{HAS_LINT_COMMAND}}     → true/false
+{{HAS_TYPE_CHECK_COMMAND}}→ true/false
 ```
 
 ---
 
-## 阶段 4：配置开发和测试环境
+## 阶段 5：合并规则
 
-### 4.1 询问环境需求
-
-```
-你想配置哪些环境？（可多选）
-
-A) 开发环境 (pnpm dev)
-B) 测试环境 (pnpm test:unit)
-C) CI/CD
-D) 全部配置
-```
-
-### 4.2 平台选择（仅当选择 CI/CD 时）
-
-如果用户选择了 CI/CD，继续询问：
+如果目标目录已存在文件，按以下规则合并：
 
 ```
-你使用哪个 Git 托管平台？
+文件是否在现有目录中？
+  ├─ 否 → 直接使用模板版本
+  └─ 是 → 文件是否与 openspec 相关？
+      ├─ 否（用户自定义）→ 保留现有版本
+      └─ 是（openspec 相关）→ 使用模板版本
 
-A) GitHub
-B) GitLab
-C) 两者都需要（多仓库场景）
-```
+判断 "与 openspec 相关" 的文件：
+✓ openspec/ 目录下的所有文件
+✓ AGENTS.md
+✓ .opencode/commands/opsx-propose.md（标准命令）
+✓ .opencode/commands/opsx-apply.md（标准命令）
+✓ .opencode/commands/opsx-explore.md（标准命令）
+✓ .opencode/commands/opsx-archive.md（标准命令）
+✓ .opencode/skills/openspec-propose/（标准技能）
+✓ .opencode/skills/openspec-apply-change/（标准技能）
+✓ .opencode/skills/openspec-archive-change/（标准技能）
+✓ .opencode/skills/openspec-explore/（标准技能）
 
-### 4.3 开发环境配置
-
-如果选择 A 或 D：
-
-```yaml
-# .vscode/launch.json (VS Code 调试)
-{
-  "version": "0.2.0",
-  "configurations":
-    [
-      {
-        "name": "Debug Main",
-        "type": "node",
-        "request": "launch",
-        "cwd": "${workspaceFolder}",
-        "runtimeExecutable": "pnpm",
-        "runtimeArgs": ["dev"],
-      },
-    ],
-}
-```
-
-### 4.4 CI/CD 配置
-
-根据用户在 4.2 选择的平台，提供对应配置：
-
-#### 4.4.1 GitHub Actions
-
-如果用户选择 GitHub：
-
-```
-好的，我将为你配置 GitHub Actions CI。
-这将创建 .github/workflows/ci.yml 文件。
-```
-
-配置文件：
-
-```yaml
-name: CI
-
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v3
-        with:
-          version: 8
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
-      - run: pnpm install
-      - run: pnpm lint
-      - run: pnpm type-check
-      - run: pnpm test:unit
-```
-
-#### 4.4.2 GitLab CI
-
-如果用户选择 GitLab：
-
-```
-好的，我将为你配置 GitLab CI。
-这将创建 .gitlab-ci.yml 文件。
-```
-
-配置文件：
-
-```yaml
-# .gitlab-ci.yml
-stages:
-  - test
-
-test:
-  stage: test
-  image: node:22-alpine
-  before_script:
-    - npm install -g pnpm
-    - pnpm install
-  script:
-    - pnpm lint
-    - pnpm type-check
-    - pnpm test:unit
-```
-
-#### 4.4.3 多平台场景
-
-如果用户选择"两者都需要"：
-
-```
-你的项目同时使用 GitHub 和 GitLab？这很常见！
-我会为你创建两套 CI 配置：
-
-✓ .github/workflows/ci.yml （用于 GitHub）
-✓ .gitlab-ci.yml （用于 GitLab）
-```
-
-两套配置内容相同，只是存放位置不同。
-
----
-
-## 阶段 5：验证环境
-
-### 5.1 创建第一个变更
-
-引导用户创建第一个变更来验证环境：
-
-```
-环境配置完成！现在让我们创建一个示例变更来验证：
-
-请选择一个场景：
-
-A) 添加欢迎消息功能
-B) 添加深色模式
-C) 其他功能（请描述）
-
-我推荐选择 A"欢迎消息"，这是一个简单的示例，可以快速验证整个流程。
-```
-
-### 5.2 验证检查清单
-
-按照 `docs/openspec/00-quick-start.md` 验证：
-
-- [ ] `pnpm install` 成功
-- [ ] `pnpm test:unit` 成功
-- [ ] `pnpm lint` 成功
-- [ ] `pnpm type-check` 成功
-- [ ] `/opsx-propose` 命令可用（如果使用 OpenCode）
-
-### 5.3 常见问题处理
-
-**问题：pnpm install 失败**
-
-```
-可能原因：
-1. Node.js 版本不对 - 需要 >=22.0.0
-2. pnpm 版本不对 - 需要 >=8.0.0
-
-解决方案：
-node --version  # 确认 Node.js 版本
-pnpm --version  # 确认 pnpm 版本
-```
-
-**问题：测试失败**
-
-```
-可能原因：
-1. 依赖未正确安装
-2. 测试文件路径问题
-
-解决方案：
-rm -rf node_modules pnpm-lock.yaml
-pnpm install
-pnpm test:unit
-```
-
-**问题：命令找不到**
-
-```
-确保 .opencode/commands/ 目录存在且包含对应命令文件
-检查 .opencode/opencode.json 配置是否正确
+✗ .opencode/commands/opsx-bugfix.md（自定义命令）
+✗ .opencode/commands/opsx-spike.md（自定义命令）
+✗ .opencode/skills/openspec-bugfix/（自定义技能）
+✗ .opencode/skills/openspec-spike/（自定义技能）
+✗ 用户自己的其他配置文件
 ```
 
 ---
 
-## AI 交互示例
+## 阶段 6：完成验证
 
-### 对话示例 1：完全从零开始
-
-```
-用户: 我想搭建 Harness 环境
-
-AI: 你好！我可以帮你搭建 OpenSpec Harness 环境。
-
-    请告诉我你的情况：
-    A) 从零创建新项目
-    B) 已有项目，想引入 Harness
-
-用户: A
-
-AI: 好的，从零开始！
-
-    1. 项目名称是什么？
-    2. 使用什么框架？（Next.js / 纯 Node.js / 其他）
-
-用户: 项目叫 my-project，用 Next.js
-
-AI: 好的，正在为你创建 my-project 的 Harness 配置...
-
-    ✓ 创建 openspec/config.yaml
-    ✓ 创建 AGENTS.md
-    ✓ 创建 .opencode/commands/
-
-    你使用哪个 Git 托管平台？
-    A) GitHub
-    B) GitLab
-    C) 两者都需要
-
-用户: A（GitHub）
-
-AI: 好的，配置 GitHub Actions CI...
-
-    ✓ 创建 .github/workflows/ci.yml
-
-    你使用什么 AI 代码助手？
-    A) OpenCode
-    B) Cursor
-    C) Claude
-    D) VS Code + Copilot
-
-用户: A
-
-AI: 正在配置 OpenCode...
-
-    ✓ 创建 .opencode/opencode.json
-    ✓ 创建 .opencode/commands/opsx-propose.md
-    ✓ 创建 .opencode/commands/opsx-apply.md
-    ✓ 创建 .opencode/commands/opsx-explore.md
-
-    现在验证环境：
-
-    请运行 pnpm install 和 pnpm test:unit 确认环境正常。
-
-用户: pnpm install 成功了，但 pnpm test:unit 失败
-
-AI: 让我看看测试失败的原因...
-
-    运行 pnpm test:unit --reporter=verbose 看看具体错误。
-
-    ...
-
-    看起来是 vitest 配置问题。让我帮你修复...
-
-用户: 好的
-
-AI: 已修复！再试一次 pnpm test:unit
-```
-
-### 对话示例 2：已有项目引入 Harness
+安装完成后，AI 验证以下内容：
 
 ```
-用户: 我有个现有项目想引入 Harness
-
-AI: 好的！请告诉我：
-
-    1. 项目使用什么框架？（Next.js / 纯 Node.js / 其他）
-    2. 使用什么包管理器？（pnpm / npm / yarn）
-    3. 主要使用 TypeScript 还是 JavaScript？
-
-用户: Next.js + pnpm + TypeScript
-
-AI: 好的，正在分析你的项目结构...
-
-    ✓ 检测到 Next.js 15 + TypeScript
-    ✓ 检测到使用 pnpm
-
-    接下来我会创建 Harness 配置文件。这些会添加到你的项目中，不会影响现有代码。
-
-    开始创建...
-
-用户: 好
-
-AI: 你使用哪个 Git 托管平台？
-    A) GitHub
-    B) GitLab
-    C) 两者都需要
-
-用户: B（GitLab）
-
-AI: 好的，配置 GitLab CI...
-
-    ✓ 创建 openspec/config.yaml
-    ✓ 创建 AGENTS.md
-    ✓ 创建 .opencode/commands/
-    ✓ 创建 .gitlab-ci.yml
-
-    现在你需要：
-    1. 阅读 docs/openspec/00-quick-start.md 了解 Harness
-    2. 尝试创建一个提案：/opsx-propose my-first-feature
+✓ openspec/config.yaml 存在且格式正确
+✓ openspec/schemas/ 包含 spec-driven、bugfix、spike
+✓ AGENTS.md 存在
+✓ .opencode/commands/ 包含必要命令
+✓ .opencode/skills/ 包含必要技能
 ```
+
+并提示用户：
+
+```
+🎉 OpenSpec Harness 环境搭建完成！
+
+下一步：
+1. 查看 openspec/config.yaml 确认配置
+2. 阅读 AGENTS.md 了解 AI 助手的工作方式
+3. 创建第一个变更：
+
+   新功能：/opsx-propose my-first-feature
+   Bug 修复：/opsx-bugfix some-bug
+   技术调研：/opsx-spike evaluate-options
+```
+
+---
+
+## 模板目录结构
+
+```
+docs/openspec/.template/
+├── README.md                    # 模板使用说明
+├── AGENTS.md                    # AI 行为指南（带变量）
+├── openspec/
+│   ├── config.yaml              # 通用配置模板（带变量）
+│   └── schemas/
+│       ├── spec-driven/         # 新功能开发工作流
+│       ├── bugfix/              # Bug 修复工作流
+│       └── spike/               # 技术调研工作流
+└── opencode/                    # OpenCode 配置
+    ├── commands/                # 斜杠命令
+    │   ├── opsx-explore.md      # 标准：探索模式
+    │   ├── opsx-propose.md      # 标准：创建提案
+    │   ├── opsx-apply.md        # 标准：实施变更
+    │   ├── opsx-archive.md      # 标准：归档变更
+    │   ├── opsx-bugfix.md       # 自定义：Bug 修复
+    │   └── opsx-spike.md        # 自定义：技术调研
+    └── skills/                  # 技能定义
+        ├── openspec-explore/    # 标准
+        ├── openspec-propose/    # 标准
+        ├── openspec-apply-change/    # 标准
+        ├── openspec-archive-change/  # 标准
+        ├── openspec-bugfix/     # 自定义
+        └── openspec-spike/      # 自定义
+```
+
+**注意**：`.template` 是一个独立的、可复用的配置模板库，与当前工程的实际配置解耦。
 
 ---
 
 ## 参考文档
 
-AI 在引导过程中应参考以下文档：
-
-| 文档                                | 用途             |
-| ----------------------------------- | ---------------- |
-| `docs/openspec/00-quick-start.md`   | 快速开始指南     |
-| `docs/openspec/01-overview.md`      | 系统概览         |
-| `docs/openspec/02-config-system.md` | 配置体系详解     |
-| `docs/openspec/03-workflows.md`     | 工作流详解       |
-| `docs/openspec/04-commands.md`      | 命令参考         |
-| `docs/openspec/spike-vs-explore.md` | Spike vs Explore |
-
----
-
-## 附录：完整文件结构
-
-```
-<项目根目录>/
-├── openspec/
-│   ├── config.yaml              # 项目配置 (必须)
-│   ├── schemas/                 # 工作流定义
-│   │   ├── spec-driven/         # 新功能开发工作流
-│   │   │   ├── schema.yaml
-│   │   │   └── templates/       # Markdown 模板
-│   │   ├── bugfix/              # Bug 修复工作流
-│   │   │   ├── schema.yaml
-│   │   │   └── templates/
-│   │   └── spike/               # 技术调研工作流
-│   │       ├── schema.yaml
-│   │       └── templates/
-│   └── changes/                 # 变更目录
-│
-├── .opencode/                   # AI 助手配置 (必须)
-│   ├── commands/                # 斜杠命令 (必须)
-│   │   ├── opsx-propose.md
-│   │   ├── opsx-apply.md
-│   │   └── opsx-explore.md
-│   ├── skills/                  # 技能定义 (必须)
-│   └── opencode.json            # OpenCode 配置 (可选)
-│
-├── .github/
-│   └── workflows/
-│       └── ci.yml               # GitHub CI (可选)
-│
-├── .gitlab-ci.yml               # GitLab CI (可选)
-│
-├── AGENTS.md                    # AI 行为指南 (必须)
-│
-└── docs/
-    └── openspec/                 # Harness 文档
-        ├── 00-quick-start.md
-        ├── 01-overview.md
-        └── ...
-```
-
-**模板位置：** `docs/openspec/template/` 包含上述所有配置文件的完整模板，可直接复制使用。
+| 文档                  | 说明           |
+| --------------------- | -------------- |
+| `00-quick-start.md`   | 5 分钟快速入门 |
+| `01-overview.md`      | 系统概览       |
+| `02-config-system.md` | 配置体系详解   |
+| `03-workflows.md`     | 工作流详解     |
+| `.template/README.md` | 模板使用说明   |

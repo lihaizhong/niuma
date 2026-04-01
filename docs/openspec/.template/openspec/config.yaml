@@ -1,0 +1,58 @@
+# OpenSpec Configuration
+# Schema resolution order: project > user > package
+
+# Default schema for new changes
+schema: spec-driven
+
+# Available schemas in this project
+schemas:
+  spec-driven:
+    path: openspec/schemas/spec-driven
+    description: Standard spec-driven development with TDD
+  bugfix:
+    path: openspec/schemas/bugfix
+    description: Streamlined bug fix workflow
+  spike:
+    path: openspec/schemas/spike
+    description: Technical research and investigation
+
+context:
+  project:
+    name: "{{PROJECT_NAME}}"
+    description: "{{PROJECT_DESCRIPTION}}"
+    language: "{{LANGUAGE}}"
+    runtime: "{{RUNTIME}}"
+    package_manager: "{{PACKAGE_MANAGER}}"
+
+  tech_stack:
+    language: "{{LANGUAGE_VERSION}}"
+    test_framework: "{{TEST_FRAMEWORK}}"
+{{WEB_FRAMEWORK_LINE}}
+{{UI_FRAMEWORK_LINE}}
+{{BUILD_TOOL_LINE}}
+    runtime: "{{RUNTIME_VERSION}}"
+
+  modules:
+{{MODULES_SECTION}}
+    openspec:
+      purpose: Change management
+      scope: Workflow config, active changes, archived changes
+    .opencode:
+      purpose: AI assistant configuration
+      scope: Commands, skills, plugins
+
+  conventions:
+{{TYPESCRIPT_CONVENTION}}
+    - ES Module syntax
+    - Async/await
+    - Identifiers in English
+    - Comments can be Chinese
+
+  commands:
+    install: "{{PACKAGE_MANAGER}} install"
+{{DEV_COMMAND_LINE}}
+{{BUILD_COMMAND_LINE}}
+{{TEST_COMMAND_LINE}}
+{{TEST_UNIT_COMMAND_LINE}}
+{{LINT_COMMAND_LINE}}
+{{TYPE_CHECK_COMMAND_LINE}}

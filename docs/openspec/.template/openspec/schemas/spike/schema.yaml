@@ -1,0 +1,106 @@
+name: spike
+version: "1.0"
+description: Technical research and exploratory investigation workflow
+
+artifacts:
+  - id: research-question
+    generates: research-question.md
+    description: Research question with scope and success criteria
+    template: research-question.md
+    requires: []
+
+  - id: exploration-log
+    generates: exploration-log.md
+    description: Log of research findings and experiments
+    template: exploration-log.md
+    requires:
+      - research-question
+
+  - id: decision
+    generates: decision.md
+    description: Final decision and recommendations
+    template: decision.md
+    requires:
+      - exploration-log
+
+apply:
+  requires:
+    - decision
+  tracks: decision.md
+
+# Extended configuration (OpenSpec custom extensions)
+extensions:
+  timebox:
+    default: 4h
+    max: 2d
+    warning_threshold: 80%
+    enforce: soft
+
+  rules:
+    timebox_respected:
+      principle: "Respect the timebox"
+      description: Spike is time-boxed research by design
+    document_as_you_go:
+      principle: "Document as you go"
+      description: Capture findings in real-time, include failed experiments
+    code_spikes_ok:
+      principle: "Throwaway code is OK"
+      description: Mark code as experimental, don't require tests
+    decision_required:
+      principle: "Must reach a conclusion"
+      description: Every spike must produce a clear decision
+    no_production_code:
+      principle: "No production code in spike"
+      description: Production implementation is a separate change
+
+  artifacts_config:
+    research_question:
+      required_sections:
+        - Problem_Statement
+        - Research_Goals
+        - Scope
+      optional_sections:
+        - Constraints
+        - Success_Criteria
+        - Timebox
+      max_words: 400
+    exploration_log:
+      required_sections:
+        - Approach
+        - Findings
+      optional_sections:
+        - Experiments_Conducted
+        - Tools_Evaluated
+        - Documentation_Reviewed
+        - Code_Spikes
+        - Pros_and_Cons
+      format: chronological
+      max_words: 2000
+    decision:
+      required_sections:
+        - Summary
+        - Recommendation
+        - Rationale
+      optional_sections:
+        - Alternatives_Considered
+        - Risks
+        - Next_Steps
+        - Implementation_Plan
+      max_words: 800
+
+  integration:
+    git:
+      branch_naming: "spike/<research-name>"
+      commit_prefix: "spike:"
+    directory:
+      pattern: "openspec/changes/<spike-name>/"
+      structure:
+        - research-question.md
+        - exploration-log.md
+        - decision.md
+        - findings/
+        - code-spikes/
+    follow_up:
+      require_decision: true
+      create_implementation_ticket: optional
+      link_to_spec: recommended
