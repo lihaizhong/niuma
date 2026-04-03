@@ -1,5 +1,6 @@
 ---
 name: openspec-bugfix
+description: Implement bug fixes using the OpenSpec bugfix schema workflow. Use when the user reports a bug, error, or issue that needs investigation and a tracked fix.
 license: MIT
 compatibility: Requires openspec CLI.
 metadata:
